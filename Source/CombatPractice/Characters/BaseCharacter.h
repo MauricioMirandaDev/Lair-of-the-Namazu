@@ -7,6 +7,8 @@
 
 class USpringArmComponent; 
 class UCameraComponent; 
+class UAnimMontage; 
+class ABaseWeapon; 
 
 UCLASS()
 class COMBATPRACTICE_API ABaseCharacter : public ACharacter
@@ -39,4 +41,15 @@ private:
 	void MoveForward(float Scale);
 
 	void MoveRight(float Scale);
+
+	// Functions and components for combat
+	void LightAttack();
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat", meta = (AllowPrivateAccess = "true"))
+	TSubclassOf<ABaseWeapon> WeaponClass; 
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat", meta = (AllowPrivateAccess = "true"))
+	UAnimMontage* LightAttackAnimation; 
+
+	ABaseWeapon* Weapon; 
 };

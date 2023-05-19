@@ -1,6 +1,8 @@
 
 #include "BaseCharacter.h"
+#include "Animation/AnimMontage.h"
 #include "Camera/CameraComponent.h"
+#include "CombatPractice/Actors/BaseWeapon.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Kismet/KismetMathLibrary.h"
@@ -29,6 +31,14 @@ ABaseCharacter::ABaseCharacter()
 void ABaseCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+
+	// Create a weapon and assign it to the player
+	if (WeaponClass)
+	{
+		Weapon = GetWorld()->SpawnActor<ABaseWeapon>(WeaponClass);
+		Weapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, TEXT("WeaponSocket"));
+		Weapon->SetOwner(this);
+	}
 }
 
 // Called every frame
@@ -49,6 +59,9 @@ void ABaseCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 	// Camera control (mouse)
 	PlayerInputComponent->BindAxis(TEXT("LookUp"), this, &ABaseCharacter::AddControllerPitchInput);
 	PlayerInputComponent->BindAxis(TEXT("LookRight"), this, &ABaseCharacter::AddControllerYawInput);
+
+	// Combat
+	PlayerInputComponent->BindAction(TEXT("LightAttack"), EInputEvent::IE_Pressed, this, &ABaseCharacter::LightAttack);
 }
 
 // Find forward vector based on control rotation and move player either forwards or backwards
@@ -63,6 +76,15 @@ void ABaseCharacter::MoveRight(float Scale)
 {
 	FVector RightDirection = UKismetMathLibrary::GetRightVector(FRotator(0.0f, Controller->GetControlRotation().Yaw, Controller->GetControlRotation().Roll));
 	AddMovementInput(RightDirection, Scale);
+}
+
+// Perform a light attack
+void ABaseCharacter::LightAttack()
+{
+	if (LightAttackAnimation)
+	{
+		PlayAnimMontage(LightAttackAnimation, 1.0f, TEXT("None"));
+	}
 }
 
 

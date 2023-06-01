@@ -16,6 +16,7 @@ ABaseCharacter::ABaseCharacter()
 	// Set default values 
 	bUseControllerRotationYaw = false; 
 	GetCharacterMovement()->bOrientRotationToMovement = true;
+	bCanAttack = true;
 
 	// Create spring arm component and set default values
 	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("Spring Arm"));
@@ -81,9 +82,26 @@ void ABaseCharacter::MoveRight(float Scale)
 // Perform a light attack
 void ABaseCharacter::LightAttack()
 {
-	if (LightAttackAnimation)
+	if (LightAttackAnimation && bCanAttack)
 	{
 		PlayAnimMontage(LightAttackAnimation, 1.0f, TEXT("None"));
+	}
+}
+
+// Apply effects and set variables based on start and end of attack
+void ABaseCharacter::AttackEffects(bool bIsStart)
+{
+	if (bIsStart)
+	{
+		GetCharacterMovement()->SetJumpAllowed(false);
+		GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
+		bCanAttack = false;
+	}
+	else
+	{
+		GetCharacterMovement()->SetJumpAllowed(true);
+		GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
+		bCanAttack = true;
 	}
 }
 

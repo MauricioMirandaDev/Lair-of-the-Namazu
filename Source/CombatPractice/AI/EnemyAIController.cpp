@@ -3,11 +3,13 @@
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Kismet/GameplayStatics.h"
 
+// Set default values
 AEnemyAIController::AEnemyAIController()
 {
 	BehaviorTree = nullptr; 
 }
 
+// Called when the game starts or when spawned
 void AEnemyAIController::BeginPlay()
 {
 	Super::BeginPlay();
@@ -20,6 +22,7 @@ void AEnemyAIController::BeginPlay()
 	}
 }
 
+// Called every frame
 void AEnemyAIController::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);

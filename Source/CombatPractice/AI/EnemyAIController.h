@@ -22,6 +22,7 @@ protected:
 	virtual void BeginPlay() override;
 
 private:
+	// This enemy's behavior tree
 	UPROPERTY(EditDefaultsOnly, Category = "Behavior Tree", meta = (AllowPrivateAccess = "true"))
 	class UBehaviorTree* BehaviorTree;
 };

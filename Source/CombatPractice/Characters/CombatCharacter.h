@@ -19,8 +19,8 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	// Anim notify that access AttackEffects(bIsStart)
-	friend class USetAttackEffects; 
+	// Anim notify that accesses bCanAttack
+	friend class UCombatAnimNotify_SetAttack; 
 
 protected:
 	// Called when the game starts or when spawned
@@ -34,9 +34,6 @@ protected:
 	bool bCanAttack; 
 
 private: 
-	// Sets variables during attack animations
-	void AttackEffects(bool bIsStart);
-
 	// This character's weapon 
 	AWeapon* Weapon;
 };

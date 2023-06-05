@@ -34,21 +34,4 @@ void ACombatCharacter::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 }
 
-// Set variables based on start and end of attack animation
-void ACombatCharacter::AttackEffects(bool bIsStart)
-{
-	if (bIsStart)
-	{
-		GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
-		GetCharacterMovement()->SetJumpAllowed(false);
-		bCanAttack = false;
-	}
-	else
-	{
-		GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
-		GetCharacterMovement()->SetJumpAllowed(true);
-		bCanAttack = true;
-	}
-}
-
 

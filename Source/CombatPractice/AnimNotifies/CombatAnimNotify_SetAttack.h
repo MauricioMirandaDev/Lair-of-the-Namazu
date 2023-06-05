@@ -3,23 +3,23 @@
 
 #include "CoreMinimal.h"
 #include "CombatAnimNotify.h"
-#include "SetAttackEffects.generated.h"
+#include "CombatAnimNotify_SetAttack.generated.h"
 
 UCLASS()
-class COMBATPRACTICE_API USetAttackEffects : public UCombatAnimNotify
+class COMBATPRACTICE_API UCombatAnimNotify_SetAttack : public UCombatAnimNotify
 {
 	GENERATED_BODY()
 	
 public:
 	// Set default values
-	USetAttackEffects();
+	UCombatAnimNotify_SetAttack(); 
 
 protected:
 	// Triggered when this anim notify is called
 	virtual void Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation) override;
 
 private:
-	// Variable to determine whehter this anim notify is being called at the start or end of an attack animation 
+	// Whether the owning character will be able to start another attack or not 
 	UPROPERTY(EditAnywhere, meta = (AllowPrivateAccess = "true"))
-	bool bStartOfAttack;
+	bool bAllowAttack; 
 };

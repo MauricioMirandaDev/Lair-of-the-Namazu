@@ -8,7 +8,6 @@
 // Sets default values
 APlayerCharacter::APlayerCharacter()
 {
-	bUseControllerRotationYaw = false;
 	LightAttackAnimation = nullptr; 
 
 	// Create spring arm component and set default values

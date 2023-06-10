@@ -18,8 +18,6 @@ protected:
 	// Update next tick
 	virtual void TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds) override;
 
-	// References to the player and owning enemy
-	class APlayerCharacter* Player;
-
-	class AEnemyCharacter* Enemy; 
+	// Reference to enemy in game
+	class AEnemyCharacter* OwningEnemy; 
 };

@@ -2,12 +2,14 @@
 #include "PlayerCharacter.h"
 #include "Animation/AnimMontage.h"
 #include "Camera/CameraComponent.h"
+#include "Components/CapsuleComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 
 // Sets default values
 APlayerCharacter::APlayerCharacter()
 {
+	GetCapsuleComponent()->SetCollisionProfileName(TEXT("PlayerCharacter"), true);
 	LightAttackAnimation = nullptr; 
 
 	// Create spring arm component and set default values

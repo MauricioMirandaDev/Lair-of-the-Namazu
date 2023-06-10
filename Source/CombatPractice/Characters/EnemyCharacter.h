@@ -17,10 +17,33 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+	// Friend class that accesses CanSeePlayer() and PlayerReference
+	friend class UBTService_SearchForPlayer; 
+
+	// Friend class that accesses PlayerReference 
+	friend class UBTService_UpdatePlayerLocation;
+
+	// Friend class that accesses IsPlayerBlocked() and PlayerReference
+	friend class UBTService_CheckBehind;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
 private:
+	// Components, functions, and variable used for line of sight search 
+	UPROPERTY(EditAnywhere, Category = "Search", meta = (AllowPrivateAccess = "true"))
+	float SearchRadius;
 
+	/** Should be between 0.0 and 180.0 */
+	UPROPERTY(EditAnywhere, Category = "Search", meta = (AllowPrivateAccess = "true", UIMin = "0.0", UIMax = "180.0"))
+	float MaxSightAngle;
+
+	bool CanSeePlayer();
+
+	bool IsPlayerWithinReach(); 
+
+	bool IsPlayerBlocked();
+
+	class APlayerCharacter* PlayerReference;
 };

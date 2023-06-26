@@ -5,15 +5,15 @@
 #include "Kismet/KismetSystemLibrary.h"
 
 // Set default values
-UCombatAnimNotify_PlaySound3D::UCombatAnimNotify_PlaySound3D()
+UCombatAnimNotify_PlayFootstep::UCombatAnimNotify_PlayFootstep()
 {
-	NotifyColor = FColor(200, 200, 200);
+	NotifyColor = FColor(220, 220, 220);
 	FootSocket = EFootSocket::SOCKET_LeftFoot;
 	SoundEffect = nullptr; 
 }
 
-// Play a sound at the designated location
-void UCombatAnimNotify_PlaySound3D::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation)
+// Play footstep sound effect at the determined location
+void UCombatAnimNotify_PlayFootstep::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation)
 {
 	Super::Notify(MeshComp, Animation);
 
@@ -24,21 +24,24 @@ void UCombatAnimNotify_PlaySound3D::Notify(USkeletalMeshComponent* MeshComp, UAn
 		ActorsToIgnore.Add(OwnerReference);
 
 		FHitResult HitResult;
-		FVector TraceLocation;
+
+		// Perform a sphere trace to determine where to play the sound effect
 		switch (FootSocket)
 		{
 		case EFootSocket::SOCKET_RightFoot:
-			TraceLocation = OwnerReference->GetMesh()->GetSocketLocation(TEXT("RightFootSocket"));
+			UKismetSystemLibrary::SphereTraceSingle(GetWorld(), OwnerReference->GetMesh()->GetSocketLocation(TEXT("RightFootSocket")), 
+													OwnerReference->GetMesh()->GetSocketLocation(TEXT("RightFootSocket")), 50.0f, 
+													UEngineTypes::ConvertToTraceType(ECC_Visibility), false, ActorsToIgnore,
+													EDrawDebugTrace::None, OUT HitResult, false);
 			break;
 		default:
-			TraceLocation = OwnerReference->GetMesh()->GetSocketLocation(TEXT("LeftFootSocket"));
+			UKismetSystemLibrary::SphereTraceSingle(GetWorld(), OwnerReference->GetMesh()->GetSocketLocation(TEXT("LeftFootSocket")),
+													OwnerReference->GetMesh()->GetSocketLocation(TEXT("LeftFootSocket")), 50.0f,
+													UEngineTypes::ConvertToTraceType(ECC_Visibility), false, ActorsToIgnore,
+													EDrawDebugTrace::None, OUT HitResult, false);
 			break;
 		}
 
-		// Perform a sphere trace to get the location where the footstep should be played
-		UKismetSystemLibrary::SphereTraceSingle(GetWorld(), TraceLocation, TraceLocation, 50.0f, UEngineTypes::ConvertToTraceType(ECC_Visibility), false,
-			ActorsToIgnore, EDrawDebugTrace::None, OUT HitResult, true);
-
-		UGameplayStatics::PlaySoundAtLocation(GetWorld(), SoundEffect, HitResult.Location, 1.0f, 1.0f, 0.0f);
+		UGameplayStatics::PlaySoundAtLocation(GetWorld(), SoundEffect, HitResult.Location);
 	}
 }

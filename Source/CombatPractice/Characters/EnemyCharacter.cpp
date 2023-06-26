@@ -10,8 +10,9 @@
 AEnemyCharacter::AEnemyCharacter()
 {
 	GetCapsuleComponent()->SetCollisionProfileName(TEXT("EnemyCharacter"), true);
-	SearchRadius = 100.0f;
+	SearchRadius = 500.0f;
 	MaxSightAngle = 90.0f; 
+	AttackRadius = 100.0f;
 	PlayerReference = nullptr;
 }
 
@@ -35,7 +36,7 @@ void AEnemyCharacter::Tick(float DeltaTime)
 // Perform a line of sight calculation to determine if the enemy can see the player
 bool AEnemyCharacter::CanSeePlayer()
 {
-	if (IsPlayerWithinReach())
+	if (IsPlayerClose())
 	{
 		// Calculate the angle between the enemy's forward vector and direction to player
 		FVector DirectionToPlayer = PlayerReference->GetActorLocation() - GetActorLocation();
@@ -51,15 +52,9 @@ bool AEnemyCharacter::CanSeePlayer()
 }
 
 // Perform a sphere trace to see if the player is withing detection radius
-bool AEnemyCharacter::IsPlayerWithinReach()
+bool AEnemyCharacter::IsPlayerClose()
 {
-	TArray<AActor*> ActorsToIngore;
-	ActorsToIngore.Add(this);
-
-	FHitResult SphereResult; 
-
-	return UKismetSystemLibrary::SphereTraceSingle(GetWorld(), GetActorLocation(), GetActorLocation(), SearchRadius, UEngineTypes::ConvertToTraceType(ECC_GameTraceChannel2),
-												   true, ActorsToIngore, EDrawDebugTrace::None, OUT SphereResult, true);
+	return FVector::Dist(GetActorLocation(), PlayerReference->GetActorLocation()) <= SearchRadius;
 }
 
 // Perform a line trace to see if ray to player is blockd by anything
@@ -74,3 +69,8 @@ bool AEnemyCharacter::IsPlayerBlocked()
 												 true, ActorsToIngore, EDrawDebugTrace::None, OUT LineResult, true);
 }
 
+// Calulate if the player is within attacking distance
+bool AEnemyCharacter::IsReadyToAttack()
+{
+	return FVector::Dist(GetActorLocation(), PlayerReference->GetActorLocation()) <= AttackRadius;
+}

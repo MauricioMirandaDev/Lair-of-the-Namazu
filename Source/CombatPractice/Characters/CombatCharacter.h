@@ -22,6 +22,9 @@ public:
 	// Anim notify that accesses bCanAttack
 	friend class UCombatAnimNotify_SetAttack; 
 
+	// Anim notify that accesses Weapon
+	friend class UCombatAnimNotify_RotateWeapon;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;

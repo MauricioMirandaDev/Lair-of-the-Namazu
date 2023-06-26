@@ -12,19 +12,19 @@ enum class EFootSocket : uint8 {
 };
 
 UCLASS()
-class COMBATPRACTICE_API UCombatAnimNotify_PlaySound3D : public UCombatAnimNotify
+class COMBATPRACTICE_API UCombatAnimNotify_PlayFootstep : public UCombatAnimNotify
 {
 	GENERATED_BODY()
 	
 public:
 	// Set default values
-	UCombatAnimNotify_PlaySound3D();
+	UCombatAnimNotify_PlayFootstep();
 
 protected:
 	// Triggered when this anim notify is called
 	virtual void Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation) override;
 
-private:
+protected:
 	/** Select which foot will be making the sound effect */
 	UPROPERTY(EditAnywhere, meta = (AllowPrivateAccess = "true"))
 	EFootSocket FootSocket;

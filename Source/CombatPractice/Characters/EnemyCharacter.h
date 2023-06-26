@@ -26,6 +26,9 @@ public:
 	// Friend class that accesses IsPlayerBlocked() and PlayerReference
 	friend class UBTService_CheckBehind;
 
+	// Friend class that accesses IsReadytoAttack() 
+	friend class UBTService_DetermineAttack; 
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -41,9 +44,15 @@ private:
 
 	bool CanSeePlayer();
 
-	bool IsPlayerWithinReach(); 
+	bool IsPlayerClose(); 
 
 	bool IsPlayerBlocked();
 
 	class APlayerCharacter* PlayerReference;
+
+	// Components, functions, and variables used for attacking
+	UPROPERTY(EditAnywhere, Category = "Attack", meta = (AllowPrivateAccess = "true"))
+	float AttackRadius;
+
+	bool IsReadyToAttack();
 };

@@ -20,9 +20,15 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+	// AnimNotify that accesses bCanAttack
+	friend class UCombatAnimNotify_SetAttack;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+
+	// Called when character runs out of health
+	virtual void OnDeath() override; 
 
 private:
 	// Components for camera control
@@ -37,9 +43,11 @@ private:
 
 	void MoveRight(float Scale);
 
-	// Function and component for combat
+	// Components, functions, and variables for combat
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat", meta = (AllowPrivateAccess = "true"))
+	class UAnimMontage* LightAttackAnimation;
+
 	void LightAttack(); 
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
-	class UAnimMontage* LightAttackAnimation;
+	bool bCanAttack;
 };

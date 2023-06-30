@@ -11,6 +11,7 @@ APlayerCharacter::APlayerCharacter()
 {
 	GetCapsuleComponent()->SetCollisionProfileName(TEXT("PlayerCharacter"), true);
 	LightAttackAnimation = nullptr; 
+	bCanAttack = true;
 
 	// Create spring arm component and set default values
 	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("Spring Arm"));
@@ -51,6 +52,12 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	PlayerInputComponent->BindAction(TEXT("LightAttack"), EInputEvent::IE_Pressed, this, &APlayerCharacter::LightAttack);
 }
 
+// Called when character runs out of health
+void APlayerCharacter::OnDeath()
+{
+	Super::OnDeath(); 
+}
+
 // Find forward vector based on control rotation and move player either forwards or backwards
 void APlayerCharacter::MoveForward(float Scale)
 {
@@ -69,9 +76,7 @@ void APlayerCharacter::MoveRight(float Scale)
 void APlayerCharacter::LightAttack()
 {
 	if (LightAttackAnimation && bCanAttack)
-	{
 		PlayAnimMontage(LightAttackAnimation, 1.0f, TEXT("None"));
-	}
 }
 
 

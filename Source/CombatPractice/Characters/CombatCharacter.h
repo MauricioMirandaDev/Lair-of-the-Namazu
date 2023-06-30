@@ -19,24 +19,31 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	// Anim notify that accesses bCanAttack
-	friend class UCombatAnimNotify_SetAttack; 
+	// Function binded to OnTakeAnyDamage()
+	UFUNCTION()
+	void ReceiveDamage(AActor* DamagedActor, float Damage, const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser);
 
-	// Anim notify that accesses Weapon
-	friend class UCombatAnimNotify_RotateWeapon;
+	// This character's weapon 
+	AWeapon* Weapon;
 
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-	// Subclass used for spawning weapon
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon", meta = (AllowPrivateAccess = "true"))
-	TSubclassOf<AWeapon> WeaponClass;
-
-	// Whether this character can attack or not
-	bool bCanAttack; 
+	// Called when character runs out of health
+	virtual void OnDeath();
 
 private: 
-	// This character's weapon 
-	AWeapon* Weapon;
+	// Components used for combat
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat", meta = (AllowPrivateAccess = "true"))
+	TSubclassOf<AWeapon> WeaponClass;
+
+	UPROPERTY(EditAnywhere, Category = "Combat", meta = (AllowPrivateAccess = "true"))
+	class UAnimMontage* HitAnimation;
+
+	// Components and variables for health system
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Health", meta = (AllowPrivateAccess = "true"))
+	float MaxHealth;
+
+	float CurrentHealth;
 };

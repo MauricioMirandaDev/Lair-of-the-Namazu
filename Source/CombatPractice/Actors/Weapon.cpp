@@ -1,13 +1,17 @@
 
 #include "Weapon.h"
+#include "CombatPractice/CombatDamageType.h"
+#include "CombatPractice/Characters/CombatCharacter.h"
 #include "Components/BoxComponent.h"
 #include "Components/StaticMeshComponent.h"
+#include "Kismet/GameplayStatics.h"
 
 // Sets default values
 AWeapon::AWeapon()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+	DamageClass = nullptr; 
 
 	// Create scene component and set as root
 	Root = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
@@ -21,7 +25,8 @@ AWeapon::AWeapon()
 	// Create box component and set default values
 	Hitbox = CreateDefaultSubobject<UBoxComponent>(TEXT("Hitbox"));
 	Hitbox->SetupAttachment(Mesh);
-	Hitbox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	Hitbox->SetCollisionProfileName(TEXT("NoCollision"), true);
+	Hitbox->OnComponentBeginOverlap.AddDynamic(this, &AWeapon::BeginOverlap);
 }
 
 // Called when the game starts or when spawned
@@ -35,4 +40,16 @@ void AWeapon::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 }
+
+// Apply damage to the overlapped actor 
+void AWeapon::BeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	if (OtherActor && (OtherActor != this) && OtherComp && DamageClass)
+	{
+		UGameplayStatics::ApplyDamage(OtherActor, DamageClass.GetDefaultObject()->Amount, nullptr, this, DamageClass);
+		Hitbox->SetCollisionProfileName(TEXT("NoCollision"), true);	
+	}
+}
+
+
 

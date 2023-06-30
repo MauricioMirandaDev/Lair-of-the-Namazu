@@ -1,6 +1,7 @@
 
 #include "CombatAnimNotify_SetAttack.h"
 #include "CombatPractice/Characters/CombatCharacter.h"
+#include "CombatPractice/Characters/PlayerCharacter.h"
 
 // Set default values
 UCombatAnimNotify_SetAttack::UCombatAnimNotify_SetAttack()
@@ -14,6 +15,8 @@ void UCombatAnimNotify_SetAttack::Notify(USkeletalMeshComponent* MeshComp, UAnim
 {
 	Super::Notify(MeshComp, Animation);
 
-	if (OwnerReference)
-		OwnerReference->bCanAttack = bAllowAttack;
+	APlayerCharacter* Player = Cast<APlayerCharacter>(OwnerReference);
+
+	if (Player)
+		Player->bCanAttack = bAllowAttack;
 }

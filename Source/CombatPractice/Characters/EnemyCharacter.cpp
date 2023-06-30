@@ -1,5 +1,6 @@
 
 #include "EnemyCharacter.h"
+#include "CombatPractice/Actors/Weapon.h"
 #include "CombatPractice/Characters/PlayerCharacter.h"
 #include "Components/CapsuleComponent.h"
 #include "Kismet/GameplayStatics.h"
@@ -31,6 +32,12 @@ void AEnemyCharacter::BeginPlay()
 void AEnemyCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime); 
+}
+
+// Called when character runs out of health
+void AEnemyCharacter::OnDeath()
+{
+	Super::OnDeath();
 }
 
 // Perform a line of sight calculation to determine if the enemy can see the player

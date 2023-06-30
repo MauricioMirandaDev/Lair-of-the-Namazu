@@ -17,21 +17,24 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	// Friend class that accesses CanSeePlayer() and PlayerReference
+	// BehaviorTree Service that accesses CanSeePlayer() and PlayerReference
 	friend class UBTService_SearchForPlayer; 
 
-	// Friend class that accesses PlayerReference 
+	// BehaviorTree Service that accesses PlayerReference 
 	friend class UBTService_UpdatePlayerLocation;
 
-	// Friend class that accesses IsPlayerBlocked() and PlayerReference
+	// BehaviorTree Service that accesses IsPlayerBlocked() and PlayerReference
 	friend class UBTService_CheckBehind;
 
-	// Friend class that accesses IsReadytoAttack() 
+	// BehaviorTree Service that accesses IsReadytoAttack() 
 	friend class UBTService_DetermineAttack; 
 
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+
+	// Called when character runs out of health
+	virtual void OnDeath() override; 
 
 private:
 	// Components, functions, and variable used for line of sight search 
@@ -50,8 +53,8 @@ private:
 
 	class APlayerCharacter* PlayerReference;
 
-	// Components, functions, and variables used for attacking
-	UPROPERTY(EditAnywhere, Category = "Attack", meta = (AllowPrivateAccess = "true"))
+	// Components, functions, and variables used for combat
+	UPROPERTY(EditAnywhere, Category = "Combat", meta = (AllowPrivateAccess = "true"))
 	float AttackRadius;
 
 	bool IsReadyToAttack();

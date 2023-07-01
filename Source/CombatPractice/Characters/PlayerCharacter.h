@@ -17,8 +17,8 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	// Called to bind functionality to input
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+	// Friend class that handles input bindings
+	friend class ACombatPlayerController; 
 
 	// AnimNotify that accesses bCanAttack
 	friend class UCombatAnimNotify_SetAttack;
@@ -37,11 +37,6 @@ private:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
 	class UCameraComponent* Camera;
-
-	// Functions for movement
-	void MoveForward(float Scale);
-
-	void MoveRight(float Scale);
 
 	// Components, functions, and variables for combat
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat", meta = (AllowPrivateAccess = "true"))

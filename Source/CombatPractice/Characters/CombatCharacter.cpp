@@ -1,6 +1,7 @@
 
 #include "CombatCharacter.h"
 #include "CombatPractice/Actors/Weapon.h"
+#include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/DamageType.h"
 
@@ -51,12 +52,18 @@ void ACombatCharacter::ReceiveDamage(AActor* DamagedActor, float Damage, const U
 		PlayAnimMontage(HitAnimation, 1.0f, TEXT("None"));
 	}
 
-	if (CurrentHealth <= 0.0f)
+	if (IsDead())
 		OnDeath();
+}
+
+// Determines if the character has lost all health
+bool ACombatCharacter::IsDead()
+{
+	return CurrentHealth <= 0.0f;
 }
 
 // Called when character runs out of health
 void ACombatCharacter::OnDeath()
 {
-	
+	GetCapsuleComponent()->SetCollisionProfileName(TEXT("NoCollision"), true);
 }

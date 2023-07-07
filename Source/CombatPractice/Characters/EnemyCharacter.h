@@ -29,6 +29,9 @@ public:
 	// BehaviorTree Service that accesses IsReadytoAttack() 
 	friend class UBTService_DetermineAttack; 
 
+	// BehaviorTree Service that accesses PlayerReference
+	friend class UBTService_CheckPlayerAlive;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;

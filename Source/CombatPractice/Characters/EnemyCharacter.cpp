@@ -38,6 +38,8 @@ void AEnemyCharacter::Tick(float DeltaTime)
 void AEnemyCharacter::OnDeath()
 {
 	Super::OnDeath();
+
+	GetController()->UnPossess();
 }
 
 // Perform a line of sight calculation to determine if the enemy can see the player

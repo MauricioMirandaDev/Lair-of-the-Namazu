@@ -10,8 +10,6 @@ void ACombatPlayerController::BeginPlay()
 	SetInputMode(FInputModeGameOnly());
 
 	Player = Cast<APlayerCharacter>(GetPawn());
-	if (Player == nullptr)
-		return; 
 }
 
 // Called to bind functionality to input
@@ -35,19 +33,24 @@ void ACombatPlayerController::SetupInputComponent()
 void ACombatPlayerController::MoveForward(float Scale)
 {
 	FVector ForwardDirection = UKismetMathLibrary::GetForwardVector(FRotator(0.0f, GetControlRotation().Yaw, 0.0f));
-	GetPawn()->AddMovementInput(ForwardDirection, Scale);
+
+	if (GetPawn())
+		GetPawn()->AddMovementInput(ForwardDirection, Scale);
 }
 
 // Find right vector based on control rotation and move player either right or left 
 void ACombatPlayerController::MoveRight(float Scale)
 {
 	FVector RightDirection = UKismetMathLibrary::GetRightVector(FRotator(0.0f, GetControlRotation().Yaw, GetControlRotation().Roll));
-	GetPawn()->AddMovementInput(RightDirection, Scale);
+
+	if (GetPawn())
+		GetPawn()->AddMovementInput(RightDirection, Scale);
 }
 
 // Call light attack from player class 
 void ACombatPlayerController::CallLightAttack()
 {
-	Player->LightAttack();
+	if (Player)
+		Player->LightAttack();
 }
 

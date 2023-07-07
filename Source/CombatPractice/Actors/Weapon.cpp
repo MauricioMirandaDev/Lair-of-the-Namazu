@@ -11,6 +11,7 @@ AWeapon::AWeapon()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+	ImpactSoundEffect = nullptr; 
 	DamageClass = nullptr; 
 
 	// Create scene component and set as root
@@ -47,6 +48,7 @@ void AWeapon::BeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherAct
 	if (OtherActor && (OtherActor != this) && OtherComp && DamageClass)
 	{
 		UGameplayStatics::ApplyDamage(OtherActor, DamageClass.GetDefaultObject()->Amount, nullptr, this, DamageClass);
+		UGameplayStatics::PlaySoundAtLocation(GetWorld(), ImpactSoundEffect, GetActorLocation());
 		Hitbox->SetCollisionProfileName(TEXT("NoCollision"), true);	
 	}
 }

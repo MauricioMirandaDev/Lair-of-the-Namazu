@@ -44,5 +44,7 @@ private:
 
 	void LightAttack(); 
 
+	class ACombatPlayerController* ControllerRef; 
+
 	bool bCanAttack;
 };

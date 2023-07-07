@@ -15,6 +15,10 @@ public:
     UFUNCTION(BlueprintCallable, Category = "UMG Game")
     void ChangeMenuWidget(TSubclassOf<UUserWidget> NewWidgetClass);
 
+    // Blueprint event that gets called when the player dies
+    UFUNCTION(BlueprintImplementableEvent)
+    void GameOver();
+
 protected:
     /** Called when the game starts. */
     virtual void BeginPlay() override;

@@ -3,7 +3,6 @@
 
 #include "CoreMinimal.h"
 #include "CombatAnimNotify.h"
-#include "GameFramework/CharacterMovementComponent.h"
 #include "CombatAnimNotify_SetMovement.generated.h"
 
 UCLASS()
@@ -20,7 +19,7 @@ protected:
 	virtual void Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation) override;
 
 private: 
-	// MovementMode that will be set during the attack animtion
+	/** The updated walk speed value; set to 0.0 to stop movement */
 	UPROPERTY(EditAnywhere, meta = (AllowPrivateAccess = "true"))
-	TEnumAsByte<EMovementMode> NewMovement;  
+	float UpdatedMaxWalkSpeed; 
 };

@@ -5,7 +5,13 @@
 #include "GameFramework/Character.h"
 #include "CombatCharacter.generated.h"
 
-class AWeapon; 
+class AWeapon;
+
+UENUM(BlueprintType)
+enum class ECombatState : uint8 {
+	COMBAT_Neutral UMETA(DisplayName = "Netural"),
+	COMBAT_Attacking UMETA(DisplayName = "Attacking")
+};
 
 UCLASS()
 class COMBATPRACTICE_API ACombatCharacter : public ACharacter
@@ -29,6 +35,12 @@ public:
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly)
 	AWeapon* Weapon;
 
+	// AnimNotify that accesses CombatState
+	friend class UCombatAnimNotify_ChangeState;
+
+	// AnimNotify that calls ForwardThrust() 
+	friend class UCombatAnimNotify_ForwardThrust; 
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -36,13 +48,21 @@ protected:
 	// Called when character runs out of health
 	virtual void OnDeath();
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat", meta = (AllowPrivateAccess = "true"))
+	ECombatState CombatState; 
+
 private: 
-	// Components used for combat
+	// Components and functions used for combat
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat", meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<AWeapon> WeaponClass;
 
 	UPROPERTY(EditAnywhere, Category = "Animations", meta = (AllowPrivateAccess = "true"))
 	class UAnimMontage* HitAnimation;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat", meta = (AllowPrivateAccess = "true"))
+	float ThrustStrength; 
+
+	void ForwardThrust(); 
 
 	// Components and variables for health system
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Health", meta = (AllowPrivateAccess = "true"))

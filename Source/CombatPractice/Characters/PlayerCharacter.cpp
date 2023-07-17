@@ -11,8 +11,11 @@
 APlayerCharacter::APlayerCharacter()
 {
 	GetCapsuleComponent()->SetCollisionProfileName(TEXT("PlayerCharacter"), true);
-	LightAttackAnimation = nullptr; 
+	LightAttackAnim_Phase01 = nullptr; 
+	LightAttackAnim_Phase02 = nullptr;
+	LightAttackAnim_Phase03 = nullptr; 
 	bCanAttack = true;
+	AttackCount = 0;
 
 	// Create spring arm component and set default values
 	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("Spring Arm"));
@@ -50,8 +53,25 @@ void APlayerCharacter::OnDeath()
 // Perform animation when player presses light attack button 
 void APlayerCharacter::LightAttack()
 {
-	if (LightAttackAnimation && bCanAttack)
-		PlayAnimMontage(LightAttackAnimation, 1.0f, TEXT("None"));
+	if (LightAttackAnim_Phase01 && LightAttackAnim_Phase02 && LightAttackAnim_Phase03 && bCanAttack)
+	{
+		AttackCount++;
+
+		switch (AttackCount)
+		{
+		case 1:
+			PlayAnimMontage(LightAttackAnim_Phase01, 1.0f, TEXT("None"));
+			break;
+		case 2:
+			PlayAnimMontage(LightAttackAnim_Phase02, 1.0f, TEXT("None"));
+			break;
+		case 3:
+			PlayAnimMontage(LightAttackAnim_Phase03, 1.0f, TEXT("None"));
+			break;
+		default:
+			break;
+		}
+	}
 }
 
 

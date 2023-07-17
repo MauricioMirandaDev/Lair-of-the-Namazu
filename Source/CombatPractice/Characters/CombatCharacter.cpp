@@ -4,6 +4,7 @@
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/DamageType.h"
+#include "Kismet/KismetSystemLibrary.h"
 
 // Sets default values
 ACombatCharacter::ACombatCharacter()
@@ -14,8 +15,10 @@ ACombatCharacter::ACombatCharacter()
 	bUseControllerRotationYaw = false;
 	SetCanBeDamaged(true);
 	GetCharacterMovement()->bOrientRotationToMovement = true;
+	CombatState = ECombatState::COMBAT_Neutral; 
 	WeaponClass = nullptr;
 	HitAnimation = nullptr;
+	ThrustStrength = 100.0f; 
 	MaxHealth = 100.0f;
 
 	OnTakeAnyDamage.AddDynamic(this, &ACombatCharacter::ReceiveDamage);
@@ -66,4 +69,24 @@ bool ACombatCharacter::IsDead()
 void ACombatCharacter::OnDeath()
 {
 	GetCapsuleComponent()->SetCollisionProfileName(TEXT("NoCollision"), true);
+}
+
+void ACombatCharacter::ForwardThrust()
+{
+	// Variables used for trace
+	FVector StartLocation = GetActorLocation() + (GetActorForwardVector() * 100.0f);
+	FVector EndLocation = StartLocation + (GetActorUpVector() * -500.0f);
+
+	TArray<AActor*> ActorsToIngore;
+	ActorsToIngore.Add(this);
+
+	FHitResult TraceResult; 
+
+	UKismetSystemLibrary::CapsuleTraceSingle(GetWorld(), StartLocation, EndLocation, GetCapsuleComponent()->GetUnscaledCapsuleRadius(), 
+											 GetCapsuleComponent()->GetUnscaledCapsuleHalfHeight(), UEngineTypes::ConvertToTraceType(ECC_Visibility), 
+											 true, ActorsToIngore, EDrawDebugTrace::None, OUT TraceResult, true);
+
+	// Perform a forward thrust if it won't launch the character off an edge
+	if (TraceResult.bBlockingHit)
+		LaunchCharacter(GetActorForwardVector() * ThrustStrength, true, true);
 }

@@ -5,6 +5,8 @@
 #include "CombatCharacter.h"
 #include "PlayerCharacter.generated.h"
 
+class UAnimMontage;
+
 UCLASS()
 class COMBATPRACTICE_API APlayerCharacter : public ACombatCharacter
 {
@@ -19,6 +21,9 @@ public:
 
 	// Friend class that handles input bindings
 	friend class ACombatPlayerController; 
+
+	// AnimNotify that accesses AttackCount
+	friend class UCombatAnimNotify_ResetAttack; 
 
 	// AnimNotify that accesses bCanAttack
 	friend class UCombatAnimNotify_SetAttack;
@@ -39,12 +44,20 @@ private:
 	class UCameraComponent* Camera;
 
 	// Components, functions, and variables for combat
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat", meta = (AllowPrivateAccess = "true"))
-	class UAnimMontage* LightAttackAnimation;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animations", meta = (AllowPrivateAccess = "true"))
+	UAnimMontage* LightAttackAnim_Phase01;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animations", meta = (AllowPrivateAccess = "true"))
+	UAnimMontage* LightAttackAnim_Phase02;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animations", meta = (AllowPrivateAccess = "true"))
+	UAnimMontage* LightAttackAnim_Phase03;
 
 	void LightAttack(); 
 
 	class ACombatPlayerController* ControllerRef; 
 
 	bool bCanAttack;
+
+	int32 AttackCount;
 };

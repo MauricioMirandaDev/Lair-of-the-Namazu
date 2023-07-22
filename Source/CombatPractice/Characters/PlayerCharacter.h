@@ -32,6 +32,12 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	// Called whenever the player performs a jump 
+	virtual void Jump() override; 
+
+	// Called when the player's movement mode changes
+	virtual void OnMovementModeChanged(EMovementMode PrevMovementMode, uint8 PreviousCustomMode) override; 
+
 	// Called when character runs out of health
 	virtual void OnDeath() override; 
 
@@ -52,6 +58,12 @@ private:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animations", meta = (AllowPrivateAccess = "true"))
 	UAnimMontage* LightAttackAnim_Phase03;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animations", meta = (AllowPrivateAccess = "true"))
+	UAnimMontage* LightAttack_Air;
+
+	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	bool bJumpPressed; 
 
 	void LightAttack(); 
 

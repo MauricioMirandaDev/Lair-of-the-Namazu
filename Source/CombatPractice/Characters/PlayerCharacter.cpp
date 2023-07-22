@@ -4,6 +4,7 @@
 #include "Camera/CameraComponent.h"
 #include "CombatPractice/CombatPlayerController.h"
 #include "Components/CapsuleComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -14,6 +15,8 @@ APlayerCharacter::APlayerCharacter()
 	LightAttackAnim_Phase01 = nullptr; 
 	LightAttackAnim_Phase02 = nullptr;
 	LightAttackAnim_Phase03 = nullptr; 
+	LightAttack_Air = nullptr;  
+	bJumpPressed = false; 
 	bCanAttack = true;
 	AttackCount = 0;
 
@@ -35,6 +38,21 @@ void APlayerCharacter::BeginPlay()
 	ControllerRef = Cast<ACombatPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
 }
 
+void APlayerCharacter::Jump()
+{
+	Super::Jump(); 
+
+	bJumpPressed = true;
+}
+
+void APlayerCharacter::OnMovementModeChanged(EMovementMode PrevMovementMode, uint8 PreviousCustomMode)
+{
+	Super::OnMovementModeChanged(PrevMovementMode, PreviousCustomMode); 
+
+	if (PrevMovementMode == EMovementMode::MOVE_Falling)
+		bJumpPressed = false;
+}
+
 // Called every frame
 void APlayerCharacter::Tick(float DeltaTime)
 {
@@ -53,23 +71,29 @@ void APlayerCharacter::OnDeath()
 // Perform animation when player presses light attack button 
 void APlayerCharacter::LightAttack()
 {
-	if (LightAttackAnim_Phase01 && LightAttackAnim_Phase02 && LightAttackAnim_Phase03 && bCanAttack)
+	if (LightAttackAnim_Phase01 && LightAttackAnim_Phase02 && LightAttackAnim_Phase03 && LightAttack_Air && bCanAttack)
 	{
-		AttackCount++;
 
-		switch (AttackCount)
+		if (GetCharacterMovement()->IsFalling())
+			PlayAnimMontage(LightAttack_Air, 1.0f, TEXT("None"));
+		else
 		{
-		case 1:
-			PlayAnimMontage(LightAttackAnim_Phase01, 1.0f, TEXT("None"));
-			break;
-		case 2:
-			PlayAnimMontage(LightAttackAnim_Phase02, 1.0f, TEXT("None"));
-			break;
-		case 3:
-			PlayAnimMontage(LightAttackAnim_Phase03, 1.0f, TEXT("None"));
-			break;
-		default:
-			break;
+			AttackCount++;
+
+			switch (AttackCount)
+			{
+			case 1:
+				PlayAnimMontage(LightAttackAnim_Phase01, 1.0f, TEXT("None"));
+				break;
+			case 2:
+				PlayAnimMontage(LightAttackAnim_Phase02, 1.0f, TEXT("None"));
+				break;
+			case 3:
+				PlayAnimMontage(LightAttackAnim_Phase03, 1.0f, TEXT("None"));
+				break;
+			default:
+				break;
+			}
 		}
 	}
 }

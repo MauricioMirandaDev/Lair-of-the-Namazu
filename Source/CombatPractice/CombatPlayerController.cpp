@@ -24,6 +24,8 @@ void ACombatPlayerController::SetupInputComponent()
 	// Movement
 	InputComponent->BindAxis(TEXT("MoveForward"), this, &ACombatPlayerController::MoveForward);
 	InputComponent->BindAxis(TEXT("MoveRight"), this, &ACombatPlayerController::MoveRight);
+	InputComponent->BindAction(TEXT("Jump"), IE_Pressed, this, &ACombatPlayerController::CallJump);
+	InputComponent->BindAction(TEXT("Jump"), IE_Released, this, &ACombatPlayerController::CallStopJump); 
 
 	// Combat
 	InputComponent->BindAction(TEXT("LightAttack"), IE_Pressed, this, &ACombatPlayerController::CallLightAttack);
@@ -45,6 +47,18 @@ void ACombatPlayerController::MoveRight(float Scale)
 
 	if (GetPawn())
 		GetPawn()->AddMovementInput(RightDirection, Scale);
+}
+
+void ACombatPlayerController::CallJump()
+{
+	if (Player)
+		Player->Jump(); 
+}
+
+void ACombatPlayerController::CallStopJump()
+{
+	if (Player)
+		Player->StopJumping();
 }
 
 // Call light attack from player class 

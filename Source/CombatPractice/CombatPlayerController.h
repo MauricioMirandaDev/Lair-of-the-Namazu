@@ -23,6 +23,10 @@ private:
 
 	void MoveRight(float Scale);
 
+	void CallJump(); 
+
+	void CallStopJump(); 
+
 	// Functions for player's attacks
 	void CallLightAttack();
 

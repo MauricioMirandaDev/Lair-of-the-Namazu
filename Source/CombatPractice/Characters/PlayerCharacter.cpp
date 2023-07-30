@@ -15,7 +15,8 @@ APlayerCharacter::APlayerCharacter()
 	LightAttackAnim_Phase01 = nullptr; 
 	LightAttackAnim_Phase02 = nullptr;
 	LightAttackAnim_Phase03 = nullptr; 
-	LightAttack_Air = nullptr;  
+	LightAttackAnim_Air = nullptr;  
+	HeavyAttackAnim = nullptr; 
 	bJumpPressed = false; 
 	bCanAttack = true;
 	AttackCount = 0;
@@ -68,14 +69,14 @@ void APlayerCharacter::OnDeath()
 		ControllerRef->DisableInput(ControllerRef);
 }
 
-// Perform animation when player presses light attack button 
+// Perform animation when player presses light attack input 
 void APlayerCharacter::LightAttack()
 {
-	if (LightAttackAnim_Phase01 && LightAttackAnim_Phase02 && LightAttackAnim_Phase03 && LightAttack_Air && bCanAttack)
+	if (LightAttackAnim_Phase01 && LightAttackAnim_Phase02 && LightAttackAnim_Phase03 && LightAttackAnim_Air && bCanAttack)
 	{
 
 		if (GetCharacterMovement()->IsFalling())
-			PlayAnimMontage(LightAttack_Air, 1.0f, TEXT("None"));
+			PlayAnimMontage(LightAttackAnim_Air, 1.0f, TEXT("None"));
 		else
 		{
 			AttackCount++;
@@ -96,6 +97,13 @@ void APlayerCharacter::LightAttack()
 			}
 		}
 	}
+}
+
+// Perform animation when player presses heavy attack input
+void APlayerCharacter::HeavyAttack()
+{
+	if (HeavyAttackAnim && bCanAttack)
+		PlayAnimMontage(HeavyAttackAnim, 1.0f, TEXT("None")); 
 }
 
 

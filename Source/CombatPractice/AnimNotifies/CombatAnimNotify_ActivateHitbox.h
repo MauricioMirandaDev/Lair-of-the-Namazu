@@ -20,7 +20,11 @@ protected:
 	virtual void Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation) override;
 
 private:
-	/** The updated collision preset for this weapon's hitbox*/
+	// Whether the hitbox will be turned on or off
 	UPROPERTY(EditAnywhere, meta = (AllowPrivateAccess = "true"))
-	FName CollisionProfile;
+	bool bActivateHitbox; 
+
+	/** The type of damage that will be inflicted from this attack */
+	UPROPERTY(EditAnywhere, meta = (AllowPrivateAccess = "true"))
+	TSubclassOf<class UCombatDamageType> DamageClass;
 };

@@ -100,6 +100,7 @@ void ACombatPlayerController::CallLightAttack()
 
 void ACombatPlayerController::CallHeavyAttack()
 {
-	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("HEAVY ATTACK")); 
+	if (Player)
+		Player->HeavyAttack(); 
 }
 

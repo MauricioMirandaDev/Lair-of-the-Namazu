@@ -60,12 +60,17 @@ private:
 	UAnimMontage* LightAttackAnim_Phase03;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animations", meta = (AllowPrivateAccess = "true"))
-	UAnimMontage* LightAttack_Air;
+	UAnimMontage* LightAttackAnim_Air;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animations", meta = (AllowPrivateAccess = "true"))
+	UAnimMontage* HeavyAttackAnim;
 
 	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	bool bJumpPressed; 
 
 	void LightAttack(); 
+
+	void HeavyAttack(); 
 
 	class ACombatPlayerController* ControllerRef; 
 

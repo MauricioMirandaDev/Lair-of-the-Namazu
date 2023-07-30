@@ -36,12 +36,13 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
 	class UStaticMeshComponent* Mesh; 
 
-	// Components used for combat
+	// Components, functions, and variables used for combat
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
 	class UBoxComponent* Hitbox; 
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat", meta = (AllowPrivateAccess = "true"))
-	TSubclassOf<class UCombatDamageType> DamageClass;
+	void UpdateHitbox(FName UpdatedCollisionProfile, TSubclassOf<class UCombatDamageType> UpdatedDamageType);
+
+	TSubclassOf<class UCombatDamageType> CurrentDamageType;
 
 	// Sound effect to be played whenever weapon hits character
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat", meta = (AllowPrivateAccess = "true"))

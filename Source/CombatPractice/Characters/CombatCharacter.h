@@ -59,10 +59,7 @@ private:
 	UPROPERTY(EditAnywhere, Category = "Animations", meta = (AllowPrivateAccess = "true"))
 	class UAnimMontage* HitAnimation;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat", meta = (AllowPrivateAccess = "true"))
-	float ThrustStrength; 
-
-	void ForwardThrust(); 
+	void ForwardThrust(float ThrustMultiplier); 
 
 	// Components and variables for health system
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Health", meta = (AllowPrivateAccess = "true"))

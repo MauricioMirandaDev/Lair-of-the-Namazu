@@ -18,4 +18,8 @@ public:
 	// Amount of damage to apply to hit actor
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Values")
 	float Amount;
+
+	// Strength of force that will push damaged character back 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Values")
+	float KnockbackStrength;
 };

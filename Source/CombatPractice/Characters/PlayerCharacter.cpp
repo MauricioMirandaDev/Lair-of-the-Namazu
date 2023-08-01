@@ -79,8 +79,6 @@ void APlayerCharacter::LightAttack()
 			PlayAnimMontage(LightAttackAnim_Air, 1.0f, TEXT("None"));
 		else
 		{
-			AttackCount++;
-
 			switch (AttackCount)
 			{
 			case 1:

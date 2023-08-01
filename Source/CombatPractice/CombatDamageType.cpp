@@ -5,4 +5,5 @@
 UCombatDamageType::UCombatDamageType()
 {
 	Amount = 10.0f;
+	KnockbackStrength = 100.0f; 
 }

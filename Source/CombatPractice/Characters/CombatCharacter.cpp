@@ -1,6 +1,7 @@
 
 #include "CombatCharacter.h"
 #include "CombatPractice/Actors/Weapon.h"
+#include "CombatPractice/CombatDamageType.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/DamageType.h"
@@ -18,7 +19,6 @@ ACombatCharacter::ACombatCharacter()
 	CombatState = ECombatState::COMBAT_Neutral; 
 	WeaponClass = nullptr;
 	HitAnimation = nullptr;
-	ThrustStrength = 100.0f; 
 	MaxHealth = 100.0f;
 
 	OnTakeAnyDamage.AddDynamic(this, &ACombatCharacter::ReceiveDamage);
@@ -52,6 +52,15 @@ void ACombatCharacter::ReceiveDamage(AActor* DamagedActor, float Damage, const U
 	if (HitAnimation)
 	{
 		CurrentHealth -= Damage;
+
+		// Rotate to face damage causer
+		FRotator LookAtRotation = (DamageCauser->GetOwner()->GetActorLocation() - GetActorLocation()).Rotation();
+		SetActorRotation(FRotator(0.0f, LookAtRotation.Yaw, 0.0f), ETeleportType::None);
+
+		// Apply knockback force from taking damage
+		UCombatDamageType* CombatDamage = Cast<UCombatDamageType>(DamageType->GetClass()->GetDefaultObject());
+		LaunchCharacter(-GetActorForwardVector() * CombatDamage->KnockbackStrength, true, true);
+
 		PlayAnimMontage(HitAnimation, 1.0f, TEXT("None"));
 	}
 
@@ -71,11 +80,11 @@ void ACombatCharacter::OnDeath()
 	GetCapsuleComponent()->SetCollisionProfileName(TEXT("NoCollision"), true);
 }
 
-void ACombatCharacter::ForwardThrust()
+void ACombatCharacter::ForwardThrust(float ThrustMultiplier)
 {
 	// Variables used for trace
-	FVector StartLocation = GetActorLocation() + (GetActorForwardVector() * 100.0f);
-	FVector EndLocation = StartLocation + (GetActorUpVector() * -500.0f);
+	FVector StartLocation = GetActorLocation() + (GetActorForwardVector() * (ThrustMultiplier / 7.5f));
+	FVector EndLocation = StartLocation + (GetActorUpVector() * -ThrustMultiplier);
 
 	TArray<AActor*> ActorsToIngore;
 	ActorsToIngore.Add(this);
@@ -88,5 +97,5 @@ void ACombatCharacter::ForwardThrust()
 
 	// Perform a forward thrust if it won't launch the character off an edge
 	if (TraceResult.bBlockingHit)
-		LaunchCharacter(GetActorForwardVector() * ThrustStrength, true, true);
+		LaunchCharacter(GetActorForwardVector() * ThrustMultiplier, true, true);
 }

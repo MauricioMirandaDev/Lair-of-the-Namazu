@@ -38,7 +38,10 @@ struct FAttackAnimation
 	float DamageAmount;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	float LaunchVelocity; 
+	float ForwardThrustStrength; 
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	float KnockbackStrength;
 };
 
 UCLASS()

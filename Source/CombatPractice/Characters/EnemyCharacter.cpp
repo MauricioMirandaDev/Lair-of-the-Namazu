@@ -1,6 +1,7 @@
 
 #include "EnemyCharacter.h"
 #include "CombatPractice/Actors/Weapon.h"
+#include "CombatPractice/AI/EnemyAIController.h"
 #include "CombatPractice/Characters/PlayerCharacter.h"
 #include "Components/CapsuleComponent.h"
 #include "Kismet/GameplayStatics.h"
@@ -26,6 +27,8 @@ void AEnemyCharacter::BeginPlay()
 	PlayerReference = Cast<APlayerCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
 	if (PlayerReference == nullptr)
 		return;
+
+	AIController = Cast <AEnemyAIController>(GetController());
 }
 
 // Called every frame
@@ -81,5 +84,5 @@ bool AEnemyCharacter::IsPlayerBlocked()
 // Calulate if the player is within attacking distance
 bool AEnemyCharacter::IsReadyToAttack()
 {
-	return FVector::Dist(GetActorLocation(), PlayerReference->GetActorLocation()) <= AttackRadius;
+	return FVector::Dist(GetActorLocation(), PlayerReference->GetActorLocation()) <= AttackRadius && CombatState == ECombatState::COMBAT_Neutral;
 }

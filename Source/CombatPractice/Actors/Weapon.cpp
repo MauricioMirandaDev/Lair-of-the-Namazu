@@ -1,5 +1,7 @@
 
 #include "Weapon.h"
+#include "BehaviorTree/BlackboardComponent.h"
+#include "CombatPractice/AI/EnemyAIController.h"
 #include "CombatPractice/Characters/CombatCharacter.h"
 #include "CombatPractice/Characters/PlayerCharacter.h"
 #include "Components/BoxComponent.h"
@@ -49,6 +51,9 @@ void AWeapon::BeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherAct
 		OtherCharacter->TakeDamage(OwningCharacter->CurrentAttackAnimation, OwningCharacter->GetActorLocation());
 		UGameplayStatics::PlaySoundAtLocation(GetWorld(), ImpactSoundEffect, GetActorLocation());
 		UpdateHitbox(false); 
+
+		if (AEnemyAIController* AIController = Cast<AEnemyAIController>(OwningCharacter->GetController()))
+			AIController->GetBlackboardComponent()->SetValueAsBool(TEXT("HitSuccessful"), true);
 	}
 }
 

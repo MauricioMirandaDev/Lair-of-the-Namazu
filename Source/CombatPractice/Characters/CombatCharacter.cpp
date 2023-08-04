@@ -66,12 +66,12 @@ void ACombatCharacter::TakeDamage(FAttackAnimation AttackAnimation, FVector Atta
 	switch (AttackAnimation.AttackType)
 	{
 	case EAttackType::ATTACK_Heavy:
-		LaunchCharacter((-GetActorForwardVector() * (AttackAnimation.LaunchVelocity / 2.0f)) + FVector(0.0f, 0.0f, 500.0f), true, true);
 		CombatState = ECombatState::COMBAT_DamagedHeavy;
+		LaunchCharacter((-GetActorForwardVector() * AttackAnimation.KnockbackStrength) + FVector(0.0f, 0.0f, 500.0f), true, true);
 		break;
 	default:
-		LaunchCharacter(-GetActorForwardVector() * AttackAnimation.LaunchVelocity, true, true);
 		CombatState = ECombatState::COMBAT_DamagedNormal;
+		LaunchCharacter(-GetActorForwardVector() * AttackAnimation.KnockbackStrength, true, true);
 		break;
 	}
 
@@ -83,8 +83,8 @@ void ACombatCharacter::TakeDamage(FAttackAnimation AttackAnimation, FVector Atta
 void ACombatCharacter::ForwardThrust()
 {
 	// Variables used for trace
-	FVector StartLocation = GetActorLocation() + (GetActorForwardVector() * (CurrentAttackAnimation.LaunchVelocity / 7.5f));
-	FVector EndLocation = StartLocation + (GetActorUpVector() * -CurrentAttackAnimation.LaunchVelocity);
+	FVector StartLocation = GetActorLocation() + (GetActorForwardVector() * (CurrentAttackAnimation.ForwardThrustStrength / 7.5f));
+	FVector EndLocation = StartLocation + (GetActorUpVector() * -CurrentAttackAnimation.ForwardThrustStrength);
 
 	TArray<AActor*> ActorsToIngore;
 	ActorsToIngore.Add(this);
@@ -97,5 +97,5 @@ void ACombatCharacter::ForwardThrust()
 
 	// Perform a forward thrust if it won't launch the character off an edge
 	if (TraceResult.bBlockingHit)
-		LaunchCharacter(GetActorForwardVector() * CurrentAttackAnimation.LaunchVelocity, true, true);
+		LaunchCharacter(GetActorForwardVector() * CurrentAttackAnimation.ForwardThrustStrength, true, true);
 }

@@ -35,6 +35,9 @@ public:
 	// BehaviorTree Task that accesses CurrentAttackAnimation
 	friend class UBTTask_AttackAnimation;
 
+	// BehaviorTree Task that accesses AIController
+	friend class UCombatAnimNotify_ResetAttack; 
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -62,6 +65,8 @@ private:
 	// Components, functions, and variables used for combat
 	UPROPERTY(EditAnywhere, Category = "Combat", meta = (AllowPrivateAccess = "true"))
 	float AttackRadius;
+
+	class AEnemyAIController* AIController; 
 
 	bool IsReadyToAttack();
 };

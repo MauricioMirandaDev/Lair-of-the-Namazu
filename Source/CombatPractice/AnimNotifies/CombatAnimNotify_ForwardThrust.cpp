@@ -6,7 +6,6 @@
 UCombatAnimNotify_ForwardThrust::UCombatAnimNotify_ForwardThrust()
 {
 	NotifyColor = FColor(255, 100, 255);
-	ThrustStrength = 100.0f; 
 }
 
 // Peform a forward thrust during attack animation 
@@ -15,5 +14,5 @@ void UCombatAnimNotify_ForwardThrust::Notify(USkeletalMeshComponent* MeshComp, U
 	Super::Notify(MeshComp, Animation); 
 
 	if (OwnerReference)
-		OwnerReference->ForwardThrust(ThrustStrength); 
+		OwnerReference->ForwardThrust(); 
 }

@@ -63,13 +63,14 @@ void ACombatPlayerController::Move(const FInputActionValue& Value)
 	FVector ForwardDirection = UKismetMathLibrary::GetForwardVector(FRotator(0.0f, GetControlRotation().Yaw, 0.0f));
 	FVector RightDirection = UKismetMathLibrary::GetRightVector(FRotator(0.0f, GetControlRotation().Yaw, GetControlRotation().Roll));
 
-	if (GetPawn())
+	if (Player && Player->CombatState == ECombatState::COMBAT_Neutral)
 	{
-		GetPawn()->AddMovementInput(ForwardDirection, MovementValue.Y);
-		GetPawn()->AddMovementInput(RightDirection, MovementValue.X); 
+		Player->AddMovementInput(ForwardDirection, MovementValue.Y);
+		Player->AddMovementInput(RightDirection, MovementValue.X); 
 	}
 }
 
+// Call jump functions from player class
 void ACombatPlayerController::CallJump()
 {
 	if (Player)
@@ -95,12 +96,13 @@ void ACombatPlayerController::Look(const FInputActionValue& Value)
 void ACombatPlayerController::CallLightAttack()
 {
 	if (Player)
-		Player->LightAttack();
+		Player->LightAttackPressed();
 }
 
+// Call heavy attack from player class
 void ACombatPlayerController::CallHeavyAttack()
 {
 	if (Player)
-		Player->HeavyAttack(); 
+		Player->HeavyAttackPressed(); 
 }
 

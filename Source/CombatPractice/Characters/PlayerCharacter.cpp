@@ -1,6 +1,5 @@
 
 #include "PlayerCharacter.h"
-#include "Animation/AnimMontage.h"
 #include "Camera/CameraComponent.h"
 #include "CombatPractice/CombatPlayerController.h"
 #include "Components/CapsuleComponent.h"
@@ -12,11 +11,6 @@
 APlayerCharacter::APlayerCharacter()
 {
 	GetCapsuleComponent()->SetCollisionProfileName(TEXT("PlayerCharacter"), true);
-	LightAttackAnim_Phase01 = nullptr; 
-	LightAttackAnim_Phase02 = nullptr;
-	LightAttackAnim_Phase03 = nullptr; 
-	LightAttackAnim_Air = nullptr;  
-	HeavyAttackAnim = nullptr; 
 	bJumpPressed = false; 
 	bCanAttack = true;
 	AttackCount = 0;
@@ -39,6 +33,7 @@ void APlayerCharacter::BeginPlay()
 	ControllerRef = Cast<ACombatPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
 }
 
+// Called whenever the player performs a jump 
 void APlayerCharacter::Jump()
 {
 	Super::Jump(); 
@@ -46,6 +41,7 @@ void APlayerCharacter::Jump()
 	bJumpPressed = true;
 }
 
+// Called when the player's movement mode changes
 void APlayerCharacter::OnMovementModeChanged(EMovementMode PrevMovementMode, uint8 PreviousCustomMode)
 {
 	Super::OnMovementModeChanged(PrevMovementMode, PreviousCustomMode); 
@@ -70,25 +66,32 @@ void APlayerCharacter::OnDeath()
 }
 
 // Perform animation when player presses light attack input 
-void APlayerCharacter::LightAttack()
+void APlayerCharacter::LightAttackPressed()
 {
-	if (LightAttackAnim_Phase01 && LightAttackAnim_Phase02 && LightAttackAnim_Phase03 && LightAttackAnim_Air && bCanAttack)
+	if (bCanAttack)
 	{
-
 		if (GetCharacterMovement()->IsFalling())
-			PlayAnimMontage(LightAttackAnim_Air, 1.0f, TEXT("None"));
+		{
+			PlayAnimMontage(LightAttack_Air.Animation, 1.0f, TEXT("None"));
+			CurrentAttackAnimation = LightAttack_Air;
+		}
 		else
 		{
+			AttackCount++;
+
 			switch (AttackCount)
 			{
 			case 1:
-				PlayAnimMontage(LightAttackAnim_Phase01, 1.0f, TEXT("None"));
+				PlayAnimMontage(LightAttack_Phase01.Animation, 1.0f, TEXT("None"));
+				CurrentAttackAnimation = LightAttack_Phase01;
 				break;
 			case 2:
-				PlayAnimMontage(LightAttackAnim_Phase02, 1.0f, TEXT("None"));
+				PlayAnimMontage(LightAttack_Phase02.Animation, 1.0f, TEXT("None"));
+				CurrentAttackAnimation = LightAttack_Phase02;
 				break;
 			case 3:
-				PlayAnimMontage(LightAttackAnim_Phase03, 1.0f, TEXT("None"));
+				PlayAnimMontage(LightAttack_Phase03.Animation, 1.0f, TEXT("None"));
+				CurrentAttackAnimation = LightAttack_Phase03;
 				break;
 			default:
 				break;
@@ -98,10 +101,13 @@ void APlayerCharacter::LightAttack()
 }
 
 // Perform animation when player presses heavy attack input
-void APlayerCharacter::HeavyAttack()
+void APlayerCharacter::HeavyAttackPressed()
 {
-	if (HeavyAttackAnim && bCanAttack)
-		PlayAnimMontage(HeavyAttackAnim, 1.0f, TEXT("None")); 
+	if (bCanAttack && !GetCharacterMovement()->IsFalling())
+	{
+		PlayAnimMontage(HeavyAttack.Animation, 1.0f, TEXT("None"));
+		CurrentAttackAnimation = HeavyAttack;
+	}
 }
 
 

@@ -5,8 +5,6 @@
 #include "CombatCharacter.h"
 #include "PlayerCharacter.generated.h"
 
-class UAnimMontage;
-
 UCLASS()
 class COMBATPRACTICE_API APlayerCharacter : public ACombatCharacter
 {
@@ -51,26 +49,26 @@ private:
 
 	// Components, functions, and variables for combat
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animations", meta = (AllowPrivateAccess = "true"))
-	UAnimMontage* LightAttackAnim_Phase01;
+	FAttackAnimation LightAttack_Phase01; 
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animations", meta = (AllowPrivateAccess = "true"))
-	UAnimMontage* LightAttackAnim_Phase02;
+	FAttackAnimation LightAttack_Phase02; 
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animations", meta = (AllowPrivateAccess = "true"))
-	UAnimMontage* LightAttackAnim_Phase03;
+	FAttackAnimation LightAttack_Phase03;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animations", meta = (AllowPrivateAccess = "true"))
-	UAnimMontage* LightAttackAnim_Air;
+	FAttackAnimation LightAttack_Air;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animations", meta = (AllowPrivateAccess = "true"))
-	UAnimMontage* HeavyAttackAnim;
+	FAttackAnimation HeavyAttack;
 
 	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	bool bJumpPressed; 
 
-	void LightAttack(); 
+	void LightAttackPressed(); 
 
-	void HeavyAttack(); 
+	void HeavyAttackPressed(); 
 
 	class ACombatPlayerController* ControllerRef; 
 

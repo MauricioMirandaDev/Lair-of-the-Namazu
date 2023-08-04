@@ -1,7 +1,7 @@
 
 #include "Weapon.h"
-#include "CombatPractice/CombatDamageType.h"
 #include "CombatPractice/Characters/CombatCharacter.h"
+#include "CombatPractice/Characters/PlayerCharacter.h"
 #include "Components/BoxComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Kismet/GameplayStatics.h"
@@ -11,8 +11,7 @@ AWeapon::AWeapon()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-	ImpactSoundEffect = nullptr; 
-	CurrentDamageType = nullptr; 
+	ImpactSoundEffect = nullptr;  
 
 	// Create scene component and set as root
 	Root = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
@@ -36,13 +35,6 @@ void AWeapon::BeginPlay()
 	Super::BeginPlay();
 }
 
-// Turn the hitbox on or off, and update the type of damage
-void AWeapon::UpdateHitbox(FName UpdatedCollisionProfile, TSubclassOf<class UCombatDamageType> UpdatedDamageType)
-{
-	Hitbox->SetCollisionProfileName(UpdatedCollisionProfile);
-	CurrentDamageType = UpdatedDamageType; 
-}
-
 // Called every frame
 void AWeapon::Tick(float DeltaTime)
 {
@@ -52,12 +44,23 @@ void AWeapon::Tick(float DeltaTime)
 // Apply damage to the overlapped actor 
 void AWeapon::BeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	if (OtherActor && (OtherActor != this) && OtherComp && CurrentDamageType)
+	if (ACombatCharacter* OtherCharacter = Cast<ACombatCharacter>(OtherActor))
 	{
-		UGameplayStatics::ApplyDamage(OtherActor, CurrentDamageType.GetDefaultObject()->Amount, nullptr, this, CurrentDamageType);
+		OtherCharacter->TakeDamage(OwningCharacter->CurrentAttackAnimation, OwningCharacter->GetActorLocation());
 		UGameplayStatics::PlaySoundAtLocation(GetWorld(), ImpactSoundEffect, GetActorLocation());
-		Hitbox->SetCollisionProfileName(TEXT("NoCollision"), true);	
+		UpdateHitbox(false); 
 	}
+}
+
+// Set hitbox to active or not
+void AWeapon::UpdateHitbox(bool bActivate)
+{
+	if (bActivate && OwningCharacter->IsA(APlayerCharacter::StaticClass()))
+		Hitbox->SetCollisionProfileName(TEXT("PlayerWeapon"));
+	else if (bActivate)
+		Hitbox->SetCollisionProfileName(TEXT("EnemyWeapon"));
+	else
+		Hitbox->SetCollisionProfileName(TEXT("NoCollision"));
 }
 
 

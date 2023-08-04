@@ -32,6 +32,9 @@ public:
 	// BehaviorTree Service that accesses PlayerReference
 	friend class UBTService_CheckPlayerAlive;
 
+	// BehaviorTree Task that accesses CurrentAttackAnimation
+	friend class UBTTask_AttackAnimation;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;

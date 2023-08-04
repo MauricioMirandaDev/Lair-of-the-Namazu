@@ -3,8 +3,8 @@
 
 #include "CoreMinimal.h"
 #include "BTTask_Combat.h"
-#include "BTTask_AttackAnimation.generated.h"
-
+#include "CombatPractice/Characters/CombatCharacter.h"
+#include "BTTask_AttackAnimation.generated.h" 
 
 UCLASS()
 class COMBATPRACTICE_API UBTTask_AttackAnimation : public UBTTask_Combat
@@ -22,5 +22,5 @@ protected:
 private:
 	// Attack animation for the enemy to perform
 	UPROPERTY(EditAnywhere, Category = "Animation", meta = (AllowPrivateAccess = "true"))
-	class UAnimMontage* AttackAnimation;
+	FAttackAnimation AttackAnimation;
 };

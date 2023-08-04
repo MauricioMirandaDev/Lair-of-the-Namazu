@@ -13,8 +13,11 @@ EBTNodeResult::Type UBTTask_AttackAnimation::ExecuteTask(UBehaviorTreeComponent&
 {
 	Super::ExecuteTask(OwnerComp, NodeMemory);
 
-	if (Enemy && AttackAnimation)
-		Enemy->PlayAnimMontage(AttackAnimation, 1.0f, TEXT("None"));
-
+	if (Enemy)
+	{
+		Enemy->PlayAnimMontage(AttackAnimation.Animation, 1.0f, TEXT("None"));
+		Enemy->CurrentAttackAnimation = AttackAnimation;
+	}
+		
 	return EBTNodeResult::Succeeded;
 }

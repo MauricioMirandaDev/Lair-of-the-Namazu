@@ -7,15 +7,15 @@
 UBTService_Combat::UBTService_Combat()
 {
 	NodeName = TEXT("Parent Service");
-	OwningEnemy = nullptr;
+	Enemy = nullptr;
 }
 
-// Get a reference to the player and owning enemy
+// Get a reference to the enemy in game
 void UBTService_Combat::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds)
 {
 	Super::TickNode(OwnerComp, NodeMemory, DeltaSeconds);
 	
-	OwningEnemy = Cast<AEnemyCharacter>(OwnerComp.GetAIOwner()->GetPawn());
-	if (OwningEnemy == nullptr)
+	Enemy = Cast<AEnemyCharacter>(OwnerComp.GetAIOwner()->GetPawn());
+	if (Enemy == nullptr)
 		return; 
 }

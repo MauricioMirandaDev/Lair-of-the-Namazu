@@ -18,8 +18,6 @@ protected:
 	// Starts task, returns succeeded or failed
 	virtual EBTNodeResult::Type ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
 
-	// References to the player and owning enemy
-	class APlayerCharacter* Player;
-
+	// Reference to the enemy who is performing this task
 	class AEnemyCharacter* Enemy;
 };

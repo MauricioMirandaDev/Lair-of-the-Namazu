@@ -1,7 +1,6 @@
 
 #include "PlayerCharacter.h"
 #include "Camera/CameraComponent.h"
-#include "CombatPractice/CombatPlayerController.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
@@ -29,8 +28,6 @@ APlayerCharacter::APlayerCharacter()
 void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-
-	ControllerRef = Cast<ACombatPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
 }
 
 // Called whenever the player performs a jump 
@@ -61,11 +58,22 @@ void APlayerCharacter::OnDeath()
 {
 	Super::OnDeath(); 
 
-	if (ControllerRef)
-		ControllerRef->DisableInput(ControllerRef);
+	UGameplayStatics::GetPlayerController(GetWorld(), 0)->DisableInput(UGameplayStatics::GetPlayerController(GetWorld(), 0));
+
+	SpringArm->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
+
+	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
 }
 
-// Perform animation when player presses light attack input 
+// Used to reset variables a character uses during combat
+void APlayerCharacter::ResetAttack()
+{
+	Super::ResetAttack();
+
+	AttackCount = 0;
+}
+
+// Perform animation when player inputs light attack
 void APlayerCharacter::LightAttackPressed()
 {
 	if (bCanAttack)
@@ -100,7 +108,7 @@ void APlayerCharacter::LightAttackPressed()
 	}
 }
 
-// Perform animation when player presses heavy attack input
+// Perform animation when player inputs heavy attack
 void APlayerCharacter::HeavyAttackPressed()
 {
 	if (bCanAttack && !GetCharacterMovement()->IsFalling())

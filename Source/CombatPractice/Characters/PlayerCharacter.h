@@ -20,9 +20,6 @@ public:
 	// Friend class that handles input bindings
 	friend class ACombatPlayerController; 
 
-	// AnimNotify that accesses AttackCount
-	friend class UCombatAnimNotify_ResetAttack; 
-
 	// AnimNotify that accesses bCanAttack
 	friend class UCombatAnimNotify_SetAttack;
 
@@ -30,14 +27,15 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-	// Called whenever the player performs a jump 
+	// Functions used for movement
 	virtual void Jump() override; 
 
-	// Called when the player's movement mode changes
 	virtual void OnMovementModeChanged(EMovementMode PrevMovementMode, uint8 PreviousCustomMode) override; 
 
-	// Called when character runs out of health
+	// Functions used for combat
 	virtual void OnDeath() override; 
+
+	virtual void ResetAttack() override;
 
 private:
 	// Components for camera control
@@ -69,8 +67,6 @@ private:
 	void LightAttackPressed(); 
 
 	void HeavyAttackPressed(); 
-
-	class ACombatPlayerController* ControllerRef; 
 
 	bool bCanAttack;
 

@@ -17,10 +17,11 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	// Function binded to OnComponentBeginOverlap() from Hitbox
+	// Function bound to OnComponentBeginOverlap() from Hitbox
 	UFUNCTION()
-	void BeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+	virtual void BeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
+	// The character who owns this weapon
 	class ACombatCharacter* OwningCharacter;
 
 	// AnimNotify that accesses UpdateHitbox()
@@ -30,6 +31,12 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	// Component and function used for hitbox
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
+	class UBoxComponent* Hitbox;
+
+	virtual void UpdateHitbox(bool bActivate);
+
 private:
 	// Visual components 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
@@ -38,12 +45,7 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
 	class UStaticMeshComponent* Mesh; 
 
-	// Components, functions, and variables used for combat
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
-	class UBoxComponent* Hitbox;
-
+	// Component used for combat
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
 	class USoundBase* ImpactSoundEffect;
-
-	void UpdateHitbox(bool bActivate);
 };

@@ -35,15 +35,14 @@ public:
 	// BehaviorTree Task that accesses CurrentAttackAnimation
 	friend class UBTTask_AttackAnimation;
 
-	// BehaviorTree Task that accesses AIController
-	friend class UCombatAnimNotify_ResetAttack; 
-
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-	// Called when character runs out of health
+	// Functions used for combat
 	virtual void OnDeath() override; 
+
+	virtual void ResetAttack() override; 
 
 private:
 	// Components, functions, and variable used for line of sight search 
@@ -62,11 +61,9 @@ private:
 
 	class APlayerCharacter* PlayerReference;
 
-	// Components, functions, and variables used for combat
+	// Component, function, and variable used for combat
 	UPROPERTY(EditAnywhere, Category = "Combat", meta = (AllowPrivateAccess = "true"))
 	float AttackRadius;
-
-	class AEnemyAIController* AIController; 
 
 	bool IsReadyToAttack();
 };

@@ -1,7 +1,7 @@
 
 #include "CombatAnimNotify_RotateWeapon.h"
 #include "CombatPractice/Actors/Weapon.h"
-#include "CombatPractice/Characters/EnemyCharacter.h"
+#include "CombatPractice/Characters/CombatCharacter.h"
 
 // Set default values
 UCombatAnimNotify_RotateWeapon::UCombatAnimNotify_RotateWeapon()

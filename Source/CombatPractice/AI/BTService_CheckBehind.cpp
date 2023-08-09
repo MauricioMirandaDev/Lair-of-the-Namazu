@@ -16,11 +16,11 @@ void UBTService_CheckBehind::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* 
 {
 	Super::TickNode(OwnerComp, NodeMemory, DeltaSeconds);
 
-	if (OwningEnemy->PlayerReference)
+	if (Enemy->PlayerReference)
 	{
-		if (FVector::DotProduct(OwningEnemy->GetActorForwardVector(), OwningEnemy->PlayerReference->GetActorLocation() - OwningEnemy->GetActorLocation()) < 0.0f
-			&& OwningEnemy->IsPlayerBlocked() != true)
-			OwnerComp.GetAIOwner()->GetBlackboardComponent()->SetValueAsVector(GetSelectedBlackboardKey(), OwningEnemy->PlayerReference->GetActorLocation());
+		if (FVector::DotProduct(Enemy->GetActorForwardVector(), Enemy->PlayerReference->GetActorLocation() - Enemy->GetActorLocation()) < 0.0f
+			&& Enemy->IsPlayerBlocked() != true)
+			OwnerComp.GetAIOwner()->GetBlackboardComponent()->SetValueAsVector(GetSelectedBlackboardKey(), Enemy->PlayerReference->GetActorLocation());
 		else
 			OwnerComp.GetAIOwner()->GetBlackboardComponent()->ClearValue(GetSelectedBlackboardKey());
 	}

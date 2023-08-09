@@ -43,6 +43,9 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Enhanced Input System", meta = (AllowPrivateAccess = "true"))
 	UInputAction* InputAction_HeavyAttack;
 
+	// Reference to player used to call functions
+	class APlayerCharacter* Player;
+
 	// Functions for movement
 	void Move(const FInputActionValue& Value); 
 
@@ -57,6 +60,4 @@ private:
 	void CallLightAttack();
 
 	void CallHeavyAttack(); 
-
-	class APlayerCharacter* Player;
 };

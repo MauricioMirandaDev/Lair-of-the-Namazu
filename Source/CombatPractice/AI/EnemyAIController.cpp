@@ -1,7 +1,6 @@
 
 #include "EnemyAIController.h"
 #include "BehaviorTree/BlackboardComponent.h"
-#include "Kismet/GameplayStatics.h"
 
 // Set default values
 AEnemyAIController::AEnemyAIController()

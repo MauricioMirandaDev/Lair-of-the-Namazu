@@ -1,6 +1,6 @@
 
 #include "EnemyCharacter.h"
-#include "CombatPractice/Actors/Weapon.h"
+#include "BehaviorTree/BlackboardComponent.h"
 #include "CombatPractice/AI/EnemyAIController.h"
 #include "CombatPractice/Characters/PlayerCharacter.h"
 #include "Components/CapsuleComponent.h"
@@ -27,8 +27,6 @@ void AEnemyCharacter::BeginPlay()
 	PlayerReference = Cast<APlayerCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
 	if (PlayerReference == nullptr)
 		return;
-
-	AIController = Cast <AEnemyAIController>(GetController());
 }
 
 // Called every frame
@@ -43,6 +41,14 @@ void AEnemyCharacter::OnDeath()
 	Super::OnDeath();
 
 	GetController()->UnPossess();
+}
+
+void AEnemyCharacter::ResetAttack()
+{
+	Super::ResetAttack();
+
+	if (AEnemyAIController* AIController = Cast<AEnemyAIController>(GetController()))
+		AIController->GetBlackboardComponent()->ClearValue(TEXT("HitSuccessful"));
 }
 
 // Perform a line of sight calculation to determine if the enemy can see the player

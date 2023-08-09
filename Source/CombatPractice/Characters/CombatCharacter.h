@@ -56,12 +56,15 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	// Checks to see if character has run out of health
-	bool IsDead();
-
 	// This character's weapon 
-	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY(BlueprintReadOnly)
 	AWeapon* Weapon;
+
+	// Friend class that accesses TakeDamage() and CurrentAttackAnimation
+	friend class AWeapon;
+
+	// BehaviorTreee Service that accesses IsDead()
+	friend class UBTService_CheckPlayerAlive;
 
 	// AnimNotify that accesses CombatState
 	friend class UCombatAnimNotify_ChangeState;
@@ -69,36 +72,39 @@ public:
 	// AnimNotify that calls ForwardThrust() 
 	friend class UCombatAnimNotify_ForwardThrust; 
 
-	// Freind class that accesses TakeDamage() and CurrentAttackAnimation
-	friend class AWeapon; 
+	// AnimNotify that calls ResetAttack()
+	friend class UCombatAnimNotify_ResetAttack;
 
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-	// Called when character runs out of health
-	virtual void OnDeath();
-
-	// This character's current state
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat", meta = (AllowPrivateAccess = "true"))
+	// Components, functions, and variable used for combat
+	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	ECombatState CombatState; 
 
-	// The attack animation this character is currently performing
+	virtual void OnDeath();
+
+	virtual void ResetAttack();
+
 	FAttackAnimation CurrentAttackAnimation;
 
+	// Function used for health system
+	bool IsDead();
+
 private: 
-	// Components and functions used for combat
+	// Component and function used for combat
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat", meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<AWeapon> WeaponClass;
 
-	void TakeDamage(FAttackAnimation AttackAnimation, FVector AttackLocation); 
-
 	void ForwardThrust(); 
 
-	// Components and variables for health system
+	// Components and function used for health system
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Health", meta = (AllowPrivateAccess = "true"))
 	float MaxHealth;
 
-	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	float CurrentHealth;
+
+	void TakeDamage(FAttackAnimation AttackAnimation, FVector AttackLocation);
 };

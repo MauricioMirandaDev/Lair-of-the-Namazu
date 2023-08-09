@@ -41,16 +41,37 @@ void ACombatCharacter::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 }
 
-// Determines if the character has lost all health
-bool ACombatCharacter::IsDead()
-{
-	return CurrentHealth <= 0.0f;
-}
-
 // Called when character runs out of health
 void ACombatCharacter::OnDeath()
 {
 	GetCapsuleComponent()->SetCollisionProfileName(TEXT("NoCollision"), true);
+}
+
+// Used to reset variables a character uses during combat
+void ACombatCharacter::ResetAttack()
+{
+
+}
+
+// Aply forward velocity when performing attack
+void ACombatCharacter::ForwardThrust()
+{
+	// Variables used for trace
+	FVector StartLocation = GetActorLocation() + (GetActorForwardVector() * (CurrentAttackAnimation.ForwardThrustStrength / 7.5f));
+	FVector EndLocation = StartLocation + (GetActorUpVector() * -CurrentAttackAnimation.ForwardThrustStrength);
+
+	TArray<AActor*> ActorsToIngore;
+	ActorsToIngore.Add(this);
+
+	FHitResult TraceResult;
+
+	UKismetSystemLibrary::CapsuleTraceSingle(GetWorld(), StartLocation, EndLocation, GetCapsuleComponent()->GetUnscaledCapsuleRadius(),
+		GetCapsuleComponent()->GetUnscaledCapsuleHalfHeight(), UEngineTypes::ConvertToTraceType(ECC_Visibility),
+		true, ActorsToIngore, EDrawDebugTrace::None, OUT TraceResult, true);
+
+	// Perform a forward thrust if it won't launch the character off an edge
+	if (TraceResult.bBlockingHit)
+		LaunchCharacter(GetActorForwardVector() * CurrentAttackAnimation.ForwardThrustStrength, true, true);
 }
 
 // Deduct damage from health and update gameplay as needed
@@ -79,23 +100,8 @@ void ACombatCharacter::TakeDamage(FAttackAnimation AttackAnimation, FVector Atta
 		OnDeath();
 }
 
-// Aply forward velocity when performing attack
-void ACombatCharacter::ForwardThrust()
+// Determines if the character has lost all health
+bool ACombatCharacter::IsDead()
 {
-	// Variables used for trace
-	FVector StartLocation = GetActorLocation() + (GetActorForwardVector() * (CurrentAttackAnimation.ForwardThrustStrength / 7.5f));
-	FVector EndLocation = StartLocation + (GetActorUpVector() * -CurrentAttackAnimation.ForwardThrustStrength);
-
-	TArray<AActor*> ActorsToIngore;
-	ActorsToIngore.Add(this);
-
-	FHitResult TraceResult; 
-
-	UKismetSystemLibrary::CapsuleTraceSingle(GetWorld(), StartLocation, EndLocation, GetCapsuleComponent()->GetUnscaledCapsuleRadius(), 
-											 GetCapsuleComponent()->GetUnscaledCapsuleHalfHeight(), UEngineTypes::ConvertToTraceType(ECC_Visibility), 
-											 true, ActorsToIngore, EDrawDebugTrace::None, OUT TraceResult, true);
-
-	// Perform a forward thrust if it won't launch the character off an edge
-	if (TraceResult.bBlockingHit)
-		LaunchCharacter(GetActorForwardVector() * CurrentAttackAnimation.ForwardThrustStrength, true, true);
+	return CurrentHealth <= 0.0f;
 }

@@ -15,8 +15,6 @@ void UCombatAnimNotify_SetAttack::Notify(USkeletalMeshComponent* MeshComp, UAnim
 {
 	Super::Notify(MeshComp, Animation);
 
-	APlayerCharacter* Player = Cast<APlayerCharacter>(OwnerReference);
-
-	if (Player)
-		Player->bCanAttack = bAllowAttack;
+	if (APlayerCharacter* Player = Cast<APlayerCharacter>(OwnerReference))
+		Player->bCanAttack = bAllowAttack; 
 }

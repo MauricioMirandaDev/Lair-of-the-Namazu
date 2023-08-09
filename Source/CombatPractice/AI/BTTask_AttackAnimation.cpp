@@ -1,6 +1,5 @@
 
 #include "BTTask_AttackAnimation.h"
-#include "CombatPractice/Actors/Weapon.h"
 #include "CombatPractice/Characters/EnemyCharacter.h"
 
 // Set default values

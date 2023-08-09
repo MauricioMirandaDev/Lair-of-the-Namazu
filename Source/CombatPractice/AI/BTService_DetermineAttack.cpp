@@ -15,7 +15,7 @@ void UBTService_DetermineAttack::TickNode(UBehaviorTreeComponent& OwnerComp, uin
 {
 	Super::TickNode(OwnerComp, NodeMemory, DeltaSeconds);
 
-	if (OwningEnemy->PlayerReference && OwningEnemy->IsReadyToAttack())
+	if (Enemy->IsReadyToAttack())
 		OwnerComp.GetAIOwner()->GetBlackboardComponent()->SetValueAsBool(GetSelectedBlackboardKey(), true);
 	else
 		OwnerComp.GetAIOwner()->GetBlackboardComponent()->ClearValue(GetSelectedBlackboardKey());

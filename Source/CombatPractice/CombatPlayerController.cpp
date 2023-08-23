@@ -14,6 +14,8 @@ ACombatPlayerController::ACombatPlayerController()
 	InputAction_Jump = nullptr; 
 	InputAction_LightAttack = nullptr; 
 	InputAction_HeavyAttack = nullptr; 
+	InputAction_LockOn = nullptr;
+	InputAction_SwitchEnemyUp = nullptr; 
 }
 
 // Called when the game starts
@@ -53,6 +55,11 @@ void ACombatPlayerController::SetupInputComponent()
 		// COMBAT
 		EnhancedInput->BindAction(InputAction_LightAttack, ETriggerEvent::Triggered, this, &ACombatPlayerController::CallLightAttack);
 		EnhancedInput->BindAction(InputAction_HeavyAttack, ETriggerEvent::Completed, this, &ACombatPlayerController::CallHeavyAttack);
+
+		// LOCK-ON SYSTEM
+		EnhancedInput->BindAction(InputAction_LockOn, ETriggerEvent::Triggered, this, &ACombatPlayerController::CallLockOn);
+		EnhancedInput->BindAction(InputAction_SwitchEnemyUp, ETriggerEvent::Triggered, this, &ACombatPlayerController::CallSwitchUp);
+		EnhancedInput->BindAction(InputAction_SwitchEnemyDown, ETriggerEvent::Triggered, this, &ACombatPlayerController::CallSwitchDown);
 	}
 }
 
@@ -105,4 +112,26 @@ void ACombatPlayerController::CallHeavyAttack()
 	if (Player)
 		Player->HeavyAttackPressed(); 
 }
+
+// Call lock on from player class
+void ACombatPlayerController::CallLockOn()
+{
+	if (Player)
+		Player->LockOntoEnemy();
+}
+
+// Call switch enemy functions from player class
+void ACombatPlayerController::CallSwitchUp()
+{
+	if (Player->bIsLockedOn)
+		Player->SwitchEnemyUp();
+}
+
+void ACombatPlayerController::CallSwitchDown()
+{
+	if (Player->bIsLockedOn)
+		Player->SwitchEnemyDown();
+}
+
+
 

@@ -3,7 +3,7 @@
 
 #include "CoreMinimal.h"
 #include "CombatCharacter.h"
-#include "PlayerCharacter.generated.h"
+#include "PlayerCharacter.generated.h" 
 
 UCLASS()
 class COMBATPRACTICE_API APlayerCharacter : public ACombatCharacter
@@ -19,6 +19,9 @@ public:
 
 	// Friend class that handles input bindings
 	friend class ACombatPlayerController; 
+
+	// Friend class that access NearbyEnemies[] 
+	friend class AEnemyCharacter; 
 
 	// AnimNotify that accesses bCanAttack
 	friend class UCombatAnimNotify_SetAttack;
@@ -71,4 +74,42 @@ private:
 	bool bCanAttack;
 
 	int32 AttackCount;
+
+	// Components, functions, and variables for lock-on system
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Lock-On System", meta = (AllowPrivateAccess = "true"))
+	float LockOnCameraOffset; 
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Lock-On System", meta = (AllowPrivateAccess = "true"))
+	float MaxLockOnDistance; 
+
+	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	bool bIsLockedOn;
+
+	void TraceForEnemies();
+
+	AActor* DetermineClosestEnemy();
+
+	void LockOntoEnemy();
+
+	void LockedOnMovement();
+
+	void LockOnBehavior();
+
+	void SwitchEnemyUp();
+
+	void SwitchEnemyDown();
+
+	TArray<AActor*> NearbyEnemies;
+
+	AActor* LockedOnEnemy;
+
+	// Components for rope
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Rope", meta = (AllowPrivateAccess = "true"))
+	class USceneComponent* RopeHolster;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Rope", meta = (AllowPrivateAccess = "true"))
+	class UCableComponent* Rope;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Rope", meta = (AllowPrivateAccess = "true"))
+	float RopeLength; 
 };

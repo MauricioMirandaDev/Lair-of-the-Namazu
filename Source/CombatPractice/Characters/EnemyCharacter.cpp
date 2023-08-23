@@ -41,6 +41,9 @@ void AEnemyCharacter::OnDeath()
 	Super::OnDeath();
 
 	GetController()->UnPossess();
+
+	if (PlayerReference->NearbyEnemies.Contains(this))
+		PlayerReference->NearbyEnemies.Remove(this);
 }
 
 void AEnemyCharacter::ResetAttack()

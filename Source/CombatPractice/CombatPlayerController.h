@@ -43,6 +43,15 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Enhanced Input System", meta = (AllowPrivateAccess = "true"))
 	UInputAction* InputAction_HeavyAttack;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Enhanced Input System", meta = (AllowPrivateAccess = "true"))
+	UInputAction* InputAction_LockOn;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Enhanced Input System", meta = (AllowPrivateAccess = "true"))
+	UInputAction* InputAction_SwitchEnemyUp;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Enhanced Input System", meta = (AllowPrivateAccess = "true"))
+	UInputAction* InputAction_SwitchEnemyDown;
+
 	// Reference to player used to call functions
 	class APlayerCharacter* Player;
 
@@ -60,4 +69,11 @@ private:
 	void CallLightAttack();
 
 	void CallHeavyAttack(); 
+
+	// Functions for lock-on system
+	void CallLockOn();
+
+	void CallSwitchUp();
+
+	void CallSwitchDown();
 };

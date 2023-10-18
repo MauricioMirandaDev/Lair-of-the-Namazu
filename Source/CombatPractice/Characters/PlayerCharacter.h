@@ -5,6 +5,8 @@
 #include "CombatCharacter.h"
 #include "PlayerCharacter.generated.h" 
 
+class AEnemyCharacter; 
+
 UCLASS()
 class COMBATPRACTICE_API APlayerCharacter : public ACombatCharacter
 {
@@ -87,7 +89,7 @@ private:
 
 	void TraceForEnemies();
 
-	AActor* DetermineClosestEnemy();
+	AEnemyCharacter* DetermineClosestEnemy();
 
 	void LockOntoEnemy();
 
@@ -99,9 +101,9 @@ private:
 
 	void SwitchEnemyDown();
 
-	TArray<AActor*> NearbyEnemies;
+	TArray<AEnemyCharacter*> NearbyEnemies;
 
-	AActor* LockedOnEnemy;
+	AEnemyCharacter* LockedOnEnemy;
 
 	// Components for rope
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Rope", meta = (AllowPrivateAccess = "true"))

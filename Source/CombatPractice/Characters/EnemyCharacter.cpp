@@ -3,7 +3,9 @@
 #include "BehaviorTree/BlackboardComponent.h"
 #include "CombatPractice/AI/EnemyAIController.h"
 #include "CombatPractice/Characters/PlayerCharacter.h"
+#include "CombatPractice/Actors/Weapon.h"
 #include "Components/CapsuleComponent.h"
+#include "Components/WidgetComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Kismet/KismetMathLibrary.h"
@@ -16,6 +18,15 @@ AEnemyCharacter::AEnemyCharacter()
 	MaxSightAngle = 90.0f; 
 	AttackRadius = 100.0f;
 	PlayerReference = nullptr;
+
+	// Create health bar 
+	HealthBar = CreateDefaultSubobject<UWidgetComponent>(TEXT("Health Bar"));
+	HealthBar->SetupAttachment(RootComponent);
+
+	// Create lock-on target
+	LockOnTarget = CreateDefaultSubobject<UWidgetComponent>(TEXT("Lock-On Target"));
+	LockOnTarget->SetupAttachment(RootComponent);
+	LockOnTarget->SetVisibility(false);
 }
 
 // Called when the game starts or when spawned
@@ -35,12 +46,19 @@ void AEnemyCharacter::Tick(float DeltaTime)
 	Super::Tick(DeltaTime); 
 }
 
+// Get a reference to the enemy's lock on target widget
+UWidgetComponent* AEnemyCharacter::GetLockOnTarget()
+{
+	return LockOnTarget;
+}
+
 // Called when character runs out of health
 void AEnemyCharacter::OnDeath()
 {
 	Super::OnDeath();
 
 	GetController()->UnPossess();
+	LockOnTarget->SetVisibility(false);
 
 	if (PlayerReference->NearbyEnemies.Contains(this))
 		PlayerReference->NearbyEnemies.Remove(this);
@@ -94,4 +112,12 @@ bool AEnemyCharacter::IsPlayerBlocked()
 bool AEnemyCharacter::IsReadyToAttack()
 {
 	return FVector::Dist(GetActorLocation(), PlayerReference->GetActorLocation()) <= AttackRadius && CombatState == ECombatState::COMBAT_Neutral;
+}
+
+// Effects to play after the enemy's death animation ends
+void AEnemyCharacter::AfterDeathEffects()
+{
+	HealthBar->DestroyComponent();
+	Weapon->Destroy();
+	//this->Destroy();
 }

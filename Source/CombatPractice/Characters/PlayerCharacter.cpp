@@ -4,6 +4,7 @@
 #include "Camera/CameraComponent.h"
 #include "CombatPractice/Characters/EnemyCharacter.h"
 #include "Components/CapsuleComponent.h"
+#include "Components/WidgetComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Kismet/GameplayStatics.h"
@@ -150,22 +151,30 @@ void APlayerCharacter::TraceForEnemies()
 
 	TArray<AActor*> ActorsToIgnore;
 	ActorsToIgnore.Add(this);
+	
+	TArray<AActor*> OutActors;
 
 	FVector2D ViewportSize;
 	GEngine->GameViewport->GetViewportSize(OUT ViewportSize);
 
 	// Get all overlapped enemies within distance
-	UKismetSystemLibrary::BoxOverlapActors(GetWorld(), GetActorLocation() + (Camera->GetForwardVector() * MaxLockOnDistance), 
+	UKismetSystemLibrary::BoxOverlapActors(GetWorld(), GetActorLocation() + (Camera->GetForwardVector() * MaxLockOnDistance),
 										   FVector(MaxLockOnDistance, ViewportSize.X, ViewportSize.Y), ObjectTypes, AEnemyCharacter::StaticClass(), ActorsToIgnore,
-										   OUT NearbyEnemies);
+										   OutActors);
+
+	for (AActor* Actor : OutActors)
+	{
+		if (AEnemyCharacter* Enemy = Cast<AEnemyCharacter>(Actor))
+			NearbyEnemies.Add(Enemy);
+	}
 }
 
 // Determine the closest enemy to the player
-AActor* APlayerCharacter::DetermineClosestEnemy()
+AEnemyCharacter* APlayerCharacter::DetermineClosestEnemy()
 {
-	AActor* ClosestEnemy = NearbyEnemies[0];
+	AEnemyCharacter* ClosestEnemy = NearbyEnemies[0];
 
-	for (AActor* Enemy : NearbyEnemies)
+	for (AEnemyCharacter* Enemy : NearbyEnemies)
 	{
 		if (FVector::Dist(GetActorLocation(), Enemy->GetActorLocation()) < FVector::Dist(GetActorLocation(), ClosestEnemy->GetActorLocation()))
 			ClosestEnemy = Enemy;
@@ -183,11 +192,13 @@ void APlayerCharacter::LockOntoEnemy()
 	{
 		bIsLockedOn = true;
 		LockedOnEnemy = DetermineClosestEnemy();
+		LockedOnEnemy->GetLockOnTarget()->SetVisibility(true);
 		SetActorTickEnabled(true);
 	}
 	else
 	{
 		bIsLockedOn = false;
+		LockedOnEnemy->GetLockOnTarget()->SetVisibility(false);
 		LockedOnEnemy = nullptr;
 		SetActorTickEnabled(false);
 	}
@@ -215,6 +226,7 @@ void APlayerCharacter::LockOnBehavior()
 	if (NearbyEnemies.Num() == 0)
 	{
 		bIsLockedOn = false;
+		LockedOnEnemy->GetLockOnTarget()->SetVisibility(false);
 		LockedOnEnemy = nullptr;
 		SetActorTickEnabled(false);
 	}
@@ -222,7 +234,10 @@ void APlayerCharacter::LockOnBehavior()
 	{
 		// If the current locked on enemy dies, lock onto the nearest one next
 		if (!NearbyEnemies.Contains(LockedOnEnemy))
+		{
 			LockedOnEnemy = DetermineClosestEnemy();
+			LockedOnEnemy->GetLockOnTarget()->SetVisibility(true);
+		}
 
 		LockedOnMovement();
 		TraceForEnemies();
@@ -232,6 +247,8 @@ void APlayerCharacter::LockOnBehavior()
 // Functions to switch between nearby enemies in both directions
 void APlayerCharacter::SwitchEnemyUp()
 {
+	LockedOnEnemy->GetLockOnTarget()->SetVisibility(false);
+
 	int32 CurrentIndex = NearbyEnemies.Find(LockedOnEnemy);
 	CurrentIndex++;
 
@@ -239,10 +256,14 @@ void APlayerCharacter::SwitchEnemyUp()
 		LockedOnEnemy = NearbyEnemies[0];
 	else
 		LockedOnEnemy = NearbyEnemies[CurrentIndex];
+
+	LockedOnEnemy->GetLockOnTarget()->SetVisibility(true);
 }
 
 void APlayerCharacter::SwitchEnemyDown()
 {
+	LockedOnEnemy->GetLockOnTarget()->SetVisibility(false);
+
 	int32 CurrentIndex = NearbyEnemies.Find(LockedOnEnemy);
 	CurrentIndex--;
 
@@ -250,6 +271,8 @@ void APlayerCharacter::SwitchEnemyDown()
 		LockedOnEnemy = NearbyEnemies[NearbyEnemies.Num() - 1];
 	else
 		LockedOnEnemy = NearbyEnemies[CurrentIndex];
+
+	LockedOnEnemy->GetLockOnTarget()->SetVisibility(true);
 }
 
 

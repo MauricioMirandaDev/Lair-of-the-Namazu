@@ -5,6 +5,8 @@
 #include "CombatCharacter.h"
 #include "EnemyCharacter.generated.h"
 
+class UWidgetComponent;
+
 UCLASS()
 class COMBATPRACTICE_API AEnemyCharacter : public ACombatCharacter
 {
@@ -16,6 +18,8 @@ public:
 
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
+
+	UWidgetComponent* GetLockOnTarget();
 
 	// BehaviorTree Service that accesses CanSeePlayer() and PlayerReference
 	friend class UBTService_SearchForPlayer; 
@@ -34,6 +38,9 @@ public:
 
 	// BehaviorTree Task that accesses CurrentAttackAnimation
 	friend class UBTTask_AttackAnimation;
+
+	// AnimNotify that accesses AfterDeathEffects()
+	friend class UCombatAnimNotify_AfterDeath;
 
 protected:
 	// Called when the game starts or when spawned
@@ -62,8 +69,16 @@ private:
 	class APlayerCharacter* PlayerReference;
 
 	// Component, function, and variable used for combat
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Components", meta = (AllowPrivateAccess = "true"))
+	UWidgetComponent* HealthBar;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Components", meta = (AllowPrivateAccess = "true"))
+	UWidgetComponent* LockOnTarget;
+
 	UPROPERTY(EditAnywhere, Category = "Combat", meta = (AllowPrivateAccess = "true"))
 	float AttackRadius;
 
 	bool IsReadyToAttack();
+
+	void AfterDeathEffects();
 };

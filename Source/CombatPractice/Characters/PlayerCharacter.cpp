@@ -77,6 +77,16 @@ void APlayerCharacter::Tick(float DeltaTime)
 	LockOnBehavior();
 }
 
+TArray<AEnemyCharacter*> APlayerCharacter::GetNearbyEnemies()
+{
+	return NearbyEnemies; 
+}
+
+void APlayerCharacter::SetCanAttack(bool bAllowAttack)
+{
+	bCanAttack = bAllowAttack;
+}
+
 // Called when character runs out of health
 void APlayerCharacter::OnDeath()
 {

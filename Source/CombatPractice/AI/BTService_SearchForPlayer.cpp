@@ -16,8 +16,8 @@ void UBTService_SearchForPlayer::TickNode(UBehaviorTreeComponent& OwnerComp, uin
 {
 	Super::TickNode(OwnerComp, NodeMemory, DeltaSeconds);
 
-	if (Enemy->PlayerReference && Enemy->CanSeePlayer())
-		OwnerComp.GetAIOwner()->GetBlackboardComponent()->SetValueAsVector(GetSelectedBlackboardKey(), Enemy->PlayerReference->GetActorLocation());
+	if (Enemy->CanSeePlayer())
+		OwnerComp.GetAIOwner()->GetBlackboardComponent()->SetValueAsVector(GetSelectedBlackboardKey(), Enemy->GetPlayerReference()->GetActorLocation());
 	else
 		OwnerComp.GetAIOwner()->GetBlackboardComponent()->ClearValue(GetSelectedBlackboardKey());
 }

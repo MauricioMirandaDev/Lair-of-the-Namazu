@@ -5,6 +5,8 @@
 #include "GameFramework/Actor.h"
 #include "Weapon.generated.h"
 
+class ACombatCharacter;
+
 UCLASS()
 class COMBATPRACTICE_API AWeapon : public AActor
 {
@@ -17,25 +19,25 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	// Function bound to OnComponentBeginOverlap() from Hitbox
+	// Setter function
+	void SetOwningCharacter(ACombatCharacter* NewOwner);
+
+	// Functions used for hitbox
 	UFUNCTION()
 	virtual void BeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
-	// The character who owns this weapon
-	class ACombatCharacter* OwningCharacter;
-
-	// AnimNotify that accesses UpdateHitbox()
-	friend class UCombatAnimNotify_ActivateHitbox;
+	virtual void UpdateHitbox(bool bActivate);
 
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-	// Component and function used for hitbox
+	// Component used for hitbox
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
 	class UBoxComponent* Hitbox;
 
-	virtual void UpdateHitbox(bool bActivate);
+	// Reference to the character who owns this weapon
+	ACombatCharacter* OwningCharacter;
 
 private:
 	// Visual components 

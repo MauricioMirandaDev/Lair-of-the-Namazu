@@ -17,13 +17,12 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	// Function bound to OnComponentBeginOverlap() 
+	// Functions used for hitbox
 	virtual void BeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult) override;
+
+	virtual void UpdateHitbox(bool bActivate) override;
 
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
-
-	// Function used for hitbox
-	virtual void UpdateHitbox(bool bActivate) override;
 };

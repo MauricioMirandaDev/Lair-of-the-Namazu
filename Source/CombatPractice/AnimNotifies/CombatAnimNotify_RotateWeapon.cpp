@@ -16,5 +16,5 @@ void UCombatAnimNotify_RotateWeapon::Notify(USkeletalMeshComponent* MeshComp, UA
 	Super::Notify(MeshComp, Animation);
 
 	if (OwnerReference)
-		OwnerReference->Weapon->SetActorRelativeRotation(NewRotation, true);
+		OwnerReference->GetWeapon()->SetActorRelativeRotation(NewRotation, true);
 }

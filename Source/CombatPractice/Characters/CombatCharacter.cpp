@@ -31,7 +31,7 @@ void ACombatCharacter::BeginPlay()
 	{
 		Weapon = GetWorld()->SpawnActor<AWeapon>(WeaponClass);
 		Weapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, TEXT("WeaponSocket"));
-		Weapon->OwningCharacter = this;
+		Weapon->SetOwningCharacter(this);
 	}
 }
 
@@ -41,10 +41,27 @@ void ACombatCharacter::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 }
 
-// Called when character runs out of health
-void ACombatCharacter::OnDeath()
+// Getter function to access this character's weapon
+AWeapon* ACombatCharacter::GetWeapon()
 {
-	GetCapsuleComponent()->SetCollisionProfileName(TEXT("NoCollision"), true);
+	return Weapon;
+}
+
+// Getter function to access the attack animation this character is currently performing
+FAttackAnimation ACombatCharacter::GetCurrentAttackAnim()
+{
+	return CurrentAttackAnimation;
+}
+
+// Setter function to update this character's combat state
+void ACombatCharacter::SetCombatState(ECombatState NewState)
+{
+	CombatState = NewState;
+}
+
+void ACombatCharacter::SetCurrentAttackAnim(FAttackAnimation NewAnim)
+{
+	CurrentAttackAnimation = NewAnim;
 }
 
 // Used to reset variables a character uses during combat
@@ -72,6 +89,12 @@ void ACombatCharacter::ForwardThrust()
 	// Perform a forward thrust if it won't launch the character off an edge
 	if (TraceResult.bBlockingHit)
 		LaunchCharacter(GetActorForwardVector() * CurrentAttackAnimation.ForwardThrustStrength, true, true);
+}
+
+// Called when character runs out of health
+void ACombatCharacter::OnDeath()
+{
+	GetCapsuleComponent()->SetCollisionProfileName(TEXT("NoCollision"), true);
 }
 
 // Deduct damage from health and update gameplay as needed

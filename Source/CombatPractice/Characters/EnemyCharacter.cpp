@@ -46,7 +46,13 @@ void AEnemyCharacter::Tick(float DeltaTime)
 	Super::Tick(DeltaTime); 
 }
 
-// Get a reference to the enemy's lock on target widget
+// Getter function to access reference to player
+APlayerCharacter* AEnemyCharacter::GetPlayerReference()
+{
+	return PlayerReference;
+}
+
+// Getter function to access lock-on target widget
 UWidgetComponent* AEnemyCharacter::GetLockOnTarget()
 {
 	return LockOnTarget;
@@ -60,8 +66,8 @@ void AEnemyCharacter::OnDeath()
 	GetController()->UnPossess();
 	LockOnTarget->SetVisibility(false);
 
-	if (PlayerReference->NearbyEnemies.Contains(this))
-		PlayerReference->NearbyEnemies.Remove(this);
+	if (PlayerReference->GetNearbyEnemies().Contains(this))
+		PlayerReference->GetNearbyEnemies().Remove(this);
 }
 
 void AEnemyCharacter::ResetAttack()
@@ -93,7 +99,10 @@ bool AEnemyCharacter::CanSeePlayer()
 // Perform a sphere trace to see if the player is withing detection radius
 bool AEnemyCharacter::IsPlayerClose()
 {
-	return FVector::Dist(GetActorLocation(), PlayerReference->GetActorLocation()) <= SearchRadius;
+	if (PlayerReference != nullptr)
+		return FVector::Dist(GetActorLocation(), PlayerReference->GetActorLocation()) <= SearchRadius;
+	else
+		return false;
 }
 
 // Perform a line trace to see if ray to player is blockd by anything

@@ -40,12 +40,18 @@ void AWeapon::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 }
 
+// Setter function to set the owner of this weapon
+void AWeapon::SetOwningCharacter(ACombatCharacter* NewOwner)
+{
+	OwningCharacter = NewOwner;
+}
+
 // Apply damage to the overlapped actor 
 void AWeapon::BeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	if (ACombatCharacter* OtherCharacter = Cast<ACombatCharacter>(OtherActor))
 	{
-		OtherCharacter->TakeDamage(OwningCharacter->CurrentAttackAnimation, OwningCharacter->GetActorLocation());
+		OtherCharacter->TakeDamage(OwningCharacter->GetCurrentAttackAnim(), OwningCharacter->GetActorLocation());
 		UGameplayStatics::PlaySoundAtLocation(GetWorld(), ImpactSoundEffect, GetActorLocation());
 		UpdateHitbox(false); 
 	}

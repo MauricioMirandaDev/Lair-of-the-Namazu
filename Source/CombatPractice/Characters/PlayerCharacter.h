@@ -19,14 +19,17 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+	// Getter function
+	TArray<AEnemyCharacter*> GetNearbyEnemies();
+
+	// Setter function
+	void SetCanAttack(bool bAllowAttack);
+
+	// Function used for combat
+	virtual void ResetAttack() override;
+
 	// Friend class that handles input bindings
 	friend class ACombatPlayerController; 
-
-	// Friend class that access NearbyEnemies[] 
-	friend class AEnemyCharacter; 
-
-	// AnimNotify that accesses bCanAttack
-	friend class UCombatAnimNotify_SetAttack;
 
 protected:
 	// Called when the game starts or when spawned
@@ -39,8 +42,6 @@ protected:
 
 	// Functions used for combat
 	virtual void OnDeath() override; 
-
-	virtual void ResetAttack() override;
 
 private:
 	// Components for camera control

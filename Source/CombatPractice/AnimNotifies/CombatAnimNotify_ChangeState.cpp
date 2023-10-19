@@ -15,5 +15,5 @@ void UCombatAnimNotify_ChangeState::Notify(USkeletalMeshComponent* MeshComp, UAn
 	Super::Notify(MeshComp, Animation);
 
 	if (OwnerReference)
-		OwnerReference->CombatState = NewState; 
+		OwnerReference->SetCombatState(NewState); 
 }

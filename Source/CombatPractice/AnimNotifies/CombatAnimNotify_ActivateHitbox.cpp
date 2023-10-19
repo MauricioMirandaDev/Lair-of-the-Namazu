@@ -16,5 +16,5 @@ void UCombatAnimNotify_ActivateHitbox::Notify(USkeletalMeshComponent* MeshComp, 
 	Super::Notify(MeshComp, Animation);
 
 	if (OwnerReference)
-		OwnerReference->Weapon->UpdateHitbox(bActivateHitbox);
+		OwnerReference->GetWeapon()->UpdateHitbox(bActivateHitbox);
 }

@@ -6,6 +6,7 @@
 #include "EnemyCharacter.generated.h"
 
 class UWidgetComponent;
+class APlayerCharacter;
 
 UCLASS()
 class COMBATPRACTICE_API AEnemyCharacter : public ACombatCharacter
@@ -19,40 +20,33 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+	// Getter functions
+	APlayerCharacter* GetPlayerReference(); 
+
 	UWidgetComponent* GetLockOnTarget();
 
-	// BehaviorTree Service that accesses CanSeePlayer() and PlayerReference
-	friend class UBTService_SearchForPlayer; 
+	// Functions used for line of sight search
+	bool CanSeePlayer();
 
-	// BehaviorTree Service that accesses PlayerReference 
-	friend class UBTService_UpdatePlayerLocation;
+	bool IsPlayerBlocked();
 
-	// BehaviorTree Service that accesses IsPlayerBlocked() and PlayerReference
-	friend class UBTService_CheckBehind;
+	// Functions used for combat
+	virtual void ResetAttack() override; 
 
-	// BehaviorTree Service that accesses IsReadytoAttack() 
-	friend class UBTService_DetermineAttack; 
+	bool IsReadyToAttack();
 
-	// BehaviorTree Service that accesses PlayerReference
-	friend class UBTService_CheckPlayerAlive;
-
-	// BehaviorTree Task that accesses CurrentAttackAnimation
-	friend class UBTTask_AttackAnimation;
-
-	// AnimNotify that accesses AfterDeathEffects()
-	friend class UCombatAnimNotify_AfterDeath;
+	// Function used for health system
+	void AfterDeathEffects();
 
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-	// Functions used for combat
+	// Function used for combat
 	virtual void OnDeath() override; 
 
-	virtual void ResetAttack() override; 
-
 private:
-	// Components, functions, and variable used for line of sight search 
+	// Components, function, and variable used for line of sight search 
 	UPROPERTY(EditAnywhere, Category = "Search", meta = (AllowPrivateAccess = "true"))
 	float SearchRadius;
 
@@ -60,15 +54,11 @@ private:
 	UPROPERTY(EditAnywhere, Category = "Search", meta = (AllowPrivateAccess = "true", UIMin = "0.0", UIMax = "180.0"))
 	float MaxSightAngle;
 
-	bool CanSeePlayer();
-
 	bool IsPlayerClose(); 
 
-	bool IsPlayerBlocked();
+	APlayerCharacter* PlayerReference;
 
-	class APlayerCharacter* PlayerReference;
-
-	// Component, function, and variable used for combat
+	// Components and variable used for combat
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Components", meta = (AllowPrivateAccess = "true"))
 	UWidgetComponent* HealthBar;
 
@@ -77,8 +67,4 @@ private:
 
 	UPROPERTY(EditAnywhere, Category = "Combat", meta = (AllowPrivateAccess = "true"))
 	float AttackRadius;
-
-	bool IsReadyToAttack();
-
-	void AfterDeathEffects();
 };

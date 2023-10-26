@@ -91,7 +91,8 @@ void ACombatCharacter::OnDeath()
 // Deduct damage from health and update gameplay as needed
 void ACombatCharacter::TakeDamage(FAttackAnimation AttackAnimation, FVector AttackLocation)
 {
-	CurrentHealth -= AttackAnimation.DamageAmount;
+	if (CombatState != ECombatState::COMBAT_DamagedNormal && CombatState != ECombatState::COMBAT_DamagedHeavy)
+		CurrentHealth -= AttackAnimation.DamageAmount;
 
 	// Rotate to face attacking character
 	FRotator LookAtRotation = (AttackLocation - GetActorLocation()).Rotation();

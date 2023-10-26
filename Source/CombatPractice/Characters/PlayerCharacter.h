@@ -5,7 +5,8 @@
 #include "CombatCharacter.h"
 #include "PlayerCharacter.generated.h" 
 
-class AEnemyCharacter; 
+class AEnemyCharacter;
+class UAnimMontage; 
 
 UCLASS()
 class COMBATPRACTICE_API APlayerCharacter : public ACombatCharacter
@@ -21,9 +22,6 @@ public:
 
 	// Getter function
 	TArray<AEnemyCharacter*> GetNearbyEnemies();
-
-	// Setter function
-	void SetCanAttack(bool bAllowAttack);
 
 	// Function used for combat
 	virtual void ResetAttack() override;
@@ -53,16 +51,13 @@ private:
 
 	// Components, functions, and variables for combat
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animations", meta = (AllowPrivateAccess = "true"))
-	FAttackAnimation LightAttack_Phase01; 
+	FAttackAnimation LightAttack; 
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animations", meta = (AllowPrivateAccess = "true"))
-	FAttackAnimation LightAttack_Phase02; 
+	TArray<UAnimMontage*> LightAttackVariations; 
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animations", meta = (AllowPrivateAccess = "true"))
-	FAttackAnimation LightAttack_Phase03;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animations", meta = (AllowPrivateAccess = "true"))
-	FAttackAnimation LightAttack_Air;
+	FAttackAnimation JumpAttack;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animations", meta = (AllowPrivateAccess = "true"))
 	FAttackAnimation HeavyAttack;
@@ -73,10 +68,6 @@ private:
 	void LightAttackPressed(); 
 
 	void HeavyAttackPressed(); 
-
-	bool bCanAttack;
-
-	int32 AttackCount;
 
 	// Components, functions, and variables for lock-on system
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Lock-On System", meta = (AllowPrivateAccess = "true"))

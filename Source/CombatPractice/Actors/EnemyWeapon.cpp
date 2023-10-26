@@ -27,9 +27,9 @@ void AEnemyWeapon::BeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* Oth
 		AIController->GetBlackboardComponent()->SetValueAsBool(TEXT("HitSuccessful"), true);
 }
 
-void AEnemyWeapon::UpdateHitbox(bool bActivate)
+void AEnemyWeapon::UpdateHitbox(bool bActivate, FVector NewBoxExtent)
 {
-	Super::UpdateHitbox(bActivate);
+	Super::UpdateHitbox(bActivate, NewBoxExtent);
 
 	if (bActivate)
 		Hitbox->SetCollisionProfileName(TEXT("EnemyWeapon"), true);

@@ -23,4 +23,7 @@ private:
 	// Whether the hitbox will be turned on or off
 	UPROPERTY(EditAnywhere, meta = (AllowPrivateAccess = "true"))
 	bool bActivateHitbox; 
+
+	UPROPERTY(EditAnywhere, meta = (AllowPrivateAccess = "true"))
+	FVector NewBoxExtent;
 };

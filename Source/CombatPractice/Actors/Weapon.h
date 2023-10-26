@@ -26,7 +26,7 @@ public:
 	UFUNCTION()
 	virtual void BeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
-	virtual void UpdateHitbox(bool bActivate);
+	virtual void UpdateHitbox(bool bActivate, FVector NewBoxExtent);
 
 protected:
 	// Called when the game starts or when spawned

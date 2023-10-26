@@ -67,28 +67,19 @@ void ACombatCharacter::SetCurrentAttackAnim(FAttackAnimation NewAnim)
 // Used to reset variables a character uses during combat
 void ACombatCharacter::ResetAttack()
 {
+	CurrentAttackAnimation = FAttackAnimation();
+}
 
+void ACombatCharacter::PlayAttackAnim(FAttackAnimation AttackAnimation)
+{
+	PlayAnimMontage(AttackAnimation.Animation, 1.0f, TEXT("None"));
+	CurrentAttackAnimation = AttackAnimation;
 }
 
 // Aply forward velocity when performing attack
 void ACombatCharacter::ForwardThrust()
 {
-	// Variables used for trace
-	FVector StartLocation = GetActorLocation() + (GetActorForwardVector() * (CurrentAttackAnimation.ForwardThrustStrength / 7.5f));
-	FVector EndLocation = StartLocation + (GetActorUpVector() * -CurrentAttackAnimation.ForwardThrustStrength);
-
-	TArray<AActor*> ActorsToIngore;
-	ActorsToIngore.Add(this);
-
-	FHitResult TraceResult;
-
-	UKismetSystemLibrary::CapsuleTraceSingle(GetWorld(), StartLocation, EndLocation, GetCapsuleComponent()->GetUnscaledCapsuleRadius(),
-		GetCapsuleComponent()->GetUnscaledCapsuleHalfHeight(), UEngineTypes::ConvertToTraceType(ECC_Visibility),
-		true, ActorsToIngore, EDrawDebugTrace::None, OUT TraceResult, true);
-
-	// Perform a forward thrust if it won't launch the character off an edge
-	if (TraceResult.bBlockingHit)
-		LaunchCharacter(GetActorForwardVector() * CurrentAttackAnimation.ForwardThrustStrength, true, true);
+	LaunchCharacter(GetActorForwardVector() * CurrentAttackAnimation.ForwardThrustStrength, true, true);
 }
 
 // Called when character runs out of health
@@ -112,6 +103,10 @@ void ACombatCharacter::TakeDamage(FAttackAnimation AttackAnimation, FVector Atta
 	case EAttackType::ATTACK_Heavy:
 		CombatState = ECombatState::COMBAT_DamagedHeavy;
 		LaunchCharacter((-GetActorForwardVector() * AttackAnimation.KnockbackStrength) + FVector(0.0f, 0.0f, 500.0f), true, true);
+		break;
+	case EAttackType::ATTACK_Stun:
+		CombatState = ECombatState::COMBAT_DamagedStun;
+		LaunchCharacter(-GetActorForwardVector() * AttackAnimation.KnockbackStrength, true, true);
 		break;
 	default:
 		CombatState = ECombatState::COMBAT_DamagedNormal;

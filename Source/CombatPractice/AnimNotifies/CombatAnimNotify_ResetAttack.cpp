@@ -5,7 +5,7 @@
 // Sets default values
 UCombatAnimNotify_ResetAttack::UCombatAnimNotify_ResetAttack()
 {
-	NotifyColor = FColor(100, 255, 255);
+	NotifyColor = FColor(255, 100, 100);
 }
 
 // Reset the corresponding character's variables during combat

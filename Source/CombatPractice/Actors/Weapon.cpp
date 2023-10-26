@@ -26,6 +26,7 @@ AWeapon::AWeapon()
 	Hitbox->SetupAttachment(Mesh);
 	Hitbox->SetCollisionProfileName(TEXT("NoCollision"), true);
 	Hitbox->OnComponentBeginOverlap.AddDynamic(this, &AWeapon::BeginOverlap);
+	
 }
 
 // Called when the game starts or when spawned
@@ -52,14 +53,15 @@ void AWeapon::BeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherAct
 	if (ACombatCharacter* OtherCharacter = Cast<ACombatCharacter>(OtherActor))
 	{
 		OtherCharacter->TakeDamage(OwningCharacter->GetCurrentAttackAnim(), OwningCharacter->GetActorLocation());
-		UGameplayStatics::PlaySoundAtLocation(GetWorld(), ImpactSoundEffect, GetActorLocation());
-		UpdateHitbox(false); 
+		UGameplayStatics::PlaySoundAtLocation(GetWorld(), ImpactSoundEffect, GetActorLocation()); 
 	}
 }
 
 // Set hitbox to active or not
-void AWeapon::UpdateHitbox(bool bActivate)
+void AWeapon::UpdateHitbox(bool bActivate, FVector NewBoxExtent)
 {
+	Hitbox->SetBoxExtent(NewBoxExtent, true);
+
 	if (!bActivate)
 		Hitbox->SetCollisionProfileName(TEXT("NoCollision"), true);
 }

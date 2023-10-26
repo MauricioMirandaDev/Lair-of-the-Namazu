@@ -12,14 +12,19 @@ UENUM(BlueprintType)
 enum class ECombatState : uint8 {
 	COMBAT_Neutral UMETA(DisplayName = "Netural"),
 	COMBAT_DamagedNormal UMETA(DisplayName = "Damaged Normal"), 
-	COMBAT_DamagedHeavy UMETA(DisplayName = "Damaged Heavy")
+	COMBAT_DamagedHeavy UMETA(DisplayName = "Damaged Heavy"),
+	COMBAT_DamagedStun UMETA(DisplayName = "Damaged Stun"),
+	COMBAT_AttackStartup UMETA(DisplayName = "Attack Startup"),
+	COMBAT_AttackActive UMETA(DisplayName = "Attack Active"),
+	COMBAT_AttackRecover UMETA(DisplayName = "Attack Recovery")
 };
 
 // Type of attack the character is performing
 UENUM(BlueprintType)
 enum class EAttackType : uint8 {
 	ATTACK_Normal UMETA(DisplayName = "Nomral Attack"),
-	ATTACK_Heavy UMETA(DisplayName = "Heavy Attack")
+	ATTACK_Heavy UMETA(DisplayName = "Heavy Attack"),
+	ATTACK_Stun UMETA(DisplayName = "Stun Attack")
 };
 
 // Animation with relevant values for combat
@@ -68,6 +73,8 @@ public:
 
 	// Functions used for combat
 	virtual void ResetAttack();
+
+	void PlayAttackAnim(FAttackAnimation AttackAnimation);
 
 	void ForwardThrust();
 

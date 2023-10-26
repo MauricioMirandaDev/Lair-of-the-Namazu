@@ -15,8 +15,6 @@ APlayerCharacter::APlayerCharacter()
 {
 	GetCapsuleComponent()->SetCollisionProfileName(TEXT("PlayerCharacter"), true);
 	bJumpPressed = false; 
-	bCanAttack = true;
-	AttackCount = 0;
 	LockOnCameraOffset = 500.0f;
 	MaxLockOnDistance = 100.0f;
 	LockedOnEnemy = nullptr; 
@@ -82,11 +80,6 @@ TArray<AEnemyCharacter*> APlayerCharacter::GetNearbyEnemies()
 	return NearbyEnemies; 
 }
 
-void APlayerCharacter::SetCanAttack(bool bAllowAttack)
-{
-	bCanAttack = bAllowAttack;
-}
-
 // Called when character runs out of health
 void APlayerCharacter::OnDeath()
 {
@@ -103,41 +96,35 @@ void APlayerCharacter::OnDeath()
 void APlayerCharacter::ResetAttack()
 {
 	Super::ResetAttack();
-
-	AttackCount = 0;
 }
 
 // Perform animation when player inputs light attack
 void APlayerCharacter::LightAttackPressed()
 {
-	if (bCanAttack)
+	if (CombatState == ECombatState::COMBAT_Neutral)
 	{
 		if (GetCharacterMovement()->IsFalling())
 		{
-			PlayAnimMontage(LightAttack_Air.Animation, 1.0f, TEXT("None"));
-			CurrentAttackAnimation = LightAttack_Air;
+			PlayAttackAnim(JumpAttack);
 		}
 		else
 		{
-			AttackCount++;
+			int32 SelectedVariation = FMath::RandRange(0, LightAttackVariations.Num() - 1);
 
-			switch (AttackCount)
+			switch (SelectedVariation)
 			{
+			case 0:
+				LightAttack.Animation = LightAttackVariations[0];
+				break;
 			case 1:
-				PlayAnimMontage(LightAttack_Phase01.Animation, 1.0f, TEXT("None"));
-				CurrentAttackAnimation = LightAttack_Phase01;
-				break;
-			case 2:
-				PlayAnimMontage(LightAttack_Phase02.Animation, 1.0f, TEXT("None"));
-				CurrentAttackAnimation = LightAttack_Phase02;
-				break;
-			case 3:
-				PlayAnimMontage(LightAttack_Phase03.Animation, 1.0f, TEXT("None"));
-				CurrentAttackAnimation = LightAttack_Phase03;
+				LightAttack.Animation = LightAttackVariations[1];
 				break;
 			default:
+				LightAttack.Animation = LightAttackVariations[LightAttackVariations.Num() - 1];
 				break;
 			}
+
+			PlayAttackAnim(LightAttack);
 		}
 	}
 }
@@ -145,11 +132,8 @@ void APlayerCharacter::LightAttackPressed()
 // Perform animation when player inputs heavy attack
 void APlayerCharacter::HeavyAttackPressed()
 {
-	if (bCanAttack && !GetCharacterMovement()->IsFalling())
-	{
-		PlayAnimMontage(HeavyAttack.Animation, 1.0f, TEXT("None"));
-		CurrentAttackAnimation = HeavyAttack;
-	}
+	if (CombatState == ECombatState::COMBAT_Neutral && !GetCharacterMovement()->IsFalling())
+		PlayAttackAnim(HeavyAttack);
 }
 
 // Trace from the viewport to find all nearby enemies

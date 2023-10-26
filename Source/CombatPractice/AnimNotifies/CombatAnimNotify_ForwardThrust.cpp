@@ -5,7 +5,7 @@
 // Sets default values
 UCombatAnimNotify_ForwardThrust::UCombatAnimNotify_ForwardThrust()
 {
-	NotifyColor = FColor(255, 100, 255);
+	NotifyColor = FColor(255, 255, 100);
 }
 
 // Peform a forward thrust during attack animation 

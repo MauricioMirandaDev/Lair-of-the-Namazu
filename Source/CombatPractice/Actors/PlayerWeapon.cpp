@@ -21,9 +21,9 @@ void APlayerWeapon::BeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* Ot
 	Super::BeginOverlap(OverlappedComp, OtherActor, OtherComp, OtherBodyIndex, bFromSweep, SweepResult);
 }
 
-void APlayerWeapon::UpdateHitbox(bool bActivate)
+void APlayerWeapon::UpdateHitbox(bool bActivate, FVector NewBoxExtent)
 {
-	Super::UpdateHitbox(bActivate);
+	Super::UpdateHitbox(bActivate, NewBoxExtent);
 
 	if (bActivate)
 		Hitbox->SetCollisionProfileName(TEXT("PlayerWeapon"), true);

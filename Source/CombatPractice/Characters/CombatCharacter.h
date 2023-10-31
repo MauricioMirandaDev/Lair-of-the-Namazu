@@ -79,6 +79,8 @@ public:
 	void ForwardThrust();
 
 	// Functions used for health system
+	virtual void AfterDeath();
+
 	void TakeDamage(FAttackAnimation AttackAnimation, FVector AttackLocation);
 
 	bool IsDead();
@@ -88,6 +90,9 @@ protected:
 	virtual void BeginPlay() override;
 
 	// Components, function, and variable used for combat
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat", meta = (AllowPrivateAccess = "true"))
+	class UAnimMontage* DeathAnimation; 
+
 	UPROPERTY(BlueprintReadOnly, Category = "Combat", meta = (AllowPrivateAccess = "true"))
 	AWeapon* Weapon;
 

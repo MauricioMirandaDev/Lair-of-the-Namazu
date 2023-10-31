@@ -50,4 +50,6 @@ private:
 	// Component used for combat
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
 	class USoundBase* ImpactSoundEffect;
+
+	ACombatCharacter* LastCharacterDamaged; 
 };

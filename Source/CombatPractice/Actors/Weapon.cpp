@@ -11,6 +11,7 @@ AWeapon::AWeapon()
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 	ImpactSoundEffect = nullptr;  
+	LastCharacterDamaged = nullptr; 
 
 	// Create scene component and set as root
 	Root = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
@@ -52,7 +53,11 @@ void AWeapon::BeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherAct
 {
 	if (ACombatCharacter* OtherCharacter = Cast<ACombatCharacter>(OtherActor))
 	{
+		if (LastCharacterDamaged == OtherCharacter)
+			return; 
+
 		OtherCharacter->TakeDamage(OwningCharacter->GetCurrentAttackAnim(), OwningCharacter->GetActorLocation());
+		LastCharacterDamaged = OtherCharacter;
 		UGameplayStatics::PlaySoundAtLocation(GetWorld(), ImpactSoundEffect, GetActorLocation()); 
 	}
 }
@@ -63,7 +68,10 @@ void AWeapon::UpdateHitbox(bool bActivate, FVector NewBoxExtent)
 	Hitbox->SetBoxExtent(NewBoxExtent, true);
 
 	if (!bActivate)
+	{
 		Hitbox->SetCollisionProfileName(TEXT("NoCollision"), true);
+		LastCharacterDamaged = nullptr;
+	}
 }
 
 

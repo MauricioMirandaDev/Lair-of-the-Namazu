@@ -4,13 +4,13 @@
 
 UCombatAnimNotify_AfterDeath::UCombatAnimNotify_AfterDeath()
 {
-	NotifyColor = FColor(255, 50, 50);
+	NotifyColor = FColor(255, 255, 255);
 }
 
 void UCombatAnimNotify_AfterDeath::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation)
 {
 	Super::Notify(MeshComp, Animation);
 
-	if (AEnemyCharacter* Enemy = Cast<AEnemyCharacter>(OwnerReference))
-		Enemy->AfterDeathEffects();
+	if (OwnerReference)
+		OwnerReference->AfterDeath(); 
 }

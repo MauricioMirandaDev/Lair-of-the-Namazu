@@ -86,6 +86,15 @@ void ACombatCharacter::ForwardThrust()
 void ACombatCharacter::OnDeath()
 {
 	GetCapsuleComponent()->SetCollisionProfileName(TEXT("NoCollision"), true);
+	CombatState = ECombatState::COMBAT_Neutral;
+
+	if (DeathAnimation)
+		PlayAnimMontage(DeathAnimation, 1.0f, TEXT("None"));
+}
+
+void ACombatCharacter::AfterDeath()
+{
+
 }
 
 // Deduct damage from health and update gameplay as needed

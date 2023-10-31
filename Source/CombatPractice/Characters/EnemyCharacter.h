@@ -33,10 +33,9 @@ public:
 	// Functions used for combat
 	virtual void ResetAttack() override; 
 
-	bool IsReadyToAttack();
+	virtual void AfterDeath() override; 
 
-	// Function used for health system
-	void AfterDeathEffects();
+	bool IsReadyToAttack();
 
 protected:
 	// Called when the game starts or when spawned

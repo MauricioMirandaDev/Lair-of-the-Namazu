@@ -65,6 +65,7 @@ void AEnemyCharacter::OnDeath()
 
 	GetController()->UnPossess();
 	LockOnTarget->SetVisibility(false);
+	HealthBar->DestroyComponent();
 
 	if (PlayerReference->GetNearbyEnemies().Contains(this))
 		PlayerReference->GetNearbyEnemies().Remove(this);
@@ -76,6 +77,14 @@ void AEnemyCharacter::ResetAttack()
 
 	if (AEnemyAIController* AIController = Cast<AEnemyAIController>(GetController()))
 		AIController->GetBlackboardComponent()->ClearValue(TEXT("HitSuccessful"));
+}
+
+void AEnemyCharacter::AfterDeath()
+{
+	Super::AfterDeath();
+
+	Weapon->Destroy();
+	this->Destroy();
 }
 
 // Perform a line of sight calculation to determine if the enemy can see the player
@@ -121,12 +130,4 @@ bool AEnemyCharacter::IsPlayerBlocked()
 bool AEnemyCharacter::IsReadyToAttack()
 {
 	return FVector::Dist(GetActorLocation(), PlayerReference->GetActorLocation()) <= AttackRadius && CombatState == ECombatState::COMBAT_Neutral;
-}
-
-// Effects to play after the enemy's death animation ends
-void AEnemyCharacter::AfterDeathEffects()
-{
-	HealthBar->DestroyComponent();
-	Weapon->Destroy();
-	//this->Destroy();
 }

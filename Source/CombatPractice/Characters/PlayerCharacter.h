@@ -26,6 +26,8 @@ public:
 	// Function used for combat
 	virtual void ResetAttack() override;
 
+	virtual void AfterDeath() override; 
+
 	// Friend class that handles input bindings
 	friend class ACombatPlayerController; 
 

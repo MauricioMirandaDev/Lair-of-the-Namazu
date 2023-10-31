@@ -2,6 +2,7 @@
 #include "PlayerCharacter.h"
 #include "CableComponent.h"
 #include "Camera/CameraComponent.h"
+#include "CombatPractice/CombatPracticeGameModeBase.h"
 #include "CombatPractice/Characters/EnemyCharacter.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/WidgetComponent.h"
@@ -96,6 +97,14 @@ void APlayerCharacter::OnDeath()
 void APlayerCharacter::ResetAttack()
 {
 	Super::ResetAttack();
+}
+
+void APlayerCharacter::AfterDeath()
+{
+	Super::AfterDeath();
+
+	if (ACombatPracticeGameModeBase* GameMode = Cast<ACombatPracticeGameModeBase>(UGameplayStatics::GetGameMode(GetWorld())))
+		GameMode->GameOver();
 }
 
 // Perform animation when player inputs light attack

@@ -24,7 +24,12 @@ void AEnemyWeapon::BeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* Oth
 	Super::BeginOverlap(OverlappedComp, OtherActor, OtherComp, OtherBodyIndex, bFromSweep, SweepResult);
 
 	if (AEnemyAIController* AIController = Cast<AEnemyAIController>(OwningCharacter->GetController()))
-		AIController->GetBlackboardComponent()->SetValueAsBool(TEXT("HitSuccessful"), true);
+	{
+		if (!AIController->GetBlackboardComponent()->GetValueAsBool(TEXT("HitSuccessful")))
+			AIController->GetBlackboardComponent()->SetValueAsBool(TEXT("HitSuccessful"), true);
+		else
+			return;
+	}
 }
 
 void AEnemyWeapon::UpdateHitbox(bool bActivate, FVector NewBoxExtent)

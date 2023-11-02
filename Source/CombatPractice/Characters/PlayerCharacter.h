@@ -43,6 +43,8 @@ protected:
 	// Functions used for combat
 	virtual void OnDeath() override; 
 
+	virtual void TakeDamage(FAttackAnimation AttackAnimation, FVector AttackLocation) override;
+
 private:
 	// Components for camera control
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))

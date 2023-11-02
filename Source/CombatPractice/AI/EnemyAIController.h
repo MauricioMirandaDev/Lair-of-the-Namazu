@@ -17,6 +17,8 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaSeconds) override;
 
+	void MovementBehavior(FVector Destination); 
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -25,4 +27,6 @@ private:
 	// This enemy's behavior tree
 	UPROPERTY(EditDefaultsOnly, Category = "Behavior Tree", meta = (AllowPrivateAccess = "true"))
 	class UBehaviorTree* BehaviorTree;
+
+	class AEnemyCharacter* EnemyOwner; 
 };

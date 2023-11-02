@@ -47,6 +47,11 @@ AWeapon* ACombatCharacter::GetWeapon()
 	return Weapon;
 }
 
+ECombatState ACombatCharacter::GetCombatState()
+{
+	return CombatState;
+}
+
 // Getter function to access the attack animation this character is currently performing
 FAttackAnimation ACombatCharacter::GetCurrentAttackAnim()
 {

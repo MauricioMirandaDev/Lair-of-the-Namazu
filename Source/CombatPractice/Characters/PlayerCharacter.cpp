@@ -93,6 +93,11 @@ void APlayerCharacter::OnDeath()
 	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
 }
 
+void APlayerCharacter::TakeDamage(FAttackAnimation AttackAnimation, FVector AttackLocation)
+{
+	Super::TakeDamage(AttackAnimation, AttackLocation); 
+}
+
 // Used to reset variables a character uses during combat
 void APlayerCharacter::ResetAttack()
 {

@@ -64,6 +64,8 @@ public:
 	// Getter functions
 	AWeapon* GetWeapon();
 
+	ECombatState GetCombatState(); 
+
 	FAttackAnimation GetCurrentAttackAnim();
 
 	// Setter functions
@@ -81,7 +83,7 @@ public:
 	// Functions used for health system
 	virtual void AfterDeath();
 
-	void TakeDamage(FAttackAnimation AttackAnimation, FVector AttackLocation);
+	virtual	void TakeDamage(FAttackAnimation AttackAnimation, FVector AttackLocation);
 
 	bool IsDead();
 

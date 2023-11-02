@@ -6,7 +6,7 @@
 // Set default values
 UCombatAnimNotify_RotateWeapon::UCombatAnimNotify_RotateWeapon()
 {
-	NotifyColor = FColor(200, 200, 100);
+	NotifyColor = FColor(255, 100, 255);
 	NewRotation = FRotator(0.0f, 0.0f, 0.0f);
 }
 

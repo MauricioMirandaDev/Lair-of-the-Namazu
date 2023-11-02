@@ -13,7 +13,7 @@ EBTNodeResult::Type UBTTask_AttackAnimation::ExecuteTask(UBehaviorTreeComponent&
 {
 	Super::ExecuteTask(OwnerComp, NodeMemory);
 
-	if (Enemy)
+	if (Enemy->GetCombatState() == ECombatState::COMBAT_Neutral)
 	{
 		Enemy->PlayAnimMontage(AttackAnimation.Animation, 1.0f, TEXT("None"));
 		Enemy->SetCurrentAttackAnim(AttackAnimation);

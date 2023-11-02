@@ -25,6 +25,8 @@ public:
 
 	UWidgetComponent* GetLockOnTarget();
 
+	float GetAttackRadius(); 
+
 	// Functions used for line of sight search
 	bool CanSeePlayer();
 
@@ -34,6 +36,8 @@ public:
 	virtual void ResetAttack() override; 
 
 	virtual void AfterDeath() override; 
+
+	virtual void TakeDamage(FAttackAnimation AttackAnimation, FVector AttackLocation) override;
 
 	bool IsReadyToAttack();
 

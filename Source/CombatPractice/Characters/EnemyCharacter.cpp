@@ -58,6 +58,11 @@ UWidgetComponent* AEnemyCharacter::GetLockOnTarget()
 	return LockOnTarget;
 }
 
+float AEnemyCharacter::GetAttackRadius()
+{
+	return AttackRadius;
+}
+
 // Called when character runs out of health
 void AEnemyCharacter::OnDeath()
 {
@@ -85,6 +90,14 @@ void AEnemyCharacter::AfterDeath()
 
 	Weapon->Destroy();
 	this->Destroy();
+}
+
+void AEnemyCharacter::TakeDamage(FAttackAnimation AttackAnimation, FVector AttackLocation)
+{
+	Super::TakeDamage(AttackAnimation, AttackLocation); 
+
+	if (AEnemyAIController* AIController = Cast<AEnemyAIController>(GetController()))
+		AIController->GetBlackboardComponent()->SetValueAsVector(TEXT("PlayerLocation"), PlayerReference->GetActorLocation());
 }
 
 // Perform a line of sight calculation to determine if the enemy can see the player

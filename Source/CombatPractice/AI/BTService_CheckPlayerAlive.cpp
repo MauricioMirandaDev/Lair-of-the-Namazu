@@ -16,8 +16,11 @@ void UBTService_CheckPlayerAlive::TickNode(UBehaviorTreeComponent& OwnerComp, ui
 {
 	Super::TickNode(OwnerComp, NodeMemory, DeltaSeconds);
 
-	if (Enemy->GetPlayerReference()->IsDead())
-		OwnerComp.GetAIOwner()->GetBlackboardComponent()->SetValueAsBool(GetSelectedBlackboardKey(), true);
+	if (EnemyController->IsPlayerDead())
+	{
+		EnemyController->GetBlackboardComponent()->ClearValue(TEXT("CanRunTree"));
+		EnemyController->GetBlackboardComponent()->SetValueAsBool(GetSelectedBlackboardKey(), true);
+	}
 	else
-		OwnerComp.GetAIOwner()->GetBlackboardComponent()->ClearValue(GetSelectedBlackboardKey());
+		EnemyController->GetBlackboardComponent()->ClearValue(GetSelectedBlackboardKey());
 }

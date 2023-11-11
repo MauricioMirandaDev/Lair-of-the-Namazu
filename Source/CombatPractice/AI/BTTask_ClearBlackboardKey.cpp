@@ -12,7 +12,10 @@ UBTTask_ClearBlackboardKey::UBTTask_ClearBlackboardKey()
 // Clear the value of the selected blackboard key
 EBTNodeResult::Type UBTTask_ClearBlackboardKey::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
-	OwnerComp.GetAIOwner()->GetBlackboardComponent()->ClearValue(GetSelectedBlackboardKey());
+	Super::ExecuteTask(OwnerComp, NodeMemory);
+
+	if (EnemyController)
+		EnemyController->GetBlackboardComponent()->ClearValue(GetSelectedBlackboardKey());
 
 	return EBTNodeResult::Succeeded;
 }

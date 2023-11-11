@@ -1,5 +1,6 @@
 
 #include "BTTask_AttackAnimation.h"
+#include "CombatPractice/AI/EnemyAIController.h"
 #include "CombatPractice/Characters/EnemyCharacter.h"
 
 // Set default values
@@ -13,11 +14,8 @@ EBTNodeResult::Type UBTTask_AttackAnimation::ExecuteTask(UBehaviorTreeComponent&
 {
 	Super::ExecuteTask(OwnerComp, NodeMemory);
 
-	if (Enemy->GetCombatState() == ECombatState::COMBAT_Neutral)
-	{
-		Enemy->PlayAnimMontage(AttackAnimation.Animation, 1.0f, TEXT("None"));
-		Enemy->SetCurrentAttackAnim(AttackAnimation);
-	}
+	if (EnemyController)
+		EnemyController->StartAttackAnimation(AttackAnimation); 
 		
 	return EBTNodeResult::Succeeded;
 }

@@ -8,6 +8,7 @@ UBTTask_Combat::UBTTask_Combat()
 {
 	NodeName = TEXT("Parent Task");
 	Enemy = nullptr; 
+	EnemyController = nullptr; 
 }
 
 // Get a reference to the enemy in game
@@ -17,6 +18,10 @@ EBTNodeResult::Type UBTTask_Combat::ExecuteTask(UBehaviorTreeComponent& OwnerCom
 
 	Enemy = Cast<AEnemyCharacter>(OwnerComp.GetAIOwner()->GetPawn());
 	if (Enemy == nullptr)
+		return EBTNodeResult::Failed;
+
+	EnemyController = Cast<AEnemyAIController>(OwnerComp.GetAIOwner());
+	if (EnemyController == nullptr)
 		return EBTNodeResult::Failed;
 
 	return EBTNodeResult::Succeeded;

@@ -20,4 +20,6 @@ protected:
 
 	// Reference to the enemy who is performing this task
 	class AEnemyCharacter* Enemy;
+
+	class AEnemyAIController* EnemyController; 
 };

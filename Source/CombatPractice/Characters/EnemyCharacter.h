@@ -21,25 +21,25 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	// Getter functions
+	UFUNCTION(BlueprintCallable)
 	APlayerCharacter* GetPlayerReference(); 
 
 	UWidgetComponent* GetLockOnTarget();
 
 	float GetAttackRadius(); 
 
-	// Functions used for line of sight search
-	bool CanSeePlayer();
-
-	bool IsPlayerBlocked();
-
 	// Functions used for combat
+	virtual void SetMovement(bool bPauseMovement) override;
+
 	virtual void ResetAttack() override; 
 
 	virtual void AfterDeath() override; 
 
 	virtual void TakeDamage(FAttackAnimation AttackAnimation, FVector AttackLocation) override;
 
-	bool IsReadyToAttack();
+	class AEnemyAIController* EnemyController; 
+
+	friend class AEnemyAIController; 
 
 protected:
 	// Called when the game starts or when spawned
@@ -59,6 +59,10 @@ private:
 
 	bool IsPlayerClose(); 
 
+	bool IsPlayerWithinView(bool bCheckBehind, float Angle);
+
+	bool IsPlayerBlocked();
+
 	APlayerCharacter* PlayerReference;
 
 	// Components and variable used for combat
@@ -70,4 +74,7 @@ private:
 
 	UPROPERTY(EditAnywhere, Category = "Combat", meta = (AllowPrivateAccess = "true"))
 	float AttackRadius;
+
+	UFUNCTION(BlueprintCallable)
+	bool PlayerWithinAttackRadius(); 
 };

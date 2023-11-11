@@ -49,6 +49,7 @@ void APlayerCharacter::BeginPlay()
 	Super::BeginPlay();
 
 	SetActorTickEnabled(false);
+	DefaultWalkSpeed = GetCharacterMovement()->MaxWalkSpeed; 
 }
 
 // Called whenever the player performs a jump 
@@ -96,6 +97,16 @@ void APlayerCharacter::OnDeath()
 void APlayerCharacter::TakeDamage(FAttackAnimation AttackAnimation, FVector AttackLocation)
 {
 	Super::TakeDamage(AttackAnimation, AttackLocation); 
+}
+
+void APlayerCharacter::SetMovement(bool bPauseMovement)
+{
+	Super::SetMovement(bPauseMovement);
+
+	if (bPauseMovement)
+		GetCharacterMovement()->MaxWalkSpeed = 0.0f;
+	else
+		GetCharacterMovement()->MaxWalkSpeed = DefaultWalkSpeed; 
 }
 
 // Used to reset variables a character uses during combat

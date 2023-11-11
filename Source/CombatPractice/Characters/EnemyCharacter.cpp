@@ -1,6 +1,8 @@
 
 #include "EnemyCharacter.h"
 #include "BehaviorTree/BlackboardComponent.h"
+#include "BehaviorTree/BehaviorTree.h"
+#include "BrainComponent.h" 
 #include "CombatPractice/AI/EnemyAIController.h"
 #include "CombatPractice/Characters/PlayerCharacter.h"
 #include "CombatPractice/Actors/Weapon.h"
@@ -17,6 +19,7 @@ AEnemyCharacter::AEnemyCharacter()
 	SearchRadius = 500.0f;
 	MaxSightAngle = 90.0f; 
 	AttackRadius = 100.0f;
+	EnemyController = nullptr; 
 	PlayerReference = nullptr;
 
 	// Create health bar 
@@ -38,6 +41,11 @@ void AEnemyCharacter::BeginPlay()
 	PlayerReference = Cast<APlayerCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
 	if (PlayerReference == nullptr)
 		return;
+
+	// Get a reference to this enemy's controller
+	EnemyController = Cast<AEnemyAIController>(GetController());
+	if (EnemyController == nullptr)
+		return; 
 }
 
 // Called every frame
@@ -68,20 +76,31 @@ void AEnemyCharacter::OnDeath()
 {
 	Super::OnDeath();
 
-	GetController()->UnPossess();
+	EnemyController->GetBlackboardComponent()->ClearValue(TEXT("CanRunTree"));
+	EnemyController->GetBlackboardComponent()->SetValueAsBool(TEXT("IsSelfDead"), true);
+	//EnemyController->UnPossess();
 	LockOnTarget->SetVisibility(false);
-	HealthBar->DestroyComponent();
+	HealthBar->SetVisibility(false);
 
 	if (PlayerReference->GetNearbyEnemies().Contains(this))
 		PlayerReference->GetNearbyEnemies().Remove(this);
+}
+
+void AEnemyCharacter::SetMovement(bool bPauseMovement)
+{
+	Super::SetMovement(bPauseMovement); 
+
+	if (bPauseMovement)
+		EnemyController->GetPathFollowingComponent()->SetActive(false, true);
+	else
+		EnemyController->GetPathFollowingComponent()->SetActive(true, true); 
 }
 
 void AEnemyCharacter::ResetAttack()
 {
 	Super::ResetAttack();
 
-	if (AEnemyAIController* AIController = Cast<AEnemyAIController>(GetController()))
-		AIController->GetBlackboardComponent()->ClearValue(TEXT("HitSuccessful"));
+	EnemyController->GetBlackboardComponent()->SetValueAsBool(TEXT("CanRunTree"), true);
 }
 
 void AEnemyCharacter::AfterDeath()
@@ -96,33 +115,37 @@ void AEnemyCharacter::TakeDamage(FAttackAnimation AttackAnimation, FVector Attac
 {
 	Super::TakeDamage(AttackAnimation, AttackLocation); 
 
-	if (AEnemyAIController* AIController = Cast<AEnemyAIController>(GetController()))
-		AIController->GetBlackboardComponent()->SetValueAsVector(TEXT("PlayerLocation"), PlayerReference->GetActorLocation());
+	EnemyController->GetBlackboardComponent()->SetValueAsBool(TEXT("SeePlayer"), true);
+	EnemyController->GetBlackboardComponent()->ClearValue(TEXT("CanRunTree"));
 }
 
-// Perform a line of sight calculation to determine if the enemy can see the player
-bool AEnemyCharacter::CanSeePlayer()
+// Calcualte if the player is within the enemy's search radius
+bool AEnemyCharacter::IsPlayerClose()
 {
-	if (IsPlayerClose())
+	if (PlayerReference)
+		return FVector::Dist(GetActorLocation(), PlayerReference->GetActorLocation()) <= SearchRadius;
+	else
+		return false;
+}
+
+// Calculate if the player is within the designted angle
+bool AEnemyCharacter::IsPlayerWithinView(bool bCheckBehind, float Angle)
+{
+	if (PlayerReference)
 	{
-		// Calculate the angle between the enemy's forward vector and direction to player
+		// Calculate the angle between the enemy's forward vector and direction to player, and see if player
 		FVector DirectionToPlayer = PlayerReference->GetActorLocation() - GetActorLocation();
 		DirectionToPlayer.Normalize();
 
 		float AngleBetweenPlayer = UKismetMathLibrary::DegAcos(FVector::DotProduct(GetActorForwardVector(), DirectionToPlayer));
 
-		if (AngleBetweenPlayer <= MaxSightAngle && !IsPlayerBlocked())
+		if (bCheckBehind && AngleBetweenPlayer >= Angle)
 			return true;
+		else if (AngleBetweenPlayer <= Angle)
+			return true;
+		else
+			return false; 
 	}
-
-	return false;
-}
-
-// Perform a sphere trace to see if the player is withing detection radius
-bool AEnemyCharacter::IsPlayerClose()
-{
-	if (PlayerReference != nullptr)
-		return FVector::Dist(GetActorLocation(), PlayerReference->GetActorLocation()) <= SearchRadius;
 	else
 		return false;
 }
@@ -140,7 +163,7 @@ bool AEnemyCharacter::IsPlayerBlocked()
 }
 
 // Calulate if the player is within attacking distance
-bool AEnemyCharacter::IsReadyToAttack()
+bool AEnemyCharacter::PlayerWithinAttackRadius()
 {
-	return FVector::Dist(GetActorLocation(), PlayerReference->GetActorLocation()) <= AttackRadius && CombatState == ECombatState::COMBAT_Neutral;
+	return FVector::Dist(GetActorLocation(), PlayerReference->GetActorLocation()) <= AttackRadius;
 }

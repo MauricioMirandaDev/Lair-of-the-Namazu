@@ -7,7 +7,7 @@
 UCombatAnimNotify_SetMovement::UCombatAnimNotify_SetMovement()
 {
 	NotifyColor = FColor(100, 255, 100); 
-	UpdatedMaxWalkSpeed = 600.0f; 
+	bStopMovement = false; 
 }
 
 // Update the walk speed of this character 
@@ -16,5 +16,5 @@ void UCombatAnimNotify_SetMovement::Notify(USkeletalMeshComponent* MeshComp, UAn
 	Super::Notify(MeshComp, Animation);
 
 	if (OwnerReference)
-		OwnerReference->GetCharacterMovement()->MaxWalkSpeed = UpdatedMaxWalkSpeed; 
+		OwnerReference->SetMovement(bStopMovement);
 }

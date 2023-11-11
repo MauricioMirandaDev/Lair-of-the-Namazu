@@ -69,6 +69,11 @@ void ACombatCharacter::SetCurrentAttackAnim(FAttackAnimation NewAnim)
 	CurrentAttackAnimation = NewAnim;
 }
 
+void ACombatCharacter::SetMovement(bool bPauseMovement)
+{
+
+}
+
 // Used to reset variables a character uses during combat
 void ACombatCharacter::ResetAttack()
 {
@@ -90,11 +95,9 @@ void ACombatCharacter::ForwardThrust()
 // Called when character runs out of health
 void ACombatCharacter::OnDeath()
 {
+	CombatState = ECombatState::COMBAT_Dead;
 	GetCapsuleComponent()->SetCollisionProfileName(TEXT("NoCollision"), true);
-	CombatState = ECombatState::COMBAT_Neutral;
-
-	if (DeathAnimation)
-		PlayAnimMontage(DeathAnimation, 1.0f, TEXT("None"));
+	GetCharacterMovement()->SetActive(false, true); 
 }
 
 void ACombatCharacter::AfterDeath()
@@ -105,32 +108,34 @@ void ACombatCharacter::AfterDeath()
 // Deduct damage from health and update gameplay as needed
 void ACombatCharacter::TakeDamage(FAttackAnimation AttackAnimation, FVector AttackLocation)
 {
-	if (CombatState != ECombatState::COMBAT_DamagedNormal && CombatState != ECombatState::COMBAT_DamagedHeavy)
-		CurrentHealth -= AttackAnimation.DamageAmount;
+	CurrentHealth -= AttackAnimation.DamageAmount;
 
 	// Rotate to face attacking character
 	FRotator LookAtRotation = (AttackLocation - GetActorLocation()).Rotation();
 	SetActorRotation(FRotator(0.0f, LookAtRotation.Yaw, 0.0f), ETeleportType::None);
 
-	// Add knockback force and update combat state
-	switch (AttackAnimation.AttackType)
-	{
-	case EAttackType::ATTACK_Heavy:
-		CombatState = ECombatState::COMBAT_DamagedHeavy;
-		LaunchCharacter((-GetActorForwardVector() * AttackAnimation.KnockbackStrength) + FVector(0.0f, 0.0f, 500.0f), true, true);
-		break;
-	case EAttackType::ATTACK_Stun:
-		CombatState = ECombatState::COMBAT_DamagedStun;
-		LaunchCharacter(-GetActorForwardVector() * AttackAnimation.KnockbackStrength, true, true);
-		break;
-	default:
-		CombatState = ECombatState::COMBAT_DamagedNormal;
-		LaunchCharacter(-GetActorForwardVector() * AttackAnimation.KnockbackStrength, true, true);
-		break;
-	}
-
 	if (IsDead())
 		OnDeath();
+	else
+	{
+
+		// Add knockback force and update combat state
+		switch (AttackAnimation.AttackType)
+		{
+			case EAttackType::ATTACK_Heavy:
+				CombatState = ECombatState::COMBAT_DamagedHeavy;
+				LaunchCharacter((-GetActorForwardVector() * AttackAnimation.ForwardKnockbackStrength) + FVector(0.0f, 0.0f, AttackAnimation.VerticalKnockbackStrength), true, true);
+				break;
+			case EAttackType::ATTACK_Stun:
+				CombatState = ECombatState::COMBAT_DamagedStun;
+				LaunchCharacter(-GetActorForwardVector() * AttackAnimation.ForwardKnockbackStrength, true, true);
+				break;
+			default:
+				CombatState = ECombatState::COMBAT_DamagedNormal;
+				LaunchCharacter(-GetActorForwardVector() * AttackAnimation.ForwardKnockbackStrength, true, true);
+				break;
+		}
+	}
 }
 
 // Determines if the character has lost all health

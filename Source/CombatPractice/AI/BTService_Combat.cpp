@@ -18,4 +18,8 @@ void UBTService_Combat::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeM
 	Enemy = Cast<AEnemyCharacter>(OwnerComp.GetAIOwner()->GetPawn());
 	if (Enemy == nullptr)
 		return; 
+
+	EnemyController = Cast<AEnemyAIController>(OwnerComp.GetAIOwner());
+	if (EnemyController == nullptr)
+		return; 
 }

@@ -2,6 +2,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "CombatPractice/Characters/AttackAnimation.h"
 #include "GameFramework/Character.h"
 #include "CombatCharacter.generated.h"
 
@@ -16,37 +17,8 @@ enum class ECombatState : uint8 {
 	COMBAT_DamagedStun UMETA(DisplayName = "Damaged Stun"),
 	COMBAT_AttackStartup UMETA(DisplayName = "Attack Startup"),
 	COMBAT_AttackActive UMETA(DisplayName = "Attack Active"),
-	COMBAT_AttackRecover UMETA(DisplayName = "Attack Recovery")
-};
-
-// Type of attack the character is performing
-UENUM(BlueprintType)
-enum class EAttackType : uint8 {
-	ATTACK_Normal UMETA(DisplayName = "Nomral Attack"),
-	ATTACK_Heavy UMETA(DisplayName = "Heavy Attack"),
-	ATTACK_Stun UMETA(DisplayName = "Stun Attack")
-};
-
-// Animation with relevant values for combat
-USTRUCT(BlueprintType)
-struct FAttackAnimation
-{
-	GENERATED_BODY()
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	class UAnimMontage* Animation;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	EAttackType AttackType; 
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	float DamageAmount;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	float ForwardThrustStrength; 
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	float KnockbackStrength;
+	COMBAT_AttackRecover UMETA(DisplayName = "Attack Recovery"),
+	COMBAT_Dead UMETA(DisplayName = "Dead")
 };
 
 UCLASS()
@@ -66,6 +38,7 @@ public:
 
 	ECombatState GetCombatState(); 
 
+	UFUNCTION(BlueprintCallable)
 	FAttackAnimation GetCurrentAttackAnim();
 
 	// Setter functions
@@ -74,9 +47,9 @@ public:
 	void SetCurrentAttackAnim(FAttackAnimation NewAnim);
 
 	// Functions used for combat
-	virtual void ResetAttack();
+	virtual void SetMovement(bool bPauseMovement); 
 
-	void PlayAttackAnim(FAttackAnimation AttackAnimation);
+	virtual void ResetAttack();
 
 	void ForwardThrust();
 
@@ -85,6 +58,9 @@ public:
 
 	virtual	void TakeDamage(FAttackAnimation AttackAnimation, FVector AttackLocation);
 
+	UFUNCTION(BlueprintCallable)
+	void PlayAttackAnim(FAttackAnimation AttackAnimation);
+
 	bool IsDead();
 
 protected:
@@ -92,9 +68,6 @@ protected:
 	virtual void BeginPlay() override;
 
 	// Components, function, and variable used for combat
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat", meta = (AllowPrivateAccess = "true"))
-	class UAnimMontage* DeathAnimation; 
-
 	UPROPERTY(BlueprintReadOnly, Category = "Combat", meta = (AllowPrivateAccess = "true"))
 	AWeapon* Weapon;
 

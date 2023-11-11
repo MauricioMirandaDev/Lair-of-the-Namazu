@@ -16,6 +16,6 @@ void UBTService_UpdatePlayerLocation::TickNode(UBehaviorTreeComponent& OwnerComp
 {
 	Super::TickNode(OwnerComp, NodeMemory, DeltaSeconds);
 
-	if (Enemy->GetPlayerReference())
-		OwnerComp.GetAIOwner()->GetBlackboardComponent()->SetValueAsVector(GetSelectedBlackboardKey(), Enemy->GetPlayerReference()->GetActorLocation());
+	if (EnemyController)
+		EnemyController->GetBlackboardComponent()->SetValueAsVector(GetSelectedBlackboardKey(), EnemyController->GetPlayerLocation());
 }

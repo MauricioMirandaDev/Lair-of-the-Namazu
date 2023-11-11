@@ -13,8 +13,15 @@ void UBTService_CanRun::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeM
 {
 	Super::TickNode(OwnerComp, NodeMemory, DeltaSeconds);
 
-	if (Enemy->GetCombatState() == ECombatState::COMBAT_Neutral)
-		OwnerComp.GetAIOwner()->GetBlackboardComponent()->SetValueAsBool(GetSelectedBlackboardKey(), true);
-	else
-		OwnerComp.GetAIOwner()->GetBlackboardComponent()->ClearValue(GetSelectedBlackboardKey()); 
+	switch (EnemyController->GetEnemyOwner()->GetCombatState())
+	{
+		case ECombatState::COMBAT_DamagedNormal:
+		case ECombatState::COMBAT_DamagedHeavy:
+		case ECombatState::COMBAT_DamagedStun:
+			EnemyController->GetBrainComponent()->StopLogic("Damaged");
+			break;
+		default:
+			EnemyController->GetBrainComponent()->StartLogic();
+			break;
+	}
 }

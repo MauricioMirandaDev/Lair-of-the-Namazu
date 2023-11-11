@@ -24,6 +24,8 @@ public:
 	TArray<AEnemyCharacter*> GetNearbyEnemies();
 
 	// Function used for combat
+	virtual void SetMovement(bool bPauseMovement) override; 
+
 	virtual void ResetAttack() override;
 
 	virtual void AfterDeath() override; 
@@ -72,6 +74,8 @@ private:
 	void LightAttackPressed(); 
 
 	void HeavyAttackPressed(); 
+
+	float DefaultWalkSpeed; 
 
 	// Components, functions, and variables for lock-on system
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Lock-On System", meta = (AllowPrivateAccess = "true"))

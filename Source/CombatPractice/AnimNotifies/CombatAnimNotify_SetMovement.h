@@ -19,7 +19,7 @@ protected:
 	virtual void Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation) override;
 
 private: 
-	/** The updated walk speed value; set to 0.0 to stop movement */
+	/** Set whether the character will start and stop moving at this point */
 	UPROPERTY(EditAnywhere, meta = (AllowPrivateAccess = "true"))
-	float UpdatedMaxWalkSpeed; 
+	bool bStopMovement; 
 };

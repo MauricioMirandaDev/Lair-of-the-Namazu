@@ -3,7 +3,7 @@
 
 #include "CoreMinimal.h"
 #include "BTTask_Combat.h"
-#include "CombatPractice/Characters/CombatCharacter.h"
+#include "CombatPractice/Characters/AttackAnimation.h"
 #include "BTTask_AttackAnimation.generated.h" 
 
 UCLASS()

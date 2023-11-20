@@ -1,26 +1,24 @@
 
 #include "EnemyCharacter.h"
 #include "BehaviorTree/BlackboardComponent.h"
-#include "BehaviorTree/BehaviorTree.h"
-#include "BrainComponent.h" 
+#include "CombatPractice/Actors/Weapon.h"
 #include "CombatPractice/AI/EnemyAIController.h"
 #include "CombatPractice/Characters/PlayerCharacter.h"
-#include "CombatPractice/Actors/Weapon.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/WidgetComponent.h"
 #include "Kismet/GameplayStatics.h"
-#include "Kismet/KismetSystemLibrary.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "Kismet/KismetSystemLibrary.h"
 
 // Sets default values
 AEnemyCharacter::AEnemyCharacter()
 {
 	GetCapsuleComponent()->SetCollisionProfileName(TEXT("EnemyCharacter"), true);
+	EnemyController = nullptr; 
 	SearchRadius = 500.0f;
 	MaxSightAngle = 90.0f; 
-	AttackRadius = 100.0f;
-	EnemyController = nullptr; 
 	PlayerReference = nullptr;
+	AttackRadius = 100.0f;
 
 	// Create health bar 
 	HealthBar = CreateDefaultSubobject<UWidgetComponent>(TEXT("Health Bar"));
@@ -66,29 +64,16 @@ UWidgetComponent* AEnemyCharacter::GetLockOnTarget()
 	return LockOnTarget;
 }
 
+// Getter function to access this enemy's attack radius 
 float AEnemyCharacter::GetAttackRadius()
 {
 	return AttackRadius;
 }
 
-// Called when character runs out of health
-void AEnemyCharacter::OnDeath()
+// Set this character to be able to move or not 
+void AEnemyCharacter::UpdateMovement(bool bPauseMovement)
 {
-	Super::OnDeath();
-
-	EnemyController->GetBlackboardComponent()->ClearValue(TEXT("CanRunTree"));
-	EnemyController->GetBlackboardComponent()->SetValueAsBool(TEXT("IsSelfDead"), true);
-	//EnemyController->UnPossess();
-	LockOnTarget->SetVisibility(false);
-	HealthBar->SetVisibility(false);
-
-	if (PlayerReference->GetNearbyEnemies().Contains(this))
-		PlayerReference->GetNearbyEnemies().Remove(this);
-}
-
-void AEnemyCharacter::SetMovement(bool bPauseMovement)
-{
-	Super::SetMovement(bPauseMovement); 
+	Super::UpdateMovement(bPauseMovement); 
 
 	if (bPauseMovement)
 		EnemyController->GetPathFollowingComponent()->SetActive(false, true);
@@ -96,6 +81,7 @@ void AEnemyCharacter::SetMovement(bool bPauseMovement)
 		EnemyController->GetPathFollowingComponent()->SetActive(true, true); 
 }
 
+// Used to reset variables a character uses during combat
 void AEnemyCharacter::ResetAttack()
 {
 	Super::ResetAttack();
@@ -103,6 +89,15 @@ void AEnemyCharacter::ResetAttack()
 	EnemyController->GetBlackboardComponent()->SetValueAsBool(TEXT("CanRunTree"), true);
 }
 
+// Deduct damage from health and update gameplay as needed
+void AEnemyCharacter::TakeDamage(FAttackAnimation AttackAnimation, FVector AttackLocation)
+{
+	Super::TakeDamage(AttackAnimation, AttackLocation); 
+
+	EnemyController->GetBlackboardComponent()->ClearValue(TEXT("CanRunTree"));
+}
+
+// Apply effects after the character has finished their death animation 
 void AEnemyCharacter::AfterDeath()
 {
 	Super::AfterDeath();
@@ -111,12 +106,16 @@ void AEnemyCharacter::AfterDeath()
 	this->Destroy();
 }
 
-void AEnemyCharacter::TakeDamage(FAttackAnimation AttackAnimation, FVector AttackLocation)
+// Called when character runs out of health
+void AEnemyCharacter::OnDeath()
 {
-	Super::TakeDamage(AttackAnimation, AttackLocation); 
+	Super::OnDeath();
 
-	EnemyController->GetBlackboardComponent()->SetValueAsBool(TEXT("SeePlayer"), true);
-	EnemyController->GetBlackboardComponent()->ClearValue(TEXT("CanRunTree"));
+	LockOnTarget->SetVisibility(false);
+	HealthBar->SetVisibility(false);
+
+	if (PlayerReference->GetNearbyEnemies().Contains(this))
+		PlayerReference->GetNearbyEnemies().Remove(this);
 }
 
 // Calcualte if the player is within the enemy's search radius
@@ -163,7 +162,7 @@ bool AEnemyCharacter::IsPlayerBlocked()
 }
 
 // Calulate if the player is within attacking distance
-bool AEnemyCharacter::PlayerWithinAttackRadius()
+bool AEnemyCharacter::IsPlayerWithinAttackRadius()
 {
 	return FVector::Dist(GetActorLocation(), PlayerReference->GetActorLocation()) <= AttackRadius;
 }

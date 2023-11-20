@@ -17,6 +17,7 @@ EBTNodeResult::Type UBTTask_Move::ExecuteTask(UBehaviorTreeComponent& OwnerComp,
 	if (EnemyController)
 	{
 		EnemyController->Move(EnemyController->GetBlackboardComponent()->GetValueAsVector(GetSelectedBlackboardKey()));
+
 		return EBTNodeResult::Succeeded;
 	}
 	else

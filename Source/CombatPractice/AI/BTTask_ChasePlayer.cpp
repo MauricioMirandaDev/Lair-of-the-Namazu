@@ -1,6 +1,5 @@
 
 #include "BTTask_ChasePlayer.h"
-#include "BehaviorTree/BlackboardComponent.h"
 #include "CombatPractice/AI/EnemyAIController.h"
 
 // Set default values
@@ -17,7 +16,8 @@ EBTNodeResult::Type UBTTask_ChasePlayer::ExecuteTask(UBehaviorTreeComponent& Own
 	if (EnemyController)
 	{
 		EnemyController->ChasePlayer();
-		return EBTNodeResult::Succeeded;
+
+		return EBTNodeResult::Succeeded; 
 	}
 	else
 		return EBTNodeResult::Failed;

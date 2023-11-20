@@ -1,10 +1,9 @@
 
 #include "EnemyAIController.h"
-#include "BehaviorTree/BlackboardComponent.h"
 #include "BehaviorTree/BehaviorTree.h"
+#include "BehaviorTree/BlackboardComponent.h"
 #include "CombatPractice/Characters/EnemyCharacter.h"
 #include "CombatPractice/Characters/PlayerCharacter.h"
-#include "Components/CapsuleComponent.h"
 
 // Set default values
 AEnemyAIController::AEnemyAIController()
@@ -21,13 +20,13 @@ void AEnemyAIController::BeginPlay()
 	EnemyOwner = Cast<AEnemyCharacter>(GetPawn());
 	if (EnemyOwner == nullptr)
 		return; 
-
+	
 	if (BehaviorTree)
 	{
 		RunBehaviorTree(BehaviorTree);
 
-		GetBlackboardComponent()->SetValueAsBool(TEXT("CanRunTree"), true); 
 		GetBlackboardComponent()->SetValueAsVector(TEXT("StartLocation"), GetPawn()->GetActorLocation());
+		GetBlackboardComponent()->SetValueAsBool(TEXT("CanRunTree"), true);
 	}
 }
 
@@ -37,16 +36,13 @@ void AEnemyAIController::Tick(float DeltaSeconds)
 	Super::Tick(DeltaSeconds);
 }
 
-UBehaviorTree* AEnemyAIController::GetBehaviorTree()
-{
-	return BehaviorTree;
-}
-
+// Getter function to access the enemy who owns this controller
 AEnemyCharacter* AEnemyAIController::GetEnemyOwner()
 {
 	return EnemyOwner;
 }
 
+// Getter function to access the player's location 
 FVector AEnemyAIController::GetPlayerLocation()
 {
 	if (EnemyOwner)
@@ -55,19 +51,24 @@ FVector AEnemyAIController::GetPlayerLocation()
 		return FVector(0.0f);
 }
 
+// Set the enemy to chase the player
 void AEnemyAIController::ChasePlayer()
-{
+{	
 	if (EnemyOwner->GetCombatState() == ECombatState::COMBAT_Neutral)
-		MoveToActor(EnemyOwner->GetPlayerReference(), EnemyOwner->AttackRadius - 100.0f, false, true, true, 0, true);
+	{
+		GetPathFollowingComponent()->SetActive(true, true);
+		MoveToActor(EnemyOwner->GetPlayerReference(), EnemyOwner->GetAttackRadius() - 100.0f, true, true, true, 0, true);
+	}
 }
 
+// Set the enemy to move to the following location 
 void AEnemyAIController::Move(FVector Destination)
 {
 	if (EnemyOwner->GetCombatState() == ECombatState::COMBAT_Neutral)
 		MoveToLocation(Destination, 1.0f, true, true, true, true, 0, true);
 }
 
-// Perform a line of sight calculation to determine if the enemy can see the player
+// Call functions to perform line of sight calculation towards player
 bool AEnemyAIController::CanSeePlayer()
 {
 	if (EnemyOwner)
@@ -76,7 +77,7 @@ bool AEnemyAIController::CanSeePlayer()
 		return false;
 }
 
-// Perform a check to see if the player is located behind the enemy
+// Call functions to check if player is standing behind enemy
 bool AEnemyAIController::CanSensePlayerBehind()
 {
 	if (EnemyOwner)
@@ -85,6 +86,7 @@ bool AEnemyAIController::CanSensePlayerBehind()
 		return false;
 }
 
+// Call function to check if player has died
 bool AEnemyAIController::IsPlayerDead()
 {
 	if (EnemyOwner)
@@ -93,14 +95,25 @@ bool AEnemyAIController::IsPlayerDead()
 		return false;
 }
 
-bool AEnemyAIController::CanAttack()
+// Call function to check if the owning enemy had died
+bool AEnemyAIController::IsSelfDead()
 {
 	if (EnemyOwner)
-		return EnemyOwner->PlayerWithinAttackRadius(); 
+		return EnemyOwner->IsDead();
 	else
 		return false;
 }
 
+// Call function to check if the enemy is ready to attack
+bool AEnemyAIController::CanAttack()
+{
+	if (EnemyOwner)
+		return EnemyOwner->IsPlayerWithinAttackRadius() && EnemyOwner->GetCombatState() == ECombatState::COMBAT_Neutral; 
+	else
+		return false;
+}
+
+// Call function to perform attack animation 
 void AEnemyAIController::StartAttackAnimation(FAttackAnimation AttackAnim)
 {
 	if (EnemyOwner->GetCombatState() == ECombatState::COMBAT_Neutral)

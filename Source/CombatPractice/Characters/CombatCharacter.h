@@ -2,8 +2,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "CombatPractice/Characters/AttackAnimation.h"
 #include "GameFramework/Character.h"
+#include "CombatPractice/Characters/AttackAnimation.h"
 #include "CombatCharacter.generated.h"
 
 class AWeapon;
@@ -38,7 +38,6 @@ public:
 
 	ECombatState GetCombatState(); 
 
-	UFUNCTION(BlueprintCallable)
 	FAttackAnimation GetCurrentAttackAnim();
 
 	// Setter functions
@@ -47,19 +46,16 @@ public:
 	void SetCurrentAttackAnim(FAttackAnimation NewAnim);
 
 	// Functions used for combat
-	virtual void SetMovement(bool bPauseMovement); 
+	virtual void UpdateMovement(bool bPauseMovement); 
 
 	virtual void ResetAttack();
 
 	void ForwardThrust();
 
 	// Functions used for health system
-	virtual void AfterDeath();
-
 	virtual	void TakeDamage(FAttackAnimation AttackAnimation, FVector AttackLocation);
 
-	UFUNCTION(BlueprintCallable)
-	void PlayAttackAnim(FAttackAnimation AttackAnimation);
+	virtual void AfterDeath();
 
 	bool IsDead();
 
@@ -74,9 +70,12 @@ protected:
 	UPROPERTY(BlueprintReadOnly, Category = "Combat", meta = (AllowPrivateAccess = "true"))
 	ECombatState CombatState; 
 
-	virtual void OnDeath();
+	void PlayAttackAnim(FAttackAnimation AttackAnimation);
 
 	FAttackAnimation CurrentAttackAnimation;
+
+	// Function used for health system 
+	virtual void OnDeath();
 
 private: 
 	// Component used for combat

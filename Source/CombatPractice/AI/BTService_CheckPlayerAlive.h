@@ -17,4 +17,12 @@ public:
 protected:
 	// Update next tick
 	virtual void TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds) override;
+
+private:
+	// Blackboard keys 
+	UPROPERTY(EditAnywhere, Category = "Blackboard", meta = (AllowPrivateAccess = "true"))
+	FBlackboardKeySelector IsPlayerDead; 
+
+	UPROPERTY(EditAnywhere, Category = "Blackboard", meta = (AllowPrivateAccess = "true"))
+	FBlackboardKeySelector IsSelfDead;
 };

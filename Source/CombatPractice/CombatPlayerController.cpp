@@ -25,6 +25,8 @@ void ACombatPlayerController::BeginPlay()
 	SetInputMode(FInputModeGameOnly());
 
 	Player = Cast<APlayerCharacter>(GetPawn());
+	if (Player == nullptr)
+		return; 
 }
 
 // Called to bind functionality to input
@@ -70,7 +72,7 @@ void ACombatPlayerController::Move(const FInputActionValue& Value)
 	FVector ForwardDirection = UKismetMathLibrary::GetForwardVector(FRotator(0.0f, GetControlRotation().Yaw, 0.0f));
 	FVector RightDirection = UKismetMathLibrary::GetRightVector(FRotator(0.0f, GetControlRotation().Yaw, GetControlRotation().Roll));
 
-	if (Player && Player->CombatState == ECombatState::COMBAT_Neutral)
+	if (Player->GetCombatState() == ECombatState::COMBAT_Neutral)
 	{
 		Player->AddMovementInput(ForwardDirection, MovementValue.Y);
 		Player->AddMovementInput(RightDirection, MovementValue.X); 
@@ -80,7 +82,7 @@ void ACombatPlayerController::Move(const FInputActionValue& Value)
 // Call jump functions from player class
 void ACombatPlayerController::CallJump()
 {
-	if (Player)
+	if (Player->GetCombatState() == ECombatState::COMBAT_Neutral)
 		Player->Jump(); 
 }
 
@@ -102,14 +104,14 @@ void ACombatPlayerController::Look(const FInputActionValue& Value)
 // Call light attack from player class 
 void ACombatPlayerController::CallLightAttack()
 {
-	if (Player)
+	if (Player->GetCombatState() == ECombatState::COMBAT_Neutral)
 		Player->LightAttackPressed();
 }
 
 // Call heavy attack from player class
 void ACombatPlayerController::CallHeavyAttack()
 {
-	if (Player)
+	if (Player->GetCombatState() == ECombatState::COMBAT_Neutral)
 		Player->HeavyAttackPressed(); 
 }
 

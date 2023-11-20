@@ -15,7 +15,11 @@ EBTNodeResult::Type UBTTask_ClearBlackboardKey::ExecuteTask(UBehaviorTreeCompone
 	Super::ExecuteTask(OwnerComp, NodeMemory);
 
 	if (EnemyController)
+	{
 		EnemyController->GetBlackboardComponent()->ClearValue(GetSelectedBlackboardKey());
 
-	return EBTNodeResult::Succeeded;
+		return EBTNodeResult::Succeeded;
+	}
+	else
+		return EBTNodeResult::Failed;
 }

@@ -18,8 +18,6 @@ protected:
 	// Update next tick
 	virtual void TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds) override;
 
-	// Reference to the enemy who is performing this service 
-	class AEnemyCharacter* Enemy; 
-
+	// Reference to the controller performing this service 
 	class AEnemyAIController* EnemyController;
 };

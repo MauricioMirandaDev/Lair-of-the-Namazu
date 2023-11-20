@@ -8,7 +8,7 @@ public class CombatPractice : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 	
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "GameplayTasks", "UMG", "EnhancedInput", "CableComponent" });
+		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "AIModule", "GameplayTasks", "UMG", "EnhancedInput", "CableComponent" });
 
 		PrivateDependencyModuleNames.AddRange(new string[] { });
 

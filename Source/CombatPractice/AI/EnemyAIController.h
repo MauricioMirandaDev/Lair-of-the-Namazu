@@ -7,7 +7,6 @@
 #include "EnemyAIController.generated.h"
 
 class AEnemyCharacter; 
-class UBehaviorTree; 
 
 UCLASS()
 class COMBATPRACTICE_API AEnemyAIController : public AAIController
@@ -22,8 +21,6 @@ public:
 	virtual void Tick(float DeltaSeconds) override;
 
 	// Getter functions
-	UBehaviorTree* GetBehaviorTree(); 
-
 	AEnemyCharacter* GetEnemyOwner(); 
 
 	FVector GetPlayerLocation(); 
@@ -41,6 +38,8 @@ public:
 	// Function to handle combat
 	bool IsPlayerDead(); 
 
+	bool IsSelfDead(); 
+
 	bool CanAttack(); 
 
 	void StartAttackAnimation(FAttackAnimation AttackAnim); 
@@ -52,7 +51,8 @@ protected:
 private:
 	// This enemy's behavior tree
 	UPROPERTY(EditDefaultsOnly, Category = "Behavior Tree", meta = (AllowPrivateAccess = "true"))
-	UBehaviorTree* BehaviorTree;
+	class UBehaviorTree* BehaviorTree;
 
+	// Enemy who owns this controller 
 	AEnemyCharacter* EnemyOwner; 
 };

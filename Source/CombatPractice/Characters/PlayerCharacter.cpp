@@ -18,8 +18,8 @@ APlayerCharacter::APlayerCharacter()
 	bJumpPressed = false; 
 	LockOnCameraOffset = 500.0f;
 	MaxLockOnDistance = 100.0f;
-	LockedOnEnemy = nullptr; 
 	bIsLockedOn = false;
+	LockedOnEnemy = nullptr; 
 	RopeLength = 500.0f;
 
 	// Create spring arm component and set default values
@@ -52,6 +52,52 @@ void APlayerCharacter::BeginPlay()
 	DefaultWalkSpeed = GetCharacterMovement()->MaxWalkSpeed; 
 }
 
+// Called every frame
+void APlayerCharacter::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+
+	LockOnBehavior();
+}
+
+// Getter function to access the array of enemies the player and lock onto
+TArray<AEnemyCharacter*> APlayerCharacter::GetNearbyEnemies()
+{
+	return NearbyEnemies; 
+}
+
+// Set this character to be able to move or not 
+void APlayerCharacter::UpdateMovement(bool bPauseMovement)
+{
+	Super::UpdateMovement(bPauseMovement);
+
+	if (bPauseMovement)
+		GetCharacterMovement()->MaxWalkSpeed = 0.0f;
+	else
+		GetCharacterMovement()->MaxWalkSpeed = DefaultWalkSpeed; 
+}
+
+// Used to reset variables a character uses during combat
+void APlayerCharacter::ResetAttack()
+{
+	Super::ResetAttack();
+}
+
+// Deduct damage from health and update gameplay as needed
+void APlayerCharacter::TakeDamage(FAttackAnimation AttackAnimation, FVector AttackLocation)
+{
+	Super::TakeDamage(AttackAnimation, AttackLocation); 
+}
+
+// Apply effects after the character has finished their death animation 
+void APlayerCharacter::AfterDeath()
+{
+	Super::AfterDeath();
+
+	if (ACombatPracticeGameModeBase* GameMode = Cast<ACombatPracticeGameModeBase>(UGameplayStatics::GetGameMode(GetWorld())))
+		GameMode->GameOver();
+}
+
 // Called whenever the player performs a jump 
 void APlayerCharacter::Jump()
 {
@@ -69,19 +115,6 @@ void APlayerCharacter::OnMovementModeChanged(EMovementMode PrevMovementMode, uin
 		bJumpPressed = false;
 }
 
-// Called every frame
-void APlayerCharacter::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-
-	LockOnBehavior();
-}
-
-TArray<AEnemyCharacter*> APlayerCharacter::GetNearbyEnemies()
-{
-	return NearbyEnemies; 
-}
-
 // Called when character runs out of health
 void APlayerCharacter::OnDeath()
 {
@@ -94,70 +127,38 @@ void APlayerCharacter::OnDeath()
 	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
 }
 
-void APlayerCharacter::TakeDamage(FAttackAnimation AttackAnimation, FVector AttackLocation)
-{
-	Super::TakeDamage(AttackAnimation, AttackLocation); 
-}
-
-void APlayerCharacter::SetMovement(bool bPauseMovement)
-{
-	Super::SetMovement(bPauseMovement);
-
-	if (bPauseMovement)
-		GetCharacterMovement()->MaxWalkSpeed = 0.0f;
-	else
-		GetCharacterMovement()->MaxWalkSpeed = DefaultWalkSpeed; 
-}
-
-// Used to reset variables a character uses during combat
-void APlayerCharacter::ResetAttack()
-{
-	Super::ResetAttack();
-}
-
-void APlayerCharacter::AfterDeath()
-{
-	Super::AfterDeath();
-
-	if (ACombatPracticeGameModeBase* GameMode = Cast<ACombatPracticeGameModeBase>(UGameplayStatics::GetGameMode(GetWorld())))
-		GameMode->GameOver();
-}
-
 // Perform animation when player inputs light attack
 void APlayerCharacter::LightAttackPressed()
 {
-	if (CombatState == ECombatState::COMBAT_Neutral)
+	if (GetCharacterMovement()->IsFalling())
 	{
-		if (GetCharacterMovement()->IsFalling())
-		{
-			PlayAttackAnim(JumpAttack);
-		}
-		else
-		{
-			int32 SelectedVariation = FMath::RandRange(0, LightAttackVariations.Num() - 1);
+		PlayAttackAnim(JumpAttack);
+	}
+	else
+	{
+		int32 SelectedVariation = FMath::RandRange(0, LightAttackVariations.Num() - 1);
 
-			switch (SelectedVariation)
-			{
-			case 0:
-				LightAttack.Animation = LightAttackVariations[0];
-				break;
-			case 1:
-				LightAttack.Animation = LightAttackVariations[1];
-				break;
-			default:
-				LightAttack.Animation = LightAttackVariations[LightAttackVariations.Num() - 1];
-				break;
-			}
-
-			PlayAttackAnim(LightAttack);
+		switch (SelectedVariation)
+		{
+		case 0:
+			LightAttack.Animation = LightAttackVariations[0];
+			break;
+		case 1:
+			LightAttack.Animation = LightAttackVariations[1];
+			break;
+		default:
+			LightAttack.Animation = LightAttackVariations[LightAttackVariations.Num() - 1];
+			break;
 		}
+
+		PlayAttackAnim(LightAttack);
 	}
 }
 
 // Perform animation when player inputs heavy attack
 void APlayerCharacter::HeavyAttackPressed()
 {
-	if (CombatState == ECombatState::COMBAT_Neutral && !GetCharacterMovement()->IsFalling())
+	if (!GetCharacterMovement()->IsFalling())
 		PlayAttackAnim(HeavyAttack);
 }
 

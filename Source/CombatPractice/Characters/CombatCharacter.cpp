@@ -15,6 +15,7 @@ ACombatCharacter::ACombatCharacter()
 	SetCanBeDamaged(true);
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 	CombatState = ECombatState::COMBAT_Neutral; 
+	CurrentAttackAnimation = FAttackAnimation(); 
 	WeaponClass = nullptr;
 	MaxHealth = 100.0f;
 }
@@ -47,6 +48,7 @@ AWeapon* ACombatCharacter::GetWeapon()
 	return Weapon;
 }
 
+// Getter function to access this character's current state 
 ECombatState ACombatCharacter::GetCombatState()
 {
 	return CombatState;
@@ -64,12 +66,14 @@ void ACombatCharacter::SetCombatState(ECombatState NewState)
 	CombatState = NewState;
 }
 
+// Setter function to update this character's current attack animation 
 void ACombatCharacter::SetCurrentAttackAnim(FAttackAnimation NewAnim)
 {
 	CurrentAttackAnimation = NewAnim;
 }
 
-void ACombatCharacter::SetMovement(bool bPauseMovement)
+// Set this character to be able to move or not 
+void ACombatCharacter::UpdateMovement(bool bPauseMovement)
 {
 
 }
@@ -80,35 +84,19 @@ void ACombatCharacter::ResetAttack()
 	CurrentAttackAnimation = FAttackAnimation();
 }
 
-void ACombatCharacter::PlayAttackAnim(FAttackAnimation AttackAnimation)
-{
-	PlayAnimMontage(AttackAnimation.Animation, 1.0f, TEXT("None"));
-	CurrentAttackAnimation = AttackAnimation;
-}
-
 // Aply forward velocity when performing attack
 void ACombatCharacter::ForwardThrust()
 {
 	LaunchCharacter(GetActorForwardVector() * CurrentAttackAnimation.ForwardThrustStrength, true, true);
 }
 
-// Called when character runs out of health
-void ACombatCharacter::OnDeath()
-{
-	CombatState = ECombatState::COMBAT_Dead;
-	GetCapsuleComponent()->SetCollisionProfileName(TEXT("NoCollision"), true);
-	GetCharacterMovement()->SetActive(false, true); 
-}
-
-void ACombatCharacter::AfterDeath()
-{
-
-}
-
 // Deduct damage from health and update gameplay as needed
 void ACombatCharacter::TakeDamage(FAttackAnimation AttackAnimation, FVector AttackLocation)
 {
 	CurrentHealth -= AttackAnimation.DamageAmount;
+
+	// Deactivate the weapon's hitbox 
+	Weapon->UpdateHitbox(false, FVector(0.0f, 0.0f, 0.0f));
 
 	// Rotate to face attacking character
 	FRotator LookAtRotation = (AttackLocation - GetActorLocation()).Rotation();
@@ -138,8 +126,29 @@ void ACombatCharacter::TakeDamage(FAttackAnimation AttackAnimation, FVector Atta
 	}
 }
 
+// Apply effects after the character has finished their death animation 
+void ACombatCharacter::AfterDeath()
+{
+
+}
+
 // Determines if the character has lost all health
 bool ACombatCharacter::IsDead()
 {
 	return CurrentHealth <= 0.0f;
+}
+
+// Play the following attack animation 
+void ACombatCharacter::PlayAttackAnim(FAttackAnimation AttackAnimation)
+{
+	PlayAnimMontage(AttackAnimation.Animation, 1.0f, TEXT("None"));
+	CurrentAttackAnimation = AttackAnimation;
+}
+
+// Called when character runs out of health
+void ACombatCharacter::OnDeath()
+{
+	CombatState = ECombatState::COMBAT_Dead;
+	GetCapsuleComponent()->SetCollisionProfileName(TEXT("NoCollision"), true);
+	GetCharacterMovement()->SetActive(false, true); 
 }

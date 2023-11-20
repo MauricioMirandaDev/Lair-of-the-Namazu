@@ -1,6 +1,6 @@
 
 #include "CombatAnimNotify_AfterDeath.h"
-#include "CombatPractice/Characters/EnemyCharacter.h"
+#include "CombatPractice/Characters/CombatCharacter.h"
 
 UCombatAnimNotify_AfterDeath::UCombatAnimNotify_AfterDeath()
 {

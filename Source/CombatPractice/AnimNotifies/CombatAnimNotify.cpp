@@ -14,5 +14,10 @@ void UCombatAnimNotify::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBa
 	Super::Notify(MeshComp, Animation);
 
 	if (MeshComp && Animation)
+	{
 		OwnerReference = Cast<ACombatCharacter>(MeshComp->GetOwner());	
+
+		if (OwnerReference == nullptr)
+			return; 
+	}
 }

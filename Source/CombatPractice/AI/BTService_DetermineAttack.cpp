@@ -2,7 +2,6 @@
 #include "BTService_DetermineAttack.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "CombatPractice/AI/EnemyAIController.h"
-#include "CombatPractice/Characters/EnemyCharacter.h"
 
 // Set default values
 UBTService_DetermineAttack::UBTService_DetermineAttack()

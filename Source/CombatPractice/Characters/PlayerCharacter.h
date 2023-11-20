@@ -23,10 +23,13 @@ public:
 	// Getter function
 	TArray<AEnemyCharacter*> GetNearbyEnemies();
 
-	// Function used for combat
-	virtual void SetMovement(bool bPauseMovement) override; 
+	// Functions used for combat
+	virtual void UpdateMovement(bool bPauseMovement) override;
 
 	virtual void ResetAttack() override;
+
+	// Functions used for health system 
+	virtual void TakeDamage(FAttackAnimation AttackAnimation, FVector AttackLocation) override;
 
 	virtual void AfterDeath() override; 
 
@@ -42,10 +45,8 @@ protected:
 
 	virtual void OnMovementModeChanged(EMovementMode PrevMovementMode, uint8 PreviousCustomMode) override; 
 
-	// Functions used for combat
+	// Function used for health system 
 	virtual void OnDeath() override; 
-
-	virtual void TakeDamage(FAttackAnimation AttackAnimation, FVector AttackLocation) override;
 
 private:
 	// Components for camera control

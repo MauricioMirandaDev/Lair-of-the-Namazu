@@ -2,8 +2,6 @@
 #include "BTService_CheckBehind.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "CombatPractice/AI/EnemyAIController.h"
-#include "CombatPractice/Characters/EnemyCharacter.h"
-#include "CombatPractice/Characters/PlayerCharacter.h"
 
 // Set default values
 UBTService_CheckBehind::UBTService_CheckBehind()

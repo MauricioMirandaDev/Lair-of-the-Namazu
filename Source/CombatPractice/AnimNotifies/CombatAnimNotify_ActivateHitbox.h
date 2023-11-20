@@ -24,6 +24,7 @@ private:
 	UPROPERTY(EditAnywhere, meta = (AllowPrivateAccess = "true"))
 	bool bActivateHitbox; 
 
+	// The new dimensions of the hitbox 
 	UPROPERTY(EditAnywhere, meta = (AllowPrivateAccess = "true"))
 	FVector NewBoxExtent;
 };

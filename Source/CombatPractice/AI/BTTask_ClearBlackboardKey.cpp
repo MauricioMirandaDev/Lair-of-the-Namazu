@@ -1,7 +1,7 @@
 
 #include "BTTask_ClearBlackboardKey.h"
 #include "BehaviorTree/BlackboardComponent.h"
-#include "CombatPractice/AI/EnemyAIController.h"
+#include "CombatPractice/Controllers/EnemyAIController.h"
 
 // Set default values
 UBTTask_ClearBlackboardKey::UBTTask_ClearBlackboardKey()

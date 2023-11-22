@@ -1,8 +1,8 @@
 
 #include "EnemyWeapon.h"
 #include "BehaviorTree/BlackboardComponent.h"
-#include "CombatPractice/AI/EnemyAIController.h"
 #include "CombatPractice/Characters/CombatCharacter.h"
+#include "CombatPractice/Controllers/EnemyAIController.h"
 #include "Components/BoxComponent.h"
 
 AEnemyWeapon::AEnemyWeapon()

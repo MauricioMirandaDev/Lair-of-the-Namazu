@@ -94,6 +94,7 @@ void ACombatCharacter::ForwardThrust()
 void ACombatCharacter::TakeDamage(FAttackAnimation AttackAnimation, FVector AttackLocation)
 {
 	CurrentHealth -= AttackAnimation.DamageAmount;
+	StopAnimMontage(CurrentAttackAnimation.Animation);
 
 	// Deactivate the weapon's hitbox 
 	Weapon->UpdateHitbox(false, FVector(0.0f, 0.0f, 0.0f));

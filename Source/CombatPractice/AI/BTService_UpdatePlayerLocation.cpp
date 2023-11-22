@@ -1,7 +1,7 @@
 
 #include "BTService_UpdatePlayerLocation.h"
 #include "BehaviorTree/BlackboardComponent.h"
-#include "CombatPractice/AI/EnemyAIController.h"
+#include "CombatPractice/Controllers/EnemyAIController.h"
 
 // Set default values
 UBTService_UpdatePlayerLocation::UBTService_UpdatePlayerLocation()

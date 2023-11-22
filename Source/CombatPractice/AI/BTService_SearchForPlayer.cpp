@@ -1,7 +1,7 @@
 
 #include "BTService_SearchForPlayer.h"
 #include "BehaviorTree/BlackboardComponent.h"
-#include "CombatPractice/AI/EnemyAIController.h"
+#include "CombatPractice/Controllers/EnemyAIController.h"
 
 // Set default values
 UBTService_SearchForPlayer::UBTService_SearchForPlayer()

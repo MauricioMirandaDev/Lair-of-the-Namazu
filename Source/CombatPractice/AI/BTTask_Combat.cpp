@@ -1,6 +1,6 @@
 
 #include "BTTask_Combat.h"
-#include "CombatPractice/AI/EnemyAIController.h"
+#include "CombatPractice/Controllers/EnemyAIController.h"
 
 // Set default values
 UBTTask_Combat::UBTTask_Combat()

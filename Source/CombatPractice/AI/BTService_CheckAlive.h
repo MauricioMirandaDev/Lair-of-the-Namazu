@@ -3,7 +3,7 @@
 
 #include "CoreMinimal.h"
 #include "BTService_Combat.h"
-#include "BTService_CheckPlayerAlive.generated.h"
+#include "BTService_CheckAlive.generated.h"
 
 UCLASS()
 class COMBATPRACTICE_API UBTService_CheckPlayerAlive : public UBTService_Combat

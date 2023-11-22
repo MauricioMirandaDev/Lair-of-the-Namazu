@@ -1,7 +1,7 @@
 
 #include "BTTask_Move.h"
 #include "BehaviorTree/BlackboardComponent.h"
-#include "CombatPractice/AI/EnemyAIController.h"
+#include "CombatPractice/Controllers/EnemyAIController.h"
 
 // Set default values
 UBTTask_Move::UBTTask_Move()

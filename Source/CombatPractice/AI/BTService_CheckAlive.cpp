@@ -1,7 +1,7 @@
 
-#include "BTService_CheckPlayerAlive.h"
+#include "BTService_CheckAlive.h"
 #include "BehaviorTree/BlackboardComponent.h"
-#include "CombatPractice/AI/EnemyAIController.h"
+#include "CombatPractice/Controllers/EnemyAIController.h"
 
 // Set default values
 UBTService_CheckPlayerAlive::UBTService_CheckPlayerAlive()

@@ -23,10 +23,13 @@ void AEnemyWeapon::BeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* Oth
 {
 	Super::BeginOverlap(OverlappedComp, OtherActor, OtherComp, OtherBodyIndex, bFromSweep, SweepResult);
 
-	if (AEnemyAIController* AIController = Cast<AEnemyAIController>(OwningCharacter->GetController()))
+	if (AEnemyAIController* EnemyController = Cast<AEnemyAIController>(OwningCharacter->GetController()))
 	{
-		if (!AIController->GetBlackboardComponent()->GetValueAsBool(TEXT("HitSuccessful")))
-			AIController->GetBlackboardComponent()->SetValueAsBool(TEXT("HitSuccessful"), true);
+		if (!EnemyController->GetBlackboardComponent()->GetValueAsBool(TEXT("IsHitSuccessful")))
+		{
+			OwningCharacter->SetCombatState(ECombatState::COMBAT_Neutral);
+			EnemyController->GetBlackboardComponent()->SetValueAsBool(TEXT("IsHitSuccessful"), true);
+		}
 		else
 			return;
 	}

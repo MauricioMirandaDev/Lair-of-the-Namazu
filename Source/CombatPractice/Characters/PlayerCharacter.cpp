@@ -10,6 +10,7 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetSystemLibrary.h"
+#include "Kismet/KismetMathLibrary.h"
 
 // Sets default values
 APlayerCharacter::APlayerCharacter()
@@ -60,12 +61,6 @@ void APlayerCharacter::Tick(float DeltaTime)
 	LockOnBehavior();
 }
 
-// Getter function to access the array of enemies the player and lock onto
-TArray<AEnemyCharacter*> APlayerCharacter::GetNearbyEnemies()
-{
-	return NearbyEnemies; 
-}
-
 // Set this character to be able to move or not 
 void APlayerCharacter::UpdateMovement(bool bPauseMovement)
 {
@@ -87,6 +82,8 @@ void APlayerCharacter::ResetAttack()
 void APlayerCharacter::TakeDamage(FAttackAnimation AttackAnimation, FVector AttackLocation)
 {
 	Super::TakeDamage(AttackAnimation, AttackLocation); 
+
+	StopLockingOn(); 
 }
 
 // Apply effects after the character has finished their death animation 
@@ -96,6 +93,16 @@ void APlayerCharacter::AfterDeath()
 
 	if (ACombatPracticeGameModeBase* GameMode = Cast<ACombatPracticeGameModeBase>(UGameplayStatics::GetGameMode(GetWorld())))
 		GameMode->GameOver();
+}
+
+// Remove the designated enemy from NearbyEnemies if it is present in the array; stop locking onto the enemy if it was previously 
+void APlayerCharacter::RemoveEnemyFromNearbyEnemies(AActor* Enemy)
+{
+	if (NearbyEnemies.Contains(Enemy))
+		NearbyEnemies.Remove(Enemy); 
+
+	if (LockedOnEnemy == Enemy)
+		LockedOnEnemy = nullptr; 
 }
 
 // Called whenever the player performs a jump 
@@ -162,66 +169,105 @@ void APlayerCharacter::HeavyAttackPressed()
 		PlayAttackAnim(HeavyAttack);
 }
 
-// Trace from the viewport to find all nearby enemies
-void APlayerCharacter::TraceForEnemies()
-{
-	// Variables for trace
-	TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypes;
-	ObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECC_GameTraceChannel1));
-
-	TArray<AActor*> ActorsToIgnore;
-	ActorsToIgnore.Add(this);
-	
-	TArray<AActor*> OutActors;
-
-	FVector2D ViewportSize;
-	GEngine->GameViewport->GetViewportSize(OUT ViewportSize);
-
-	// Get all overlapped enemies within distance
-	UKismetSystemLibrary::BoxOverlapActors(GetWorld(), GetActorLocation() + (Camera->GetForwardVector() * MaxLockOnDistance),
-										   FVector(MaxLockOnDistance, ViewportSize.X, ViewportSize.Y), ObjectTypes, AEnemyCharacter::StaticClass(), ActorsToIgnore,
-										   OutActors);
-
-	for (AActor* Actor : OutActors)
-	{
-		if (AEnemyCharacter* Enemy = Cast<AEnemyCharacter>(Actor))
-			NearbyEnemies.Add(Enemy);
-	}
-}
-
-// Determine the closest enemy to the player
-AEnemyCharacter* APlayerCharacter::DetermineClosestEnemy()
-{
-	AEnemyCharacter* ClosestEnemy = NearbyEnemies[0];
-
-	for (AEnemyCharacter* Enemy : NearbyEnemies)
-	{
-		if (FVector::Dist(GetActorLocation(), Enemy->GetActorLocation()) < FVector::Dist(GetActorLocation(), ClosestEnemy->GetActorLocation()))
-			ClosestEnemy = Enemy;
-	}
-
-	return ClosestEnemy;
-}
-
 // Lock onto a nearby enemy or stop locking on; enables Tick() when the player locks onto an enemy and disables Tick() when the player stops
 void APlayerCharacter::LockOntoEnemy()
 {
 	TraceForEnemies();
 
 	if (!bIsLockedOn && NearbyEnemies.Num() > 0)
+		BeginLockingOn(); 
+	else
+		StopLockingOn(); 
+}
+
+// Trace from the viewport to find all nearby enemies
+void APlayerCharacter::TraceForEnemies()
+{
+	// Variables for traces 
+	TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypes;
+	ObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECC_GameTraceChannel1));
+
+	TArray<AActor*> OutActors; 
+
+	TArray<AActor*> ActorsToIgnore;
+	ActorsToIgnore.Add(this);
+
+	FVector2D ViewportSize;
+	GEngine->GameViewport->GetViewportSize(OUT ViewportSize);
+
+	FVector CameraForward = UKismetMathLibrary::GetForwardVector(Camera->GetComponentRotation());
+
+	FHitResult HitResult; 
+
+	// Get all overlapped enemies within distance
+	UKismetSystemLibrary::BoxOverlapActors(GetWorld(), GetActorLocation() + (CameraForward * MaxLockOnDistance), FVector(MaxLockOnDistance, ViewportSize.X, ViewportSize.Y), 
+										   ObjectTypes, AEnemyCharacter::StaticClass(), ActorsToIgnore, OutActors);
+
+	// Save all detected enemies; remove the enemy if line of sight to it is blocked
+	for (AActor* Enemy : OutActors)
 	{
-		bIsLockedOn = true;
-		LockedOnEnemy = DetermineClosestEnemy();
-		LockedOnEnemy->GetLockOnTarget()->SetVisibility(true);
-		SetActorTickEnabled(true);
+		if (!NearbyEnemies.Contains(Enemy))
+			NearbyEnemies.Add(Enemy);
+
+		UKismetSystemLibrary::LineTraceSingle(GetWorld(), GetActorLocation(), Enemy->GetActorLocation(), UEngineTypes::ConvertToTraceType(ECC_Visibility), true, ActorsToIgnore,
+											  EDrawDebugTrace::None, OUT HitResult, true); 
+
+		if (HitResult.bBlockingHit)
+			NearbyEnemies.Remove(Enemy);
 	}
+}
+
+// Determine the closest enemy to the player
+AEnemyCharacter* APlayerCharacter::DetermineClosestEnemy()
+{
+	AActor* ClosestEnemy = NearbyEnemies[0];
+
+	for (AActor* Enemy : NearbyEnemies)
+	{
+		if (FVector::Dist(GetActorLocation(), Enemy->GetActorLocation()) < FVector::Dist(GetActorLocation(), ClosestEnemy->GetActorLocation()))
+			ClosestEnemy = Enemy;
+	}
+
+	return Cast<AEnemyCharacter>(ClosestEnemy);
+}
+
+// Moves player according to locked on enemy and continues to trace for nearby enemies; disables Tick() when there are no nearby enemies
+void APlayerCharacter::LockOnBehavior()
+{
+	if (NearbyEnemies.IsEmpty())
+		StopLockingOn();
 	else
 	{
-		bIsLockedOn = false;
-		LockedOnEnemy->GetLockOnTarget()->SetVisibility(false);
-		LockedOnEnemy = nullptr;
-		SetActorTickEnabled(false);
+		// If the current locked on enemy is lost, lock onto the closest enemy next 
+		if (LockedOnEnemy == nullptr)
+		{
+			LockedOnEnemy = DetermineClosestEnemy();
+			LockedOnEnemy->GetLockOnTarget()->SetVisibility(true);
+		}
+
+		LockedOnMovement();
+		TraceForEnemies();
 	}
+}
+
+// Begin locking onto an enemy
+void APlayerCharacter::BeginLockingOn()
+{
+	bIsLockedOn = true;
+	LockedOnEnemy = DetermineClosestEnemy();
+	LockedOnEnemy->GetLockOnTarget()->SetVisibility(true);
+	SetActorTickEnabled(true);
+}
+
+// Stops locking onto an enemy
+void APlayerCharacter::StopLockingOn()
+{
+	bIsLockedOn = false;
+	if (LockedOnEnemy)
+		LockedOnEnemy->GetLockOnTarget()->SetVisibility(false);
+	LockedOnEnemy = nullptr;
+	NearbyEnemies.Empty();
+	SetActorTickEnabled(false); 
 }
 
 // Set the player and camera to always face the locked on enemy
@@ -240,30 +286,6 @@ void APlayerCharacter::LockedOnMovement()
 	GetController()->SetControlRotation(CameraToEnemy.Rotation());
 }
 
-// Moves player according to locked on enemy and continues to trace for nearby enemies; disables Tick() when there are no nearby enemies
-void APlayerCharacter::LockOnBehavior()
-{
-	if (NearbyEnemies.Num() == 0)
-	{
-		bIsLockedOn = false;
-		LockedOnEnemy->GetLockOnTarget()->SetVisibility(false);
-		LockedOnEnemy = nullptr;
-		SetActorTickEnabled(false);
-	}
-	else
-	{
-		// If the current locked on enemy dies, lock onto the nearest one next
-		if (!NearbyEnemies.Contains(LockedOnEnemy))
-		{
-			LockedOnEnemy = DetermineClosestEnemy();
-			LockedOnEnemy->GetLockOnTarget()->SetVisibility(true);
-		}
-
-		LockedOnMovement();
-		TraceForEnemies();
-	}
-}
-
 // Functions to switch between nearby enemies in both directions
 void APlayerCharacter::SwitchEnemyUp()
 {
@@ -273,9 +295,9 @@ void APlayerCharacter::SwitchEnemyUp()
 	CurrentIndex++;
 
 	if (CurrentIndex >= NearbyEnemies.Num())
-		LockedOnEnemy = NearbyEnemies[0];
+		LockedOnEnemy = Cast<AEnemyCharacter>(NearbyEnemies[0]);
 	else
-		LockedOnEnemy = NearbyEnemies[CurrentIndex];
+		LockedOnEnemy = Cast<AEnemyCharacter>(NearbyEnemies[CurrentIndex]);
 
 	LockedOnEnemy->GetLockOnTarget()->SetVisibility(true);
 }
@@ -288,9 +310,9 @@ void APlayerCharacter::SwitchEnemyDown()
 	CurrentIndex--;
 
 	if (CurrentIndex < 0)
-		LockedOnEnemy = NearbyEnemies[NearbyEnemies.Num() - 1];
+		LockedOnEnemy = Cast<AEnemyCharacter>(NearbyEnemies[NearbyEnemies.Num() - 1]);
 	else
-		LockedOnEnemy = NearbyEnemies[CurrentIndex];
+		LockedOnEnemy = Cast<AEnemyCharacter>(NearbyEnemies[CurrentIndex]);
 
 	LockedOnEnemy->GetLockOnTarget()->SetVisibility(true);
 }

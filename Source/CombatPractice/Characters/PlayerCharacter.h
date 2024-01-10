@@ -20,9 +20,6 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	// Getter function
-	TArray<AEnemyCharacter*> GetNearbyEnemies();
-
 	// Functions used for combat
 	virtual void UpdateMovement(bool bPauseMovement) override;
 
@@ -32,6 +29,9 @@ public:
 	virtual void TakeDamage(FAttackAnimation AttackAnimation, FVector AttackLocation) override;
 
 	virtual void AfterDeath() override; 
+
+	// Function used for lock on system
+	void RemoveEnemyFromNearbyEnemies(AActor* Enemy); 
 
 	// Friend class that handles input bindings
 	friend class ACombatPlayerController; 
@@ -88,21 +88,25 @@ private:
 	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	bool bIsLockedOn;
 
+	void LockOntoEnemy();
+
 	void TraceForEnemies();
 
 	AEnemyCharacter* DetermineClosestEnemy();
 
-	void LockOntoEnemy();
+	void LockOnBehavior();
+
+	void BeginLockingOn(); 
+
+	void StopLockingOn(); 
 
 	void LockedOnMovement();
-
-	void LockOnBehavior();
 
 	void SwitchEnemyUp();
 
 	void SwitchEnemyDown();
 
-	TArray<AEnemyCharacter*> NearbyEnemies;
+	TArray<AActor*> NearbyEnemies;
 
 	AEnemyCharacter* LockedOnEnemy;
 

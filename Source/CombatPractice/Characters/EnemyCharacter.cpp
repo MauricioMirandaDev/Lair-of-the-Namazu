@@ -114,8 +114,7 @@ void AEnemyCharacter::OnDeath()
 	LockOnTarget->SetVisibility(false);
 	HealthBar->SetVisibility(false);
 
-	if (PlayerReference->GetNearbyEnemies().Contains(this))
-		PlayerReference->GetNearbyEnemies().Remove(this);
+	PlayerReference->RemoveEnemyFromNearbyEnemies(this); 
 }
 
 // Calcualte if the player is within the enemy's search radius

@@ -21,6 +21,7 @@ APlayerCharacter::APlayerCharacter()
 	MaxLockOnDistance = 100.0f;
 	bIsLockedOn = false;
 	LockedOnEnemy = nullptr; 
+	bEnemyJustDefeated = false; 
 	RopeLength = 500.0f;
 
 	// Create spring arm component and set default values
@@ -96,13 +97,13 @@ void APlayerCharacter::AfterDeath()
 }
 
 // Remove the designated enemy from NearbyEnemies if it is present in the array; stop locking onto the enemy if it was previously 
-void APlayerCharacter::RemoveEnemyFromNearbyEnemies(AActor* Enemy)
+void APlayerCharacter::EnemyDefeated(AActor* Enemy)
 {
-	if (NearbyEnemies.Contains(Enemy))
-		NearbyEnemies.Remove(Enemy); 
-
 	if (LockedOnEnemy == Enemy)
+	{
 		LockedOnEnemy = nullptr; 
+		bEnemyJustDefeated = true; 
+	}
 }
 
 // Called whenever the player performs a jump 
@@ -169,25 +170,21 @@ void APlayerCharacter::HeavyAttackPressed()
 		PlayAttackAnim(HeavyAttack);
 }
 
-// Lock onto a nearby enemy or stop locking on; enables Tick() when the player locks onto an enemy and disables Tick() when the player stops
-void APlayerCharacter::LockOntoEnemy()
+// Lock onto a nearby enemy or stop locking on
+void APlayerCharacter::LockOn()
 {
-	TraceForEnemies();
-
-	if (!bIsLockedOn && NearbyEnemies.Num() > 0)
-		BeginLockingOn(); 
+	if (!bIsLockedOn)
+		BeginLockingOn();
 	else
-		StopLockingOn(); 
+		StopLockingOn();
 }
 
-// Trace from the viewport to find all nearby enemies
-void APlayerCharacter::TraceForEnemies()
+// Trace from the viewport to find an enemy that can be locked onto
+AEnemyCharacter* APlayerCharacter::FindClosestEnemy()
 {
 	// Variables for traces 
 	TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypes;
 	ObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECC_GameTraceChannel1));
-
-	TArray<AActor*> OutActors; 
 
 	TArray<AActor*> ActorsToIgnore;
 	ActorsToIgnore.Add(this);
@@ -197,76 +194,61 @@ void APlayerCharacter::TraceForEnemies()
 
 	FVector CameraForward = UKismetMathLibrary::GetForwardVector(Camera->GetComponentRotation());
 
-	FHitResult HitResult; 
+	FHitResult BoxResult, LineResult; 
 
-	// Get all overlapped enemies within distance
-	UKismetSystemLibrary::BoxOverlapActors(GetWorld(), GetActorLocation() + (CameraForward * MaxLockOnDistance), FVector(MaxLockOnDistance, ViewportSize.X, ViewportSize.Y), 
-										   ObjectTypes, AEnemyCharacter::StaticClass(), ActorsToIgnore, OutActors);
-
-	// Save all detected enemies; remove the enemy if line of sight to it is blocked
-	for (AActor* Enemy : OutActors)
+	// Perform a box trace to find the closest enemy
+	if (UKismetSystemLibrary::BoxTraceSingleForObjects(GetWorld(), GetActorLocation(), GetActorLocation() + (CameraForward * MaxLockOnDistance),
+													   FVector(10.0f, ViewportSize.X, ViewportSize.Y), CameraForward.Rotation(), ObjectTypes, true,
+		ActorsToIgnore, EDrawDebugTrace::None, OUT BoxResult, true))
 	{
-		if (!NearbyEnemies.Contains(Enemy))
-			NearbyEnemies.Add(Enemy);
-
-		UKismetSystemLibrary::LineTraceSingle(GetWorld(), GetActorLocation(), Enemy->GetActorLocation(), UEngineTypes::ConvertToTraceType(ECC_Visibility), true, ActorsToIgnore,
-											  EDrawDebugTrace::None, OUT HitResult, true); 
-
-		if (HitResult.bBlockingHit)
-			NearbyEnemies.Remove(Enemy);
+		// If can enemy is found, perform a line trace to see if anything is blocking line of sight to the enemy
+		if (!UKismetSystemLibrary::LineTraceSingle(GetWorld(), GetActorLocation(), BoxResult.ImpactPoint, UEngineTypes::ConvertToTraceType(ECC_Visibility), true, ActorsToIgnore,
+												   EDrawDebugTrace::None, OUT LineResult, true))
+			return Cast<AEnemyCharacter>(BoxResult.GetActor());
+		else
+			return nullptr; 
 	}
+	else
+		return nullptr; 
 }
 
-// Determine the closest enemy to the player
-AEnemyCharacter* APlayerCharacter::DetermineClosestEnemy()
-{
-	AActor* ClosestEnemy = NearbyEnemies[0];
-
-	for (AActor* Enemy : NearbyEnemies)
-	{
-		if (FVector::Dist(GetActorLocation(), Enemy->GetActorLocation()) < FVector::Dist(GetActorLocation(), ClosestEnemy->GetActorLocation()))
-			ClosestEnemy = Enemy;
-	}
-
-	return Cast<AEnemyCharacter>(ClosestEnemy);
-}
-
-// Moves player according to locked on enemy and continues to trace for nearby enemies; disables Tick() when there are no nearby enemies
+// Moves player based on the enemy they are locking onto
 void APlayerCharacter::LockOnBehavior()
 {
-	if (NearbyEnemies.IsEmpty())
-		StopLockingOn();
-	else
+	// If the player defeats the locked on enemy, find the next nearest enemy to lock onto or stop if there are none 
+	if (LockedOnEnemy == nullptr)
 	{
-		// If the current locked on enemy is lost, lock onto the closest enemy next 
-		if (LockedOnEnemy == nullptr)
+		if (bEnemyJustDefeated)
 		{
-			LockedOnEnemy = DetermineClosestEnemy();
-			LockedOnEnemy->GetLockOnTarget()->SetVisibility(true);
+			BeginLockingOn();
+			bEnemyJustDefeated = false;
 		}
-
+		else
+			StopLockingOn();
+	}
+	else
 		LockedOnMovement();
-		TraceForEnemies();
+}
+
+// Begin locking onto an enemy if one can be locked onto; enables Tick() 
+void APlayerCharacter::BeginLockingOn()
+{
+	LockedOnEnemy = FindClosestEnemy();
+	if (LockedOnEnemy)
+	{
+		bIsLockedOn = true;
+		LockedOnEnemy->GetLockOnTarget()->SetVisibility(true);
+		SetActorTickEnabled(true);
 	}
 }
 
-// Begin locking onto an enemy
-void APlayerCharacter::BeginLockingOn()
-{
-	bIsLockedOn = true;
-	LockedOnEnemy = DetermineClosestEnemy();
-	LockedOnEnemy->GetLockOnTarget()->SetVisibility(true);
-	SetActorTickEnabled(true);
-}
-
-// Stops locking onto an enemy
+// Stops locking onto an enemy; disables Tick()
 void APlayerCharacter::StopLockingOn()
 {
 	bIsLockedOn = false;
 	if (LockedOnEnemy)
 		LockedOnEnemy->GetLockOnTarget()->SetVisibility(false);
 	LockedOnEnemy = nullptr;
-	NearbyEnemies.Empty();
 	SetActorTickEnabled(false); 
 }
 
@@ -286,35 +268,63 @@ void APlayerCharacter::LockedOnMovement()
 	GetController()->SetControlRotation(CameraToEnemy.Rotation());
 }
 
-// Functions to switch between nearby enemies in both directions
-void APlayerCharacter::SwitchEnemyUp()
+// Find a nearby enemy to switch to when locking on
+AEnemyCharacter* APlayerCharacter::FindNearbyEnemy(FVector Direction)
 {
-	LockedOnEnemy->GetLockOnTarget()->SetVisibility(false);
+	// Variables for traces
+	TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypes;
+	ObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECC_GameTraceChannel1));
 
-	int32 CurrentIndex = NearbyEnemies.Find(LockedOnEnemy);
-	CurrentIndex++;
+	TArray<AActor*> ActorsToIgnore;
+	ActorsToIgnore.Add(this);
+	ActorsToIgnore.Add(LockedOnEnemy);
 
-	if (CurrentIndex >= NearbyEnemies.Num())
-		LockedOnEnemy = Cast<AEnemyCharacter>(NearbyEnemies[0]);
-	else
-		LockedOnEnemy = Cast<AEnemyCharacter>(NearbyEnemies[CurrentIndex]);
+	FVector2D ViewportSize;
+	GEngine->GameViewport->GetViewportSize(OUT ViewportSize);
 
-	LockedOnEnemy->GetLockOnTarget()->SetVisibility(true);
+	FHitResult BoxResult, LineResult;
+
+	// Perform a box trace in the desired direction
+	if (UKismetSystemLibrary::BoxTraceSingleForObjects(GetWorld(), LockedOnEnemy->GetActorLocation(), LockedOnEnemy->GetActorLocation() + (Direction * MaxLockOnDistance),
+													   FVector(10.0f, ViewportSize.X, ViewportSize.Y), Direction.Rotation(), ObjectTypes, true, ActorsToIgnore,
+													   EDrawDebugTrace::None, OUT BoxResult, true))
+	{
+		// If an enemy is found, check there is nothing blocking line of sight to the enemy
+		if (!UKismetSystemLibrary::LineTraceSingle(GetWorld(), GetActorLocation(), BoxResult.ImpactPoint, UEngineTypes::ConvertToTraceType(ECC_Visibility), true, ActorsToIgnore,
+												   EDrawDebugTrace::None, OUT LineResult, true))
+			return Cast<AEnemyCharacter>(BoxResult.GetActor());
+		else
+			return nullptr;
+	}
+
+	return nullptr;
 }
 
-void APlayerCharacter::SwitchEnemyDown()
+// Functions to switch between nearby enemies in both directions
+void APlayerCharacter::SwitchEnemyLeft()
 {
-	LockedOnEnemy->GetLockOnTarget()->SetVisibility(false);
+	FVector Left = UKismetMathLibrary::GetRightVector(Camera->GetComponentRotation()) * -1.0f;
 
-	int32 CurrentIndex = NearbyEnemies.Find(LockedOnEnemy);
-	CurrentIndex--;
+	if (LockedOnEnemy && FindNearbyEnemy(Left))
+	{
+		LockedOnEnemy->GetLockOnTarget()->SetVisibility(false);
 
-	if (CurrentIndex < 0)
-		LockedOnEnemy = Cast<AEnemyCharacter>(NearbyEnemies[NearbyEnemies.Num() - 1]);
-	else
-		LockedOnEnemy = Cast<AEnemyCharacter>(NearbyEnemies[CurrentIndex]);
+		LockedOnEnemy = FindNearbyEnemy(Left);
+		LockedOnEnemy->GetLockOnTarget()->SetVisibility(true);
+	}
+}
 
-	LockedOnEnemy->GetLockOnTarget()->SetVisibility(true);
+void APlayerCharacter::SwitchEnemyRight()
+{
+	FVector Right = UKismetMathLibrary::GetRightVector(Camera->GetComponentRotation());
+
+	if (LockedOnEnemy && FindNearbyEnemy(Right))
+	{
+		LockedOnEnemy->GetLockOnTarget()->SetVisibility(false);
+
+		LockedOnEnemy = FindNearbyEnemy(Right);
+		LockedOnEnemy->GetLockOnTarget()->SetVisibility(true);
+	}
 }
 
 

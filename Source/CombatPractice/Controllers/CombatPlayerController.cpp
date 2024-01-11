@@ -119,20 +119,20 @@ void ACombatPlayerController::CallHeavyAttack()
 void ACombatPlayerController::CallLockOn()
 {
 	if (Player)
-		Player->LockOntoEnemy();
+		Player->LockOn();
 }
 
 // Call switch enemy functions from player class
 void ACombatPlayerController::CallSwitchUp()
 {
 	if (Player->bIsLockedOn)
-		Player->SwitchEnemyUp();
+		Player->SwitchEnemyLeft();
 }
 
 void ACombatPlayerController::CallSwitchDown()
 {
 	if (Player->bIsLockedOn)
-		Player->SwitchEnemyDown();
+		Player->SwitchEnemyRight();
 }
 
 

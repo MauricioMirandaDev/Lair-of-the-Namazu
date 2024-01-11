@@ -31,7 +31,7 @@ public:
 	virtual void AfterDeath() override; 
 
 	// Function used for lock on system
-	void RemoveEnemyFromNearbyEnemies(AActor* Enemy); 
+	void EnemyDefeated(AActor* Enemy); 
 
 	// Friend class that handles input bindings
 	friend class ACombatPlayerController; 
@@ -88,11 +88,9 @@ private:
 	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	bool bIsLockedOn;
 
-	void LockOntoEnemy();
+	void LockOn();
 
-	void TraceForEnemies();
-
-	AEnemyCharacter* DetermineClosestEnemy();
+	AEnemyCharacter* FindClosestEnemy();
 
 	void LockOnBehavior();
 
@@ -102,13 +100,15 @@ private:
 
 	void LockedOnMovement();
 
-	void SwitchEnemyUp();
+	void SwitchEnemyLeft();
 
-	void SwitchEnemyDown();
+	void SwitchEnemyRight();
 
-	TArray<AActor*> NearbyEnemies;
+	AEnemyCharacter* FindNearbyEnemy(FVector Direction);
 
 	AEnemyCharacter* LockedOnEnemy;
+
+	bool bEnemyJustDefeated; 
 
 	// Components for rope
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Rope", meta = (AllowPrivateAccess = "true"))

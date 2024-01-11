@@ -113,8 +113,7 @@ void AEnemyCharacter::OnDeath()
 
 	LockOnTarget->SetVisibility(false);
 	HealthBar->SetVisibility(false);
-
-	PlayerReference->RemoveEnemyFromNearbyEnemies(this); 
+	PlayerReference->EnemyDefeated(this); 
 }
 
 // Calcualte if the player is within the enemy's search radius

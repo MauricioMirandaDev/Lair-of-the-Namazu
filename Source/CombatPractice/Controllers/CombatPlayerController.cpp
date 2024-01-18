@@ -11,11 +11,15 @@ ACombatPlayerController::ACombatPlayerController()
 	InputMappingContext = nullptr;
 	InputAction_Move = nullptr; 
 	InputAction_Look = nullptr; 
+	InputAction_LookGamepad = nullptr; 
 	InputAction_Jump = nullptr; 
 	InputAction_LightAttack = nullptr; 
 	InputAction_HeavyAttack = nullptr; 
 	InputAction_LockOn = nullptr;
-	InputAction_SwitchEnemyUp = nullptr; 
+	InputAction_SwitchEnemy = nullptr; 
+
+	GamepadLookRate = 100.0f; 
+	bCanSwitchEnemy = true;  
 }
 
 // Called when the game starts
@@ -53,6 +57,7 @@ void ACombatPlayerController::SetupInputComponent()
 
 		// CAMERA CONTROLS
 		EnhancedInput->BindAction(InputAction_Look, ETriggerEvent::Triggered, this, &ACombatPlayerController::Look);
+		EnhancedInput->BindAction(InputAction_LookGamepad, ETriggerEvent::Triggered, this, &ACombatPlayerController::LookGamepad);
 
 		// COMBAT
 		EnhancedInput->BindAction(InputAction_LightAttack, ETriggerEvent::Triggered, this, &ACombatPlayerController::CallLightAttack);
@@ -60,8 +65,8 @@ void ACombatPlayerController::SetupInputComponent()
 
 		// LOCK-ON SYSTEM
 		EnhancedInput->BindAction(InputAction_LockOn, ETriggerEvent::Triggered, this, &ACombatPlayerController::CallLockOn);
-		EnhancedInput->BindAction(InputAction_SwitchEnemyUp, ETriggerEvent::Triggered, this, &ACombatPlayerController::CallSwitchUp);
-		EnhancedInput->BindAction(InputAction_SwitchEnemyDown, ETriggerEvent::Triggered, this, &ACombatPlayerController::CallSwitchDown);
+		EnhancedInput->BindAction(InputAction_SwitchEnemy, ETriggerEvent::Triggered, this, &ACombatPlayerController::CallSwitchEnemy);
+		EnhancedInput->BindAction(InputAction_SwitchEnemy, ETriggerEvent::Completed, this, &ACombatPlayerController::ResetSwitchEnemy);
 	}
 }
 
@@ -101,6 +106,15 @@ void ACombatPlayerController::Look(const FInputActionValue& Value)
 	AddYawInput(LookValue.X);
 }
 
+// Rotate camera based on input from gamepad
+void ACombatPlayerController::LookGamepad(const FInputActionValue& Value)
+{
+	const FVector2D LookValue = Value.Get<FVector2D>();
+
+	AddPitchInput(LookValue.Y * GamepadLookRate * GetWorld()->GetDeltaSeconds());
+	AddYawInput(LookValue.X * GamepadLookRate * GetWorld()->GetDeltaSeconds());
+}
+
 // Call light attack from player class 
 void ACombatPlayerController::CallLightAttack()
 {
@@ -122,17 +136,38 @@ void ACombatPlayerController::CallLockOn()
 		Player->LockOn();
 }
 
-// Call switch enemy functions from player class
-void ACombatPlayerController::CallSwitchUp()
+// Call switch enemy from player class 
+void ACombatPlayerController::CallSwitchEnemy(const FInputActionValue& Value)
 {
-	if (Player->bIsLockedOn)
-		Player->SwitchEnemyLeft();
+	const FVector2D Input = Value.Get<FVector2D>();
+
+	if (Player->bIsLockedOn && bCanSwitchEnemy)
+	{
+		bCanSwitchEnemy = false;
+
+		FVector LockOnDirection = FVector::ZeroVector;
+
+		// Create a direction based on the player's input and current rotation 
+		if (Input.X == 1.0f)
+			LockOnDirection += Player->GetActorRightVector();
+		else if (Input.X == -1.0f)
+			LockOnDirection += -Player->GetActorRightVector();
+
+		if (Input.Y == 1.0f)
+			LockOnDirection += Player->GetActorForwardVector();
+		else if (Input.Y == -1.0f)
+			LockOnDirection += -Player->GetActorForwardVector();
+
+		LockOnDirection.Normalize();
+
+		Player->SwitchLockedOnEnemy(LockOnDirection);
+	}
 }
 
-void ACombatPlayerController::CallSwitchDown()
+// Allow the player to switch after releasing input 
+void ACombatPlayerController::ResetSwitchEnemy()
 {
-	if (Player->bIsLockedOn)
-		Player->SwitchEnemyRight();
+	bCanSwitchEnemy = true;
 }
 
 

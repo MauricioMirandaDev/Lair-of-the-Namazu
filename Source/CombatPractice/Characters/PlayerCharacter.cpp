@@ -9,8 +9,8 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Kismet/GameplayStatics.h"
-#include "Kismet/KismetSystemLibrary.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "Kismet/KismetSystemLibrary.h"
 
 // Sets default values
 APlayerCharacter::APlayerCharacter()
@@ -289,7 +289,7 @@ void APlayerCharacter::LockedOnMovement()
 // Find a nearby enemy to switch to when locking on
 AEnemyCharacter* APlayerCharacter::FindNearbyEnemy(FVector Direction)
 {
-	// Variables for traces
+	// Variables for traces 
 	TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypes;
 	ObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECC_GameTraceChannel1));
 
@@ -297,50 +297,53 @@ AEnemyCharacter* APlayerCharacter::FindNearbyEnemy(FVector Direction)
 	ActorsToIgnore.Add(this);
 	ActorsToIgnore.Add(LockedOnEnemy);
 
-	FVector2D ViewportSize;
-	GEngine->GameViewport->GetViewportSize(OUT ViewportSize);
+	TArray<AActor*> FoundActors;
+	TArray<AEnemyCharacter*> NearbyEnemies;
 
-	FHitResult BoxResult, LineResult;
+	FHitResult HitResult;
 
-	// Perform a box trace in the desired direction
-	if (UKismetSystemLibrary::BoxTraceSingleForObjects(GetWorld(), LockedOnEnemy->GetActorLocation(), LockedOnEnemy->GetActorLocation() + (Direction * MaxLockOnDistance),
-													   FVector(10.0f, ViewportSize.X, ViewportSize.Y), Direction.Rotation(), ObjectTypes, true, ActorsToIgnore,
-													   EDrawDebugTrace::None, OUT BoxResult, true))
+	// Get all available enemies within lock on radius
+	UKismetSystemLibrary::SphereOverlapActors(GetWorld(), LockedOnEnemy->GetActorLocation(), MaxLockOnDistance, ObjectTypes, AEnemyCharacter::StaticClass(), ActorsToIgnore, FoundActors);
+
+	// Check to see which enemies are blocked by an object
+	for (AActor* Actor : FoundActors)
 	{
-		// If an enemy is found, check there is nothing blocking line of sight to the enemy
-		if (!UKismetSystemLibrary::LineTraceSingle(GetWorld(), GetActorLocation(), BoxResult.ImpactPoint, UEngineTypes::ConvertToTraceType(ECC_Visibility), true, ActorsToIgnore,
-												   EDrawDebugTrace::None, OUT LineResult, true))
-			return Cast<AEnemyCharacter>(BoxResult.GetActor());
-		else
-			return nullptr;
+		if (!UKismetSystemLibrary::LineTraceSingle(GetWorld(), GetActorLocation(), Actor->GetActorLocation(), UEngineTypes::ConvertToTraceType(ECC_Visibility), true, ActorsToIgnore,
+			EDrawDebugTrace::None, OUT HitResult, true))
+			NearbyEnemies.Add(Cast<AEnemyCharacter>(Actor));
 	}
 
-	return nullptr;
+	// Lock onto the nearest enemy based on the desired direction
+	if (!NearbyEnemies.IsEmpty())
+	{
+		AEnemyCharacter* ClosestNearbyEnemy = NearbyEnemies[0];
+
+		for (AEnemyCharacter* Enemy : NearbyEnemies)
+		{
+			FVector DirectionToNearbyEnemy = Enemy->GetActorLocation() - LockedOnEnemy->GetActorLocation();
+			DirectionToNearbyEnemy.Normalize();
+
+			FVector DirectionToClosest = ClosestNearbyEnemy->GetActorLocation() - LockedOnEnemy->GetActorLocation();
+			DirectionToClosest.Normalize();
+
+			if (FVector::DotProduct(Direction, DirectionToNearbyEnemy) > FVector::DotProduct(Direction, DirectionToClosest))
+				ClosestNearbyEnemy = Enemy;
+		}
+
+		return ClosestNearbyEnemy;
+	}
+	else
+		return nullptr;
 }
 
-// Functions to switch between nearby enemies in both directions
-void APlayerCharacter::SwitchEnemyLeft()
+// Switch which enemy the player is locking onto based on the desired direction 
+void APlayerCharacter::SwitchLockedOnEnemy(FVector Direction)
 {
-	FVector Left = UKismetMathLibrary::GetRightVector(Camera->GetComponentRotation()) * -1.0f;
-
-	if (LockedOnEnemy && FindNearbyEnemy(Left))
+	if (LockedOnEnemy && FindNearbyEnemy(Direction))
 	{
 		LockedOnEnemy->GetLockOnTarget()->SetVisibility(false);
 
-		LockedOnEnemy = FindNearbyEnemy(Left);
-		LockedOnEnemy->GetLockOnTarget()->SetVisibility(true);
-	}
-}
-
-void APlayerCharacter::SwitchEnemyRight()
-{
-	FVector Right = UKismetMathLibrary::GetRightVector(Camera->GetComponentRotation());
-
-	if (LockedOnEnemy && FindNearbyEnemy(Right))
-	{
-		LockedOnEnemy->GetLockOnTarget()->SetVisibility(false);
-
-		LockedOnEnemy = FindNearbyEnemy(Right);
+		LockedOnEnemy = FindNearbyEnemy(Direction);
 		LockedOnEnemy->GetLockOnTarget()->SetVisibility(true);
 	}
 }

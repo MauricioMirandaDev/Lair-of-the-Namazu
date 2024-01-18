@@ -100,11 +100,9 @@ private:
 
 	void LockedOnMovement();
 
-	void SwitchEnemyLeft();
-
-	void SwitchEnemyRight();
-
 	AEnemyCharacter* FindNearbyEnemy(FVector Direction);
+
+	void SwitchLockedOnEnemy(FVector Direction); 
 
 	AEnemyCharacter* LockedOnEnemy;
 

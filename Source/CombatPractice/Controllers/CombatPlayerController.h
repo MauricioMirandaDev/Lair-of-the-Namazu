@@ -35,6 +35,9 @@ private:
 	UInputAction* InputAction_Look;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Enhanced Input System", meta = (AllowPrivateAccess = "true"))
+	UInputAction* InputAction_LookGamepad;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Enhanced Input System", meta = (AllowPrivateAccess = "true"))
 	UInputAction* InputAction_Jump;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Enhanced Input System", meta = (AllowPrivateAccess = "true"))
@@ -47,10 +50,7 @@ private:
 	UInputAction* InputAction_LockOn;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Enhanced Input System", meta = (AllowPrivateAccess = "true"))
-	UInputAction* InputAction_SwitchEnemyUp;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Enhanced Input System", meta = (AllowPrivateAccess = "true"))
-	UInputAction* InputAction_SwitchEnemyDown;
+	UInputAction* InputAction_SwitchEnemy;
 
 	// Reference to player used to call functions
 	class APlayerCharacter* Player;
@@ -63,17 +63,25 @@ private:
 	void CallStopJump(); 
 
 	// Function for camera control
+	/** How fast the camera should rotate on gamepad*/
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Camera Controls", meta = (AllowPrivateAccess = "true"))
+	float GamepadLookRate; 
+
 	void Look(const FInputActionValue& Value);
+
+	void LookGamepad(const FInputActionValue& Value); 
 
 	// Functions for player's attacks
 	void CallLightAttack();
 
 	void CallHeavyAttack(); 
 
-	// Functions for lock-on system
+	// Functions and variable for lock-on system
 	void CallLockOn();
 
-	void CallSwitchUp();
+	void CallSwitchEnemy(const FInputActionValue& Value); 
 
-	void CallSwitchDown();
+	void ResetSwitchEnemy(); 
+
+	bool bCanSwitchEnemy; 
 };

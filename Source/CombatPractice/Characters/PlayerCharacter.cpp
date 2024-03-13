@@ -23,9 +23,12 @@ APlayerCharacter::APlayerCharacter()
 	bIsLockedOn = false;
 	LockedOnEnemy = nullptr; 
 	bEnemyJustDefeated = false; 
+	CastRopeAnim = nullptr; 
+	DetachRopeAnim = nullptr; 
 	RopeLength = 500.0f;
 	ClosestGrapplePoint = nullptr; 
 	bCanGrapple = false; 
+	bIsGrappling = false; 
 
 	// Create spring arm component and set default values
 	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("Spring Arm"));
@@ -55,6 +58,7 @@ void APlayerCharacter::BeginPlay()
 
 	//SetActorTickEnabled(false);
 	DefaultWalkSpeed = GetCharacterMovement()->MaxWalkSpeed; 
+	Rope->SetAttachEndToComponent(GetRootComponent(), TEXT("None"));
 }
 
 // Called every frame
@@ -402,11 +406,37 @@ void APlayerCharacter::SearchForGrapplePoints()
 		}
 
 		ClosestGrapplePoint->SetIconVisibility(true);
+		bCanGrapple = true; 
 	}
 	else if (NearbyPoints.IsEmpty() && ClosestGrapplePoint)
 	{
 		// If there are no nearby points and one was found previously, turn off the icon visibility and set reference to null 
 		ClosestGrapplePoint->SetIconVisibility(false);
 		ClosestGrapplePoint = nullptr; 
+		bCanGrapple = false; 
 	}
+}
+
+// Play animation to cast or detach rope
+void APlayerCharacter::CastRope()
+{
+	if (!bIsGrappling && bCanGrapple)
+	{
+		PlayAnimMontage(CastRopeAnim, 1.0f, TEXT("None"));
+		bIsGrappling = true;
+	}
+	else if (bIsGrappling)
+	{
+		PlayAnimMontage(DetachRopeAnim, -1.0f, TEXT("None"));
+		bIsGrappling = false; 
+	}
+}
+
+// Either attach or detach the rope
+void APlayerCharacter::SetRopeAttached(bool bAttach)
+{
+	if (bAttach)
+		Rope->SetAttachEndToComponent(ClosestGrapplePoint->GetRootComponent(), TEXT("None"));
+	else
+		Rope->SetAttachEndToComponent(GetRootComponent(), TEXT("None")); 
 }

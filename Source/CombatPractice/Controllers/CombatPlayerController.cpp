@@ -17,6 +17,7 @@ ACombatPlayerController::ACombatPlayerController()
 	InputAction_HeavyAttack = nullptr; 
 	InputAction_LockOn = nullptr;
 	InputAction_SwitchEnemy = nullptr; 
+	InputAction_CastRope = nullptr; 
 
 	GamepadLookRate = 100.0f; 
 	bCanSwitchEnemy = true;  
@@ -67,6 +68,9 @@ void ACombatPlayerController::SetupInputComponent()
 		//EnhancedInput->BindAction(InputAction_LockOn, ETriggerEvent::Triggered, this, &ACombatPlayerController::CallLockOn);
 		//EnhancedInput->BindAction(InputAction_SwitchEnemy, ETriggerEvent::Triggered, this, &ACombatPlayerController::CallSwitchEnemy);
 		//EnhancedInput->BindAction(InputAction_SwitchEnemy, ETriggerEvent::Completed, this, &ACombatPlayerController::ResetSwitchEnemy);
+
+		// ROPE
+		EnhancedInput->BindAction(InputAction_CastRope, ETriggerEvent::Triggered, this, &ACombatPlayerController::CallCastRope); 
 	}
 }
 
@@ -171,5 +175,12 @@ void ACombatPlayerController::ResetSwitchEnemy()
 	bCanSwitchEnemy = true;
 }
 */
+
+// Call rope cast from player class 
+void ACombatPlayerController::CallCastRope()
+{
+	if (Player)
+		Player->CastRope(); 
+}
 
 

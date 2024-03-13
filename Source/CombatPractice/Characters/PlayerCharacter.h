@@ -34,6 +34,9 @@ public:
 	// Function used for lock on system
 	void EnemyDefeated(AActor* Enemy); 
 
+	// Function used for rope
+	void SetRopeAttached(bool bAttach); 
+
 	// Friend class that handles input bindings
 	friend class ACombatPlayerController; 
 
@@ -116,12 +119,22 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Rope", meta = (AllowPrivateAccess = "true"))
 	class UCableComponent* Rope;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animations", meta = (AllowPrivateAccess = "true"))
+	UAnimMontage* CastRopeAnim; 
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animations", meta = (AllowPrivateAccess = "true"))
+	UAnimMontage* DetachRopeAnim;
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Rope", meta = (AllowPrivateAccess = "true"))
 	float RopeLength; 
 
 	void SearchForGrapplePoints(); 
 
+	void CastRope(); 
+
 	AGrapplePoint* ClosestGrapplePoint; 
 
 	bool bCanGrapple; 
+
+	bool bIsGrappling; 
 };

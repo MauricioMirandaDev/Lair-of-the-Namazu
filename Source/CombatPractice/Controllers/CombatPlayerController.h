@@ -52,6 +52,9 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Enhanced Input System", meta = (AllowPrivateAccess = "true"))
 	UInputAction* InputAction_SwitchEnemy;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Enhanced Input System", meta = (AllowPrivateAccess = "true"))
+	UInputAction* InputAction_CastRope;
+
 	// Reference to player used to call functions
 	class APlayerCharacter* Player;
 
@@ -84,4 +87,7 @@ private:
 	void ResetSwitchEnemy(); 
 
 	bool bCanSwitchEnemy; 
+
+	// Functions for rope 
+	void CallCastRope(); 
 };

@@ -6,6 +6,7 @@
 #include "PlayerCharacter.generated.h" 
 
 class AEnemyCharacter;
+class AGrapplePoint; 
 class UAnimMontage; 
 
 UCLASS()
@@ -117,4 +118,10 @@ private:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Rope", meta = (AllowPrivateAccess = "true"))
 	float RopeLength; 
+
+	void SearchForGrapplePoints(); 
+
+	AGrapplePoint* ClosestGrapplePoint; 
+
+	bool bCanGrapple; 
 };

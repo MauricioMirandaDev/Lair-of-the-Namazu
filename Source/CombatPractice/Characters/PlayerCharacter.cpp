@@ -3,6 +3,7 @@
 #include "CableComponent.h"
 #include "Camera/CameraComponent.h"
 #include "CombatPractice/CombatPracticeGameModeBase.h"
+#include "CombatPractice/Actors/GrapplePoint.h"
 #include "CombatPractice/Characters/EnemyCharacter.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/WidgetComponent.h"
@@ -23,6 +24,8 @@ APlayerCharacter::APlayerCharacter()
 	LockedOnEnemy = nullptr; 
 	bEnemyJustDefeated = false; 
 	RopeLength = 500.0f;
+	ClosestGrapplePoint = nullptr; 
+	bCanGrapple = false; 
 
 	// Create spring arm component and set default values
 	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("Spring Arm"));
@@ -50,7 +53,7 @@ void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
-	SetActorTickEnabled(false);
+	//SetActorTickEnabled(false);
 	DefaultWalkSpeed = GetCharacterMovement()->MaxWalkSpeed; 
 }
 
@@ -59,7 +62,9 @@ void APlayerCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	LockOnBehavior();
+	//LockOnBehavior();
+
+	SearchForGrapplePoints();
 }
 
 // Set this character to be able to move or not 
@@ -84,7 +89,7 @@ void APlayerCharacter::TakeDamage(FAttackAnimation AttackAnimation, FVector Atta
 {
 	Super::TakeDamage(AttackAnimation, AttackLocation); 
 
-	StopLockingOn(); 
+	//StopLockingOn(); 
 }
 
 // Apply effects after the character has finished their death animation 
@@ -170,6 +175,7 @@ void APlayerCharacter::HeavyAttackPressed()
 		PlayAttackAnim(HeavyAttack);
 }
 
+/*
 // Lock onto a nearby enemy or stop locking on
 void APlayerCharacter::LockOn()
 {
@@ -347,8 +353,60 @@ void APlayerCharacter::SwitchLockedOnEnemy(FVector Direction)
 		LockedOnEnemy->GetLockOnTarget()->SetVisibility(true);
 	}
 }
+*/
 
+// Search for points to grapple onto 
+void APlayerCharacter::SearchForGrapplePoints()
+{
+	// Variables for trace
+	TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypes;
+	ObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECC_GameTraceChannel4));
 
+	TArray<AActor*> ActorsToIgnore;
+	ActorsToIgnore.Add(this);
 
+	TArray<AActor*> FoundActors;
+	TArray<AGrapplePoint*> NearbyPoints; 
 
+	FHitResult HitResult; 
 
+	// Find all nearby grapple points
+	UKismetSystemLibrary::SphereOverlapActors(GetWorld(), GetActorLocation(), RopeLength, ObjectTypes, AGrapplePoint::StaticClass(), ActorsToIgnore, FoundActors);
+	
+	// Find which points are within line of sight to the player
+	for (AActor* Actor : FoundActors)
+	{
+		if (!UKismetSystemLibrary::LineTraceSingle(GetWorld(), GetActorLocation(), Actor->GetActorLocation(), UEngineTypes::ConvertToTraceType(ECC_Visibility), true, ActorsToIgnore,
+												   EDrawDebugTrace::None, OUT HitResult, true))
+			NearbyPoints.Add(Cast<AGrapplePoint>(Actor));
+	}
+
+	// Highlight the grapple point closest to the player
+	if (!NearbyPoints.IsEmpty())
+	{
+		ClosestGrapplePoint = NearbyPoints[0];
+
+		if (NearbyPoints.Num() > 1)
+		{
+			for (AGrapplePoint* NextPoint : NearbyPoints)
+			{
+				NextPoint->SetIconVisibility(false); 
+
+				float DistanceToPoint = FVector::Dist(GetActorLocation(), NextPoint->GetActorLocation());
+
+				float DistanceToClosest = FVector::Dist(GetActorLocation(), ClosestGrapplePoint->GetActorLocation());
+
+				if (DistanceToPoint < DistanceToClosest)
+					ClosestGrapplePoint = NextPoint; 
+			}
+		}
+
+		ClosestGrapplePoint->SetIconVisibility(true);
+	}
+	else if (NearbyPoints.IsEmpty() && ClosestGrapplePoint)
+	{
+		// If there are no nearby points and one was found previously, turn off the icon visibility and set reference to null 
+		ClosestGrapplePoint->SetIconVisibility(false);
+		ClosestGrapplePoint = nullptr; 
+	}
+}

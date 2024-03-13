@@ -64,9 +64,9 @@ void ACombatPlayerController::SetupInputComponent()
 		EnhancedInput->BindAction(InputAction_HeavyAttack, ETriggerEvent::Completed, this, &ACombatPlayerController::CallHeavyAttack);
 
 		// LOCK-ON SYSTEM
-		EnhancedInput->BindAction(InputAction_LockOn, ETriggerEvent::Triggered, this, &ACombatPlayerController::CallLockOn);
-		EnhancedInput->BindAction(InputAction_SwitchEnemy, ETriggerEvent::Triggered, this, &ACombatPlayerController::CallSwitchEnemy);
-		EnhancedInput->BindAction(InputAction_SwitchEnemy, ETriggerEvent::Completed, this, &ACombatPlayerController::ResetSwitchEnemy);
+		//EnhancedInput->BindAction(InputAction_LockOn, ETriggerEvent::Triggered, this, &ACombatPlayerController::CallLockOn);
+		//EnhancedInput->BindAction(InputAction_SwitchEnemy, ETriggerEvent::Triggered, this, &ACombatPlayerController::CallSwitchEnemy);
+		//EnhancedInput->BindAction(InputAction_SwitchEnemy, ETriggerEvent::Completed, this, &ACombatPlayerController::ResetSwitchEnemy);
 	}
 }
 
@@ -129,6 +129,7 @@ void ACombatPlayerController::CallHeavyAttack()
 		Player->HeavyAttackPressed(); 
 }
 
+/*
 // Call lock on from player class
 void ACombatPlayerController::CallLockOn()
 {
@@ -169,6 +170,6 @@ void ACombatPlayerController::ResetSwitchEnemy()
 {
 	bCanSwitchEnemy = true;
 }
-
+*/
 
 

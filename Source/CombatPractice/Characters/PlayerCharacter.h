@@ -122,17 +122,19 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animations", meta = (AllowPrivateAccess = "true"))
 	UAnimMontage* CastRopeAnim; 
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animations", meta = (AllowPrivateAccess = "true"))
-	UAnimMontage* DetachRopeAnim;
-
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Rope", meta = (AllowPrivateAccess = "true"))
 	float RopeLength; 
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Rope", meta = (AllowPrivateAccess = "true"))
+	float TensionStrength;
 
 	void SearchForGrapplePoints(); 
 
 	void CastRope(); 
 
-	AGrapplePoint* ClosestGrapplePoint; 
+	void AddTensionForce(); 
+
+	AGrapplePoint* TargetGrapplePoint; 
 
 	bool bCanGrapple; 
 

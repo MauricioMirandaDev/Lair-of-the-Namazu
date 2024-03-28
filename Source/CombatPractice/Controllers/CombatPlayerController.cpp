@@ -3,6 +3,7 @@
 #include "CombatPractice/Characters/PlayerCharacter.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 
 // Sets default values
@@ -85,12 +86,17 @@ void ACombatPlayerController::Move(const FInputActionValue& Value)
 	{
 		Player->AddMovementInput(ForwardDirection, MovementValue.Y);
 		Player->AddMovementInput(RightDirection, MovementValue.X); 
+		
+		if (Player->bIsGrappling && Player->GetCharacterMovement()->MovementMode == EMovementMode::MOVE_Falling)
+			Player->AddTensionForce();
 	}
 }
 
 // Call jump functions from player class
 void ACombatPlayerController::CallJump()
 {
+	// TODO: Bind "Jump" input to be reel in
+
 	if (Player->GetCombatState() == ECombatState::COMBAT_Neutral)
 		Player->Jump(); 
 }

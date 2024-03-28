@@ -24,9 +24,9 @@ APlayerCharacter::APlayerCharacter()
 	LockedOnEnemy = nullptr; 
 	bEnemyJustDefeated = false; 
 	CastRopeAnim = nullptr; 
-	DetachRopeAnim = nullptr; 
 	RopeLength = 500.0f;
-	ClosestGrapplePoint = nullptr; 
+	TensionStrength = 100.0f;
+	TargetGrapplePoint = nullptr; 
 	bCanGrapple = false; 
 	bIsGrappling = false; 
 
@@ -372,6 +372,8 @@ void APlayerCharacter::SearchForGrapplePoints()
 	TArray<AActor*> FoundActors;
 	TArray<AGrapplePoint*> NearbyPoints; 
 
+	FVector CameraForward = UKismetMathLibrary::GetForwardVector(Camera->GetComponentRotation());
+
 	FHitResult HitResult; 
 
 	// Find all nearby grapple points
@@ -388,31 +390,43 @@ void APlayerCharacter::SearchForGrapplePoints()
 	// Highlight the grapple point closest to the player
 	if (!NearbyPoints.IsEmpty())
 	{
-		ClosestGrapplePoint = NearbyPoints[0];
+		TargetGrapplePoint = NearbyPoints[0];
+		TargetGrapplePoint->SetIconVisibility(false);
 
 		if (NearbyPoints.Num() > 1)
 		{
 			for (AGrapplePoint* NextPoint : NearbyPoints)
 			{
-				NextPoint->SetIconVisibility(false); 
+				NextPoint->SetIconVisibility(false);
+
+				FVector DirectionToNext = NextPoint->GetActorLocation() - GetActorLocation();
+				DirectionToNext.Normalize();
+
+				FVector DirectionToTarget = TargetGrapplePoint->GetActorLocation() - GetActorLocation();
+				DirectionToTarget.Normalize();
+
+				if (FVector::DotProduct(CameraForward, DirectionToNext) > FVector::DotProduct(CameraForward, DirectionToTarget))
+					TargetGrapplePoint = NextPoint;
+
+				/*NextPoint->SetIconVisibility(false);
 
 				float DistanceToPoint = FVector::Dist(GetActorLocation(), NextPoint->GetActorLocation());
 
-				float DistanceToClosest = FVector::Dist(GetActorLocation(), ClosestGrapplePoint->GetActorLocation());
+				float DistanceToClosest = FVector::Dist(GetActorLocation(), TargetGrapplePoint->GetActorLocation());
 
 				if (DistanceToPoint < DistanceToClosest)
-					ClosestGrapplePoint = NextPoint; 
+					TargetGrapplePoint = NextPoint; */
 			}
 		}
 
-		ClosestGrapplePoint->SetIconVisibility(true);
+		TargetGrapplePoint->SetIconVisibility(true);
 		bCanGrapple = true; 
 	}
-	else if (NearbyPoints.IsEmpty() && ClosestGrapplePoint)
+	else if (NearbyPoints.IsEmpty() && TargetGrapplePoint)
 	{
 		// If there are no nearby points and one was found previously, turn off the icon visibility and set reference to null 
-		ClosestGrapplePoint->SetIconVisibility(false);
-		ClosestGrapplePoint = nullptr; 
+		TargetGrapplePoint->SetIconVisibility(false);
+		TargetGrapplePoint = nullptr; 
 		bCanGrapple = false; 
 	}
 }
@@ -424,19 +438,42 @@ void APlayerCharacter::CastRope()
 	{
 		PlayAnimMontage(CastRopeAnim, 1.0f, TEXT("None"));
 		bIsGrappling = true;
+
+		SetActorTickEnabled(false);
 	}
 	else if (bIsGrappling)
 	{
-		PlayAnimMontage(DetachRopeAnim, -1.0f, TEXT("None"));
+		SetRopeAttached(false);
+
 		bIsGrappling = false; 
+
+		TargetGrapplePoint->SetIconVisibility(false);
+		TargetGrapplePoint = nullptr;
+		bCanGrapple = true;
+
+		SetActorTickEnabled(true); 
 	}
+}
+
+void APlayerCharacter::AddTensionForce()
+{
+	FVector DirectionToPoint = GetActorLocation() - TargetGrapplePoint->GetActorLocation(); 
+	DirectionToPoint.Normalize();
+
+	FVector Tension = DirectionToPoint * FVector::DotProduct(GetVelocity(), DirectionToPoint);
+
+	/*float test = FVector::Dist(TargetGrapplePoint->GetActorLocation(), GetActorLocation());
+	test /= 100.0f;*/
+	//TensionStrength *= test;
+
+	GetCharacterMovement()->AddForce(Tension * -TensionStrength * GetCharacterMovement()->Mass);
 }
 
 // Either attach or detach the rope
 void APlayerCharacter::SetRopeAttached(bool bAttach)
 {
 	if (bAttach)
-		Rope->SetAttachEndToComponent(ClosestGrapplePoint->GetRootComponent(), TEXT("None"));
+		Rope->SetAttachEndToComponent(TargetGrapplePoint->GetRootComponent(), TEXT("None"));
 	else
 		Rope->SetAttachEndToComponent(GetRootComponent(), TEXT("None")); 
 }

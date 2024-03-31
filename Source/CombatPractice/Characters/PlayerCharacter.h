@@ -6,7 +6,8 @@
 #include "PlayerCharacter.generated.h" 
 
 class AEnemyCharacter;
-class AGrapplePoint; 
+class AGrapplePoint;
+class ARope;
 class UAnimMontage; 
 
 UCLASS()
@@ -21,6 +22,9 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+	// Setter functions
+	void SetCanGrapple(bool bCanPlayerGrapple);
+
 	// Functions used for combat
 	virtual void UpdateMovement(bool bPauseMovement) override;
 
@@ -34,8 +38,11 @@ public:
 	// Function used for lock on system
 	void EnemyDefeated(AActor* Enemy); 
 
-	// Function used for rope
-	void SetRopeAttached(bool bAttach); 
+	// Functions used for rope
+	UFUNCTION(BlueprintImplementableEvent)
+	void Grapple(); 
+
+	void AttachRope(); 
 
 	// Friend class that handles input bindings
 	friend class ACombatPlayerController; 
@@ -112,29 +119,35 @@ private:
 
 	bool bEnemyJustDefeated; 
 
-	// Components for rope
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Rope", meta = (AllowPrivateAccess = "true"))
-	class USceneComponent* RopeHolster;
+	// Components, functions, and variables for rope
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Rope", meta = (AllowPrivateAccess = "true"))
+	TSubclassOf<ARope> RopeClass;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Rope", meta = (AllowPrivateAccess = "true"))
-	class UCableComponent* Rope;
+	UPROPERTY(BlueprintReadOnly, Category = "Rope", meta = (AllowPrivateAccess = "true"))
+	ARope* Rope;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animations", meta = (AllowPrivateAccess = "true"))
 	UAnimMontage* CastRopeAnim; 
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Rope", meta = (AllowPrivateAccess = "true"))
-	float RopeLength; 
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Rope", meta = (AllowPrivateAccess = "true"))
 	float TensionStrength;
 
-	void SearchForGrapplePoints(); 
+	UFUNCTION(BlueprintCallable)
+	void PrepareGrapple(); 
+
+	UFUNCTION(BlueprintCallable)
+	void FinishGrapple();
+
+	UFUNCTION(BlueprintCallable)
+	void LerpPlayerPosition(float Alpha);
 
 	void CastRope(); 
 
 	void AddTensionForce(); 
 
-	AGrapplePoint* TargetGrapplePoint; 
+	FVector InitialPosition;
+
+	FVector EndPosition; 
 
 	bool bCanGrapple; 
 

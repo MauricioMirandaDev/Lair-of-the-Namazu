@@ -3,35 +3,48 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "GrapplePoint.generated.h"
+#include "Rope.generated.h"
+
+class AGrapplePoint;
+class APlayerCharacter; 
 
 UCLASS()
-class COMBATPRACTICE_API AGrapplePoint : public AActor
+class COMBATPRACTICE_API ARope : public AActor
 {
 	GENERATED_BODY()
 	
 public:	
 	// Sets default values for this actor's properties
-	AGrapplePoint();
+	ARope();
 
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+	// Getter functions
+	AGrapplePoint* GetTargetPoint(); 
+
 	// Setter functions
-	void SetIconVisibility(bool bShowIcon); 
+	void SetPlayerReference(APlayerCharacter* Player);
+
+	// Function for cable
+	void UpdateRopeAttached(bool bShouldAttach);
 
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-private:
-	// Visual components 
+private:	
+	// Physical components
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
 	class USceneComponent* Root;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
-	class UCapsuleComponent* Collider;
+	class UCableComponent* Cable;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Components", meta = (AllowPrivateAccess = "true"))
-	class UWidgetComponent* SelectedIcon;
+	// Function and variables for finding grapple points
+	void DetermineClosestGrapplePoint(); 
+
+	AGrapplePoint* TargetGrapplePoint; 
+
+	APlayerCharacter* PlayerRef; 
 };

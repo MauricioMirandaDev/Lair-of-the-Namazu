@@ -7,7 +7,6 @@
 UCombatAnimNotify_AttachRope::UCombatAnimNotify_AttachRope()
 {
 	NotifyColor = FColor(255, 200, 100);
-	bShouldAttach = false; 
 }
 
 // Attach the player's rope to a grapple point
@@ -16,5 +15,5 @@ void UCombatAnimNotify_AttachRope::Notify(USkeletalMeshComponent* MeshComp, UAni
 	Super::Notify(MeshComp, Animation); 
 
 	if (APlayerCharacter* Player = Cast<APlayerCharacter>(OwnerReference))
-		Player->SetRopeAttached(bShouldAttach);
+		Player->AttachRope();
 }

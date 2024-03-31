@@ -19,6 +19,7 @@ ACombatPlayerController::ACombatPlayerController()
 	InputAction_LockOn = nullptr;
 	InputAction_SwitchEnemy = nullptr; 
 	InputAction_CastRope = nullptr; 
+	InputAction_Grapple = nullptr;
 
 	GamepadLookRate = 100.0f; 
 	bCanSwitchEnemy = true;  
@@ -71,7 +72,8 @@ void ACombatPlayerController::SetupInputComponent()
 		//EnhancedInput->BindAction(InputAction_SwitchEnemy, ETriggerEvent::Completed, this, &ACombatPlayerController::ResetSwitchEnemy);
 
 		// ROPE
-		EnhancedInput->BindAction(InputAction_CastRope, ETriggerEvent::Triggered, this, &ACombatPlayerController::CallCastRope); 
+		EnhancedInput->BindAction(InputAction_CastRope, ETriggerEvent::Triggered, this, &ACombatPlayerController::CallCastRope);
+		EnhancedInput->BindAction(InputAction_Grapple, ETriggerEvent::Triggered, this, &ACombatPlayerController::CallGrapple);
 	}
 }
 
@@ -95,9 +97,7 @@ void ACombatPlayerController::Move(const FInputActionValue& Value)
 // Call jump functions from player class
 void ACombatPlayerController::CallJump()
 {
-	// TODO: Bind "Jump" input to be reel in
-
-	if (Player->GetCombatState() == ECombatState::COMBAT_Neutral)
+	if (Player->GetCombatState() == ECombatState::COMBAT_Neutral && !Player->bIsGrappling)
 		Player->Jump(); 
 }
 
@@ -187,6 +187,13 @@ void ACombatPlayerController::CallCastRope()
 {
 	if (Player)
 		Player->CastRope(); 
+}
+
+// Call grapple from player class
+void ACombatPlayerController::CallGrapple()
+{
+	if (Player)
+		Player->Grapple(); 
 }
 
 

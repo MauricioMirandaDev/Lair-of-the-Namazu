@@ -1,6 +1,6 @@
 
 #include "GrapplePoint.h"
-#include "Components/SphereComponent.h"
+#include "Components/CapsuleComponent.h"
 #include "Components/WidgetComponent.h"
 
 // Sets default values
@@ -14,7 +14,7 @@ AGrapplePoint::AGrapplePoint()
 	SetRootComponent(Root); 
 
 	// Create sphere component and set default values
-	Collider = CreateDefaultSubobject<USphereComponent>(TEXT("Collider"));
+	Collider = CreateDefaultSubobject<UCapsuleComponent>(TEXT("Collider"));
 	Collider->SetupAttachment(Root); 
 	Collider->SetCollisionProfileName(TEXT("GrappleArea"), true);
 

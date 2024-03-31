@@ -1,0 +1,9 @@
+Movement: WASD / Left Control Stick
+Camera: Mouse Axis / Right Control Stick
+Jump: Space Bar / Face Button South
+Light Attack: Left Mouse Button (Tap) / Right Shoulder Button (Tap)
+Heavy Attack: Left Mouse Button (Hold) / Right Shoulder Button (Hold)
+Lock-On: Tab / Right Stick Button
+Switch Enemy during Lock-On: Arrow Keys / Right Control Stick
+Cast Rope, Detach Rope: Q / Right Trigger
+Grapple: E / Left Trigger

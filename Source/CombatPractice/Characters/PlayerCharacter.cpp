@@ -1,9 +1,9 @@
 
 #include "PlayerCharacter.h"
-#include "CableComponent.h"
 #include "Camera/CameraComponent.h"
 #include "CombatPractice/CombatPracticeGameModeBase.h"
 #include "CombatPractice/Actors/GrapplePoint.h"
+#include "CombatPractice/Actors/Rope.h"
 #include "CombatPractice/Characters/EnemyCharacter.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/WidgetComponent.h"
@@ -24,9 +24,9 @@ APlayerCharacter::APlayerCharacter()
 	LockedOnEnemy = nullptr; 
 	bEnemyJustDefeated = false; 
 	CastRopeAnim = nullptr; 
-	RopeLength = 500.0f;
 	TensionStrength = 100.0f;
-	TargetGrapplePoint = nullptr; 
+	InitialPosition = FVector(0.0f);
+	EndPosition = FVector(0.0f);
 	bCanGrapple = false; 
 	bIsGrappling = false; 
 
@@ -38,17 +38,6 @@ APlayerCharacter::APlayerCharacter()
 	// Create camera component and set default values
 	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
 	Camera->SetupAttachment(SpringArm);
-
-	// Create a scene component where the rope will be held
-	RopeHolster = CreateDefaultSubobject<USceneComponent>(TEXT("Rope Holster"));
-	RopeHolster->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, TEXT("RopeSocket"));
-
-	// Create a cable component and set default values
-	Rope = CreateDefaultSubobject<UCableComponent>(TEXT("Rope"));
-	Rope->AttachToComponent(RopeHolster, FAttachmentTransformRules::KeepRelativeTransform);
-	Rope->bAttachStart = true;
-	Rope->bAttachEnd = true;
-	Rope->CableLength = RopeLength;
 }
 
 // Called when the game starts or when spawned
@@ -56,9 +45,17 @@ void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
-	//SetActorTickEnabled(false);
 	DefaultWalkSpeed = GetCharacterMovement()->MaxWalkSpeed; 
-	Rope->SetAttachEndToComponent(GetRootComponent(), TEXT("None"));
+
+	// Create rope actor and attach to player
+	if (RopeClass)
+	{
+		Rope = GetWorld()->SpawnActor<ARope>(RopeClass);
+		Rope->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, TEXT("RopeSocket"));
+		Rope->SetPlayerReference(this); 
+	}
+
+	SetActorTickEnabled(false);
 }
 
 // Called every frame
@@ -67,8 +64,12 @@ void APlayerCharacter::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	//LockOnBehavior();
+}
 
-	SearchForGrapplePoints();
+// Set whether the player can grapple or not
+void APlayerCharacter::SetCanGrapple(bool bCanPlayerGrapple)
+{
+	bCanGrapple = bCanPlayerGrapple;
 }
 
 // Set this character to be able to move or not 
@@ -359,76 +360,33 @@ void APlayerCharacter::SwitchLockedOnEnemy(FVector Direction)
 }
 */
 
-// Search for points to grapple onto 
-void APlayerCharacter::SearchForGrapplePoints()
+// Prepare variables for grappling 
+void APlayerCharacter::PrepareGrapple()
 {
-	// Variables for trace
-	TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypes;
-	ObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECC_GameTraceChannel4));
+	InitialPosition = GetActorLocation();
+	EndPosition = Rope->GetTargetPoint()->GetActorLocation();
 
-	TArray<AActor*> ActorsToIgnore;
-	ActorsToIgnore.Add(this);
+	FVector DirectionToPoint = EndPosition - InitialPosition;
+	DirectionToPoint.Normalize();
 
-	TArray<AActor*> FoundActors;
-	TArray<AGrapplePoint*> NearbyPoints; 
+	FRotator RotationToPoint = DirectionToPoint.Rotation();
+	SetActorRotation(FRotator(0.0f, RotationToPoint.Yaw, 0.0f));
+}
 
-	FVector CameraForward = UKismetMathLibrary::GetForwardVector(Camera->GetComponentRotation());
+// Reset values after grappling
+void APlayerCharacter::FinishGrapple()
+{
+	Rope->SetActorTickEnabled(true);
+	Rope->UpdateRopeAttached(false);
+	bIsGrappling = false;
+}
 
-	FHitResult HitResult; 
+// Use linear interpolation to grapple the player to a point
+void APlayerCharacter::LerpPlayerPosition(float Alpha)
+{
+	FVector LerpedLocation = FMath::Lerp(InitialPosition, EndPosition, Alpha);
 
-	// Find all nearby grapple points
-	UKismetSystemLibrary::SphereOverlapActors(GetWorld(), GetActorLocation(), RopeLength, ObjectTypes, AGrapplePoint::StaticClass(), ActorsToIgnore, FoundActors);
-	
-	// Find which points are within line of sight to the player
-	for (AActor* Actor : FoundActors)
-	{
-		if (!UKismetSystemLibrary::LineTraceSingle(GetWorld(), GetActorLocation(), Actor->GetActorLocation(), UEngineTypes::ConvertToTraceType(ECC_Visibility), true, ActorsToIgnore,
-												   EDrawDebugTrace::None, OUT HitResult, true))
-			NearbyPoints.Add(Cast<AGrapplePoint>(Actor));
-	}
-
-	// Highlight the grapple point closest to the player
-	if (!NearbyPoints.IsEmpty())
-	{
-		TargetGrapplePoint = NearbyPoints[0];
-		TargetGrapplePoint->SetIconVisibility(false);
-
-		if (NearbyPoints.Num() > 1)
-		{
-			for (AGrapplePoint* NextPoint : NearbyPoints)
-			{
-				NextPoint->SetIconVisibility(false);
-
-				FVector DirectionToNext = NextPoint->GetActorLocation() - GetActorLocation();
-				DirectionToNext.Normalize();
-
-				FVector DirectionToTarget = TargetGrapplePoint->GetActorLocation() - GetActorLocation();
-				DirectionToTarget.Normalize();
-
-				if (FVector::DotProduct(CameraForward, DirectionToNext) > FVector::DotProduct(CameraForward, DirectionToTarget))
-					TargetGrapplePoint = NextPoint;
-
-				/*NextPoint->SetIconVisibility(false);
-
-				float DistanceToPoint = FVector::Dist(GetActorLocation(), NextPoint->GetActorLocation());
-
-				float DistanceToClosest = FVector::Dist(GetActorLocation(), TargetGrapplePoint->GetActorLocation());
-
-				if (DistanceToPoint < DistanceToClosest)
-					TargetGrapplePoint = NextPoint; */
-			}
-		}
-
-		TargetGrapplePoint->SetIconVisibility(true);
-		bCanGrapple = true; 
-	}
-	else if (NearbyPoints.IsEmpty() && TargetGrapplePoint)
-	{
-		// If there are no nearby points and one was found previously, turn off the icon visibility and set reference to null 
-		TargetGrapplePoint->SetIconVisibility(false);
-		TargetGrapplePoint = nullptr; 
-		bCanGrapple = false; 
-	}
+	SetActorLocation(LerpedLocation);
 }
 
 // Play animation to cast or detach rope
@@ -436,44 +394,38 @@ void APlayerCharacter::CastRope()
 {
 	if (!bIsGrappling && bCanGrapple)
 	{
-		PlayAnimMontage(CastRopeAnim, 1.0f, TEXT("None"));
-		bIsGrappling = true;
+		FVector ToPoint = Rope->GetTargetPoint()->GetActorLocation() - GetActorLocation();
+		ToPoint.Normalize();
 
-		SetActorTickEnabled(false);
+		FRotator LookAtPoint = ToPoint.Rotation();
+
+		SetActorRotation(FRotator(0.0f, LookAtPoint.Yaw, 0.0f));
+
+		PlayAnimMontage(CastRopeAnim, 1.0f, TEXT("None"));
+		Rope->SetActorTickEnabled(false);
+		bIsGrappling = true;
 	}
 	else if (bIsGrappling)
 	{
-		SetRopeAttached(false);
-
-		bIsGrappling = false; 
-
-		TargetGrapplePoint->SetIconVisibility(false);
-		TargetGrapplePoint = nullptr;
-		bCanGrapple = true;
-
-		SetActorTickEnabled(true); 
+		Rope->SetActorTickEnabled(true);
+		Rope->UpdateRopeAttached(false);
+		bIsGrappling = false;
 	}
 }
 
+// Add tension to player while in midair
 void APlayerCharacter::AddTensionForce()
 {
-	FVector DirectionToPoint = GetActorLocation() - TargetGrapplePoint->GetActorLocation(); 
-	DirectionToPoint.Normalize();
+	FVector DirectionToPlayer = GetActorLocation() - Rope->GetTargetPoint()->GetActorLocation();
+	DirectionToPlayer.Normalize();
 
-	FVector Tension = DirectionToPoint * FVector::DotProduct(GetVelocity(), DirectionToPoint);
-
-	/*float test = FVector::Dist(TargetGrapplePoint->GetActorLocation(), GetActorLocation());
-	test /= 100.0f;*/
-	//TensionStrength *= test;
+	FVector Tension = DirectionToPlayer * FVector::DotProduct(GetVelocity(), DirectionToPlayer);
 
 	GetCharacterMovement()->AddForce(Tension * -TensionStrength * GetCharacterMovement()->Mass);
 }
 
-// Either attach or detach the rope
-void APlayerCharacter::SetRopeAttached(bool bAttach)
+// Attach rope during animation
+void APlayerCharacter::AttachRope()
 {
-	if (bAttach)
-		Rope->SetAttachEndToComponent(TargetGrapplePoint->GetRootComponent(), TEXT("None"));
-	else
-		Rope->SetAttachEndToComponent(GetRootComponent(), TEXT("None")); 
+	Rope->UpdateRopeAttached(true);
 }

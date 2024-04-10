@@ -3,6 +3,7 @@
 #include "CableComponent.h"
 #include "CombatPractice/Actors/GrapplePoint.h"
 #include "CombatPractice/Characters/PlayerCharacter.h"
+#include "CombatPractice/Characters/EnemyCharacter.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetSystemLibrary.h"
 
@@ -11,7 +12,7 @@ ARope::ARope()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-	TargetGrapplePoint = nullptr; 
+	Target = FGrappleActor(); 
 
 	// Create scene component and set as root
 	Root = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
@@ -38,13 +39,13 @@ void ARope::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	DetermineClosestGrapplePoint(); 
+	DetermineTarget(); 
 }
 
-// Get a reference to the target grapple point
-AGrapplePoint* ARope::GetTargetPoint()
+// Access the target the rope is focussed on
+FGrappleActor ARope::GetTarget()
 {
-	return TargetGrapplePoint;
+	return Target;
 }
 
 // Set reference to player
@@ -59,72 +60,80 @@ void ARope::UpdateRopeAttached(bool bShouldAttach)
 	Cable->SetVisibility(bShouldAttach);
 
 	if (bShouldAttach)
-		Cable->SetAttachEndToComponent(TargetGrapplePoint->GetRootComponent());
+		Cable->SetAttachEndToComponent(Target.Actor->GetRootComponent());
 	else
 		Cable->SetAttachEndToComponent(Root);
 }
 
 // Find the grapple point closest to where the player is looking
-void ARope::DetermineClosestGrapplePoint()
+void ARope::DetermineTarget()
 {
 	// Variables for trace
 	TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypes;
 	ObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECC_GameTraceChannel4));
+	ObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECC_GameTraceChannel1));
 
 	TArray<AActor*> ActorsToIgnore;
 	ActorsToIgnore.Add(this);
 	ActorsToIgnore.Add(PlayerRef);
 
 	TArray<AActor*> FoundActors;
-	TArray<AGrapplePoint*> NearbyPoints;
+	TArray<FGrappleActor> NearbyGrappleActors;
 
 	FVector CameraForward = UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0)->GetActorForwardVector();
 
 	FHitResult HitResult;
 
-	// Find all nearby grapple points
-	UKismetSystemLibrary::SphereOverlapActors(GetWorld(), GetActorLocation(), Cable->CableLength, ObjectTypes, AGrapplePoint::StaticClass(), ActorsToIgnore, OUT FoundActors);
+	// Find all nearby actors that can be grappled onto
+	UKismetSystemLibrary::SphereOverlapActors(GetWorld(), GetActorLocation(), Cable->CableLength, ObjectTypes, nullptr, ActorsToIgnore, OUT FoundActors);
 
-	// Determine which points are within line of site to the player
+	// Determine which actors are within line of sight to the player
 	for (AActor* Actor : FoundActors)
 	{
-		if (!UKismetSystemLibrary::LineTraceSingle(GetWorld(), PlayerRef->GetActorLocation(), Actor->GetActorLocation(), UEngineTypes::ConvertToTraceType(ECC_Visibility), 
-												  true, ActorsToIgnore, EDrawDebugTrace::None, OUT HitResult, true))
-			NearbyPoints.Add(Cast<AGrapplePoint>(Actor));
+		if (!UKismetSystemLibrary::LineTraceSingle(GetWorld(), PlayerRef->GetActorLocation(), Actor->GetActorLocation(), UEngineTypes::ConvertToTraceType(ECC_Visibility),
+			true, ActorsToIgnore, EDrawDebugTrace::None, OUT HitResult, true)
+			&&
+			Actor->Implements<UGrappleInterface>())
+		{
+			if (AGrapplePoint* Point = Cast<AGrapplePoint>(Actor))
+				NearbyGrappleActors.Add(Point->CreateGrappleActor());
+			else if (AEnemyCharacter* Enemy = Cast<AEnemyCharacter>(Actor))
+				NearbyGrappleActors.Add(Enemy->CreateGrappleActor()); 
+		}
 	}
 
-	// Select the closest grapple point based on camera rotation
-	if (!NearbyPoints.IsEmpty())
+	// Select the actor closest to the where the camera is pointed 
+	if (!NearbyGrappleActors.IsEmpty())
 	{
-		TargetGrapplePoint = NearbyPoints[0];
-		TargetGrapplePoint->SetIconVisibility(false); 
+		Target = NearbyGrappleActors[0];
+		Target.SetIconVisibility(false);
 
-		if (NearbyPoints.Num() > 1)
+		if (NearbyGrappleActors.Num() > 1)
 		{
-			for (AGrapplePoint* NextPoint : NearbyPoints)
+			for (int i = 1; i <= NearbyGrappleActors.Num() - 1; i++)
 			{
-				NextPoint->SetIconVisibility(false);
+				NearbyGrappleActors[i].SetIconVisibility(false);
 
-				FVector DirectionToNext = NextPoint->GetActorLocation() - PlayerRef->GetActorLocation();
+				FVector DirectionToNext = NearbyGrappleActors[i].Actor->GetActorLocation() - PlayerRef->GetActorLocation();
 				DirectionToNext.Normalize();
 
-				FVector DirectionToTarget = TargetGrapplePoint->GetActorLocation() - PlayerRef->GetActorLocation();
+				FVector DirectionToTarget = Target.Actor->GetActorLocation() - PlayerRef->GetActorLocation();
 				DirectionToTarget.Normalize();
 
 				if (FVector::DotProduct(CameraForward, DirectionToNext) > FVector::DotProduct(CameraForward, DirectionToTarget))
-					TargetGrapplePoint = NextPoint;
+					Target = NearbyGrappleActors[i];
 			}
 		}
 
-		TargetGrapplePoint->SetIconVisibility(true);
+		Target.SetIconVisibility(true);
 		PlayerRef->SetCanGrapple(true);
 	}
 	else
 	{
-		if (TargetGrapplePoint)
+		if (Target.Actor)
 		{
-			TargetGrapplePoint->SetIconVisibility(false);
-			TargetGrapplePoint = nullptr;
+			Target.SetIconVisibility(false);
+			Target = FGrappleActor();
 		}
 
 		PlayerRef->SetCanGrapple(false);

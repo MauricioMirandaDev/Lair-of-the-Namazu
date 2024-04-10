@@ -3,9 +3,9 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "CombatPractice/Actors/GrappleActor.h"
 #include "Rope.generated.h"
 
-class AGrapplePoint;
 class APlayerCharacter; 
 
 UCLASS()
@@ -21,7 +21,7 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	// Getter functions
-	AGrapplePoint* GetTargetPoint(); 
+	FGrappleActor GetTarget(); 
 
 	// Setter functions
 	void SetPlayerReference(APlayerCharacter* Player);
@@ -34,17 +34,17 @@ protected:
 	virtual void BeginPlay() override;
 
 private:	
-	// Physical components
+	// Components for cable
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
 	class USceneComponent* Root;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
 	class UCableComponent* Cable;
 
-	// Function and variables for finding grapple points
-	void DetermineClosestGrapplePoint(); 
-
-	AGrapplePoint* TargetGrapplePoint; 
+	// Function and variables for grapple system 
+	void DetermineTarget(); 
 
 	APlayerCharacter* PlayerRef; 
+
+	FGrappleActor Target; 
 };

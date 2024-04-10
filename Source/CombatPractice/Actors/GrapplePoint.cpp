@@ -14,20 +14,21 @@ AGrapplePoint::AGrapplePoint()
 	SetRootComponent(Root); 
 
 	// Create sphere component and set default values
-	Collider = CreateDefaultSubobject<UCapsuleComponent>(TEXT("Collider"));
-	Collider->SetupAttachment(Root); 
-	Collider->SetCollisionProfileName(TEXT("GrappleArea"), true);
+	Capsule = CreateDefaultSubobject<UCapsuleComponent>(TEXT("Collider"));
+	Capsule->SetupAttachment(Root); 
+	Capsule->SetCollisionProfileName(TEXT("GrapplePoint"), true);
 
 	// Create a widget component and set default values
-	SelectedIcon = CreateDefaultSubobject<UWidgetComponent>(TEXT("Selected Icon"));
-	SelectedIcon->SetupAttachment(Root);
-	SelectedIcon->SetVisibility(false); 
+	Widget = CreateDefaultSubobject<UWidgetComponent>(TEXT("Selected Icon"));
+	Widget->SetupAttachment(Root);
+	Widget->SetVisibility(false);
 }
 
 // Called when the game starts or when spawned
 void AGrapplePoint::BeginPlay()
 {
 	Super::BeginPlay();
+
 }
 
 // Called every frame
@@ -36,9 +37,9 @@ void AGrapplePoint::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 }
 
-// Set the visibility of this grapple point's icon
-void AGrapplePoint::SetIconVisibility(bool bShowIcon)
+// Create struct variable from this actor's information
+FGrappleActor AGrapplePoint::CreateGrappleActor()
 {
-	SelectedIcon->SetVisibility(bShowIcon); 
+	return FGrappleActor(this, Widget);
 }
 

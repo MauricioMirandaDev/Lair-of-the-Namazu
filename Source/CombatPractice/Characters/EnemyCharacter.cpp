@@ -25,9 +25,14 @@ AEnemyCharacter::AEnemyCharacter()
 	HealthBar->SetupAttachment(RootComponent);
 
 	// Create lock-on target
-	LockOnTarget = CreateDefaultSubobject<UWidgetComponent>(TEXT("Lock-On Target"));
-	LockOnTarget->SetupAttachment(RootComponent);
-	LockOnTarget->SetVisibility(false);
+	LockOnIcon = CreateDefaultSubobject<UWidgetComponent>(TEXT("Lock-On Target"));
+	LockOnIcon->SetupAttachment(RootComponent);
+	LockOnIcon->SetVisibility(false);
+
+	// Create widget for grapple icon
+	GrappleIcon = CreateDefaultSubobject<UWidgetComponent>(TEXT("Grapple Icon"));
+	GrappleIcon->SetupAttachment(RootComponent);
+	GrappleIcon->SetVisibility(false);
 }
 
 // Called when the game starts or when spawned
@@ -61,7 +66,7 @@ APlayerCharacter* AEnemyCharacter::GetPlayerReference()
 // Getter function to access lock-on target widget
 UWidgetComponent* AEnemyCharacter::GetLockOnTarget()
 {
-	return LockOnTarget;
+	return LockOnIcon;
 }
 
 // Getter function to access this enemy's attack radius 
@@ -106,12 +111,18 @@ void AEnemyCharacter::AfterDeath()
 	this->Destroy();
 }
 
+// Create struct variable from this actor's information
+FGrappleActor AEnemyCharacter::CreateGrappleActor()
+{
+	return FGrappleActor(this, GrappleIcon);
+}
+
 // Called when character runs out of health
 void AEnemyCharacter::OnDeath()
 {
 	Super::OnDeath();
 
-	LockOnTarget->SetVisibility(false);
+	LockOnIcon->SetVisibility(false);
 	HealthBar->SetVisibility(false);
 	PlayerReference->EnemyDefeated(this); 
 }

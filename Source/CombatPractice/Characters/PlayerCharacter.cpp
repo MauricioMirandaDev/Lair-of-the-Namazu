@@ -2,7 +2,7 @@
 #include "PlayerCharacter.h"
 #include "Camera/CameraComponent.h"
 #include "CombatPractice/CombatPracticeGameModeBase.h"
-#include "CombatPractice/Actors/GrapplePoint.h"
+#include "CombatPractice/Actors/GrappleActor.h"
 #include "CombatPractice/Actors/Rope.h"
 #include "CombatPractice/Characters/EnemyCharacter.h"
 #include "Components/CapsuleComponent.h"
@@ -63,7 +63,7 @@ void APlayerCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	//LockOnBehavior();
+	LockOnBehavior();
 }
 
 // Set whether the player can grapple or not
@@ -180,7 +180,6 @@ void APlayerCharacter::HeavyAttackPressed()
 		PlayAttackAnim(HeavyAttack);
 }
 
-/*
 // Lock onto a nearby enemy or stop locking on
 void APlayerCharacter::LockOn()
 {
@@ -358,18 +357,17 @@ void APlayerCharacter::SwitchLockedOnEnemy(FVector Direction)
 		LockedOnEnemy->GetLockOnTarget()->SetVisibility(true);
 	}
 }
-*/
 
 // Prepare variables for grappling 
 void APlayerCharacter::PrepareGrapple()
 {
 	InitialPosition = GetActorLocation();
-	EndPosition = Rope->GetTargetPoint()->GetActorLocation();
+	EndPosition = Rope->GetTarget().Actor->GetActorLocation();
 
-	FVector DirectionToPoint = EndPosition - InitialPosition;
-	DirectionToPoint.Normalize();
+	FVector DirectionToTarget = EndPosition - InitialPosition;
+	DirectionToTarget.Normalize();
 
-	FRotator RotationToPoint = DirectionToPoint.Rotation();
+	FRotator RotationToPoint = DirectionToTarget.Rotation();
 	SetActorRotation(FRotator(0.0f, RotationToPoint.Yaw, 0.0f));
 }
 
@@ -394,12 +392,12 @@ void APlayerCharacter::CastRope()
 {
 	if (!bIsGrappling && bCanGrapple)
 	{
-		FVector ToPoint = Rope->GetTargetPoint()->GetActorLocation() - GetActorLocation();
-		ToPoint.Normalize();
+		FVector DirectionToTarget = Rope->GetTarget().Actor->GetActorLocation() - GetActorLocation();
+		DirectionToTarget.Normalize();
 
-		FRotator LookAtPoint = ToPoint.Rotation();
+		FRotator RotationToTarget = DirectionToTarget.Rotation();
 
-		SetActorRotation(FRotator(0.0f, LookAtPoint.Yaw, 0.0f));
+		SetActorRotation(FRotator(0.0f, RotationToTarget.Yaw, 0.0f));
 
 		PlayAnimMontage(CastRopeAnim, 1.0f, TEXT("None"));
 		Rope->SetActorTickEnabled(false);
@@ -416,7 +414,7 @@ void APlayerCharacter::CastRope()
 // Add tension to player while in midair
 void APlayerCharacter::AddTensionForce()
 {
-	FVector DirectionToPlayer = GetActorLocation() - Rope->GetTargetPoint()->GetActorLocation();
+	FVector DirectionToPlayer = GetActorLocation() - Rope->GetTarget().Actor->GetActorLocation();
 	DirectionToPlayer.Normalize();
 
 	FVector Tension = DirectionToPlayer * FVector::DotProduct(GetVelocity(), DirectionToPlayer);
@@ -428,4 +426,5 @@ void APlayerCharacter::AddTensionForce()
 void APlayerCharacter::AttachRope()
 {
 	Rope->UpdateRopeAttached(true);
+	Rope->GetTarget().SetIconVisibility(false);
 }

@@ -67,11 +67,11 @@ void ACombatPlayerController::SetupInputComponent()
 		EnhancedInput->BindAction(InputAction_HeavyAttack, ETriggerEvent::Completed, this, &ACombatPlayerController::CallHeavyAttack);
 
 		// LOCK-ON SYSTEM
-		//EnhancedInput->BindAction(InputAction_LockOn, ETriggerEvent::Triggered, this, &ACombatPlayerController::CallLockOn);
-		//EnhancedInput->BindAction(InputAction_SwitchEnemy, ETriggerEvent::Triggered, this, &ACombatPlayerController::CallSwitchEnemy);
-		//EnhancedInput->BindAction(InputAction_SwitchEnemy, ETriggerEvent::Completed, this, &ACombatPlayerController::ResetSwitchEnemy);
+		EnhancedInput->BindAction(InputAction_LockOn, ETriggerEvent::Triggered, this, &ACombatPlayerController::CallLockOn);
+		EnhancedInput->BindAction(InputAction_SwitchEnemy, ETriggerEvent::Triggered, this, &ACombatPlayerController::CallSwitchEnemy);
+		EnhancedInput->BindAction(InputAction_SwitchEnemy, ETriggerEvent::Completed, this, &ACombatPlayerController::ResetSwitchEnemy);
 
-		// ROPE
+		// GRAPPLE SYSTEM
 		EnhancedInput->BindAction(InputAction_CastRope, ETriggerEvent::Triggered, this, &ACombatPlayerController::CallCastRope);
 		EnhancedInput->BindAction(InputAction_Grapple, ETriggerEvent::Triggered, this, &ACombatPlayerController::CallGrapple);
 	}
@@ -139,7 +139,6 @@ void ACombatPlayerController::CallHeavyAttack()
 		Player->HeavyAttackPressed(); 
 }
 
-/*
 // Call lock on from player class
 void ACombatPlayerController::CallLockOn()
 {
@@ -180,7 +179,6 @@ void ACombatPlayerController::ResetSwitchEnemy()
 {
 	bCanSwitchEnemy = true;
 }
-*/
 
 // Call rope cast from player class 
 void ACombatPlayerController::CallCastRope()

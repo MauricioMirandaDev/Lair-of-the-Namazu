@@ -3,13 +3,14 @@
 
 #include "CoreMinimal.h"
 #include "CombatCharacter.h"
+#include "CombatPractice/GrappleInterface.h"
 #include "EnemyCharacter.generated.h"
 
 class UWidgetComponent;
 class APlayerCharacter;
 
 UCLASS()
-class COMBATPRACTICE_API AEnemyCharacter : public ACombatCharacter
+class COMBATPRACTICE_API AEnemyCharacter : public ACombatCharacter, public IGrappleInterface
 {
 	GENERATED_BODY()
 	
@@ -36,6 +37,9 @@ public:
 	virtual void TakeDamage(FAttackAnimation AttackAnimation, FVector AttackLocation) override;
 
 	virtual void AfterDeath() override; 
+
+	// Interface function
+	virtual FGrappleActor CreateGrappleActor() override;
 
 	// Friend class that handles AI logic and actions
 	friend class AEnemyAIController; 
@@ -72,10 +76,14 @@ private:
 	UWidgetComponent* HealthBar;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Components", meta = (AllowPrivateAccess = "true"))
-	UWidgetComponent* LockOnTarget;
+	UWidgetComponent* LockOnIcon;
 
 	UPROPERTY(EditAnywhere, Category = "Combat", meta = (AllowPrivateAccess = "true"))
 	float AttackRadius;
 
 	bool IsPlayerWithinAttackRadius(); 
+
+	// Components for grapple system
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Components", meta = (AllowPrivateAccess = "true"))
+	UWidgetComponent* GrappleIcon;
 };

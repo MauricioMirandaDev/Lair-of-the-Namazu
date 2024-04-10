@@ -119,7 +119,7 @@ private:
 
 	bool bEnemyJustDefeated; 
 
-	// Components, functions, and variables for rope
+	// Components, functions, and variables for grapple system
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Rope", meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<ARope> RopeClass;
 

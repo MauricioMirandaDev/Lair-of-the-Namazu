@@ -3,10 +3,11 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "CombatPractice/GrappleInterface.h"
 #include "GrapplePoint.generated.h"
 
 UCLASS()
-class COMBATPRACTICE_API AGrapplePoint : public AActor
+class COMBATPRACTICE_API AGrapplePoint : public AActor, public IGrappleInterface
 {
 	GENERATED_BODY()
 	
@@ -17,8 +18,8 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	// Setter functions
-	void SetIconVisibility(bool bShowIcon); 
+	// Interface function
+	virtual FGrappleActor CreateGrappleActor() override; 
 
 protected:
 	// Called when the game starts or when spawned
@@ -30,8 +31,8 @@ private:
 	class USceneComponent* Root;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
-	class UCapsuleComponent* Collider;
+	class UCapsuleComponent* Capsule;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Components", meta = (AllowPrivateAccess = "true"))
-	class UWidgetComponent* SelectedIcon;
+	class UWidgetComponent* Widget;
 };

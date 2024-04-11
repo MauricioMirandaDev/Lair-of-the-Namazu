@@ -141,6 +141,9 @@ private:
 	UFUNCTION(BlueprintCallable)
 	void LerpPlayerPosition(float Alpha);
 
+	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	bool bIsGrappling; 
+
 	void CastRope(); 
 
 	void AddTensionForce(); 
@@ -151,5 +154,5 @@ private:
 
 	bool bCanGrapple; 
 
-	bool bIsGrappling; 
+	bool bRopeAttached; 
 };

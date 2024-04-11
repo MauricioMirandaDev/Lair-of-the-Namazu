@@ -27,8 +27,9 @@ APlayerCharacter::APlayerCharacter()
 	TensionStrength = 100.0f;
 	InitialPosition = FVector(0.0f);
 	EndPosition = FVector(0.0f);
-	bCanGrapple = false; 
 	bIsGrappling = false; 
+	bCanGrapple = false; 
+	bRopeAttached = false; 
 
 	// Create spring arm component and set default values
 	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("Spring Arm"));
@@ -271,7 +272,7 @@ void APlayerCharacter::BeginLockingOn()
 
 		Rope->SetActorTickEnabled(false);
 
-		if (!bIsGrappling)
+		if (!bRopeAttached)
 		{
 			Rope->GetTarget().Clear();
 			Rope->SetTarget(FGrappleActor(LockedOnEnemy, LockedOnEnemy->GetGrappleIcon())); 
@@ -368,7 +369,7 @@ void APlayerCharacter::SwitchLockedOnEnemy(FVector Direction)
 		LockedOnEnemy = FindNearbyEnemy(Direction);
 		LockedOnEnemy->GetLockOnTarget()->SetVisibility(true);
 
-		if (!bIsGrappling)
+		if (!bRopeAttached)
 		{
 			Rope->GetTarget().Clear();
 			Rope->SetTarget(FGrappleActor(LockedOnEnemy, LockedOnEnemy->GetGrappleIcon()));
@@ -387,12 +388,21 @@ void APlayerCharacter::PrepareGrapple()
 
 	FRotator RotationToPoint = DirectionToTarget.Rotation();
 	SetActorRotation(FRotator(0.0f, RotationToPoint.Yaw, 0.0f));
+
+	bIsGrappling = true;
 }
 
 // Reset values after grappling
 void APlayerCharacter::FinishGrapple()
 {
-	bIsGrappling = false;
+	bRopeAttached = false;
+	bIsGrappling = false; 
+
+	if (Rope->GetTarget().Actor->IsA(AEnemyCharacter::StaticClass()))
+	{
+		AEnemyCharacter* Enemy = Cast<AEnemyCharacter>(Rope->GetTarget().Actor);
+		Enemy->TakeDamage(FAttackAnimation(nullptr, EAttackType::ATTACK_Trip, 0.0f, 0.0f, 0.0f, 0.0f), GetActorLocation());
+	}
 
 	Rope->UpdateRopeAttached(false);
 	Rope->GetTarget().Clear();
@@ -414,7 +424,7 @@ void APlayerCharacter::LerpPlayerPosition(float Alpha)
 // Play animation to cast or detach rope
 void APlayerCharacter::CastRope()
 {
-	if (!bIsGrappling && bCanGrapple && Rope->GetTarget().Actor)
+	if (!bRopeAttached && bCanGrapple && Rope->GetTarget().Actor)
 	{
 		FVector DirectionToTarget = Rope->GetTarget().Actor->GetActorLocation() - GetActorLocation();
 		DirectionToTarget.Normalize();
@@ -425,9 +435,9 @@ void APlayerCharacter::CastRope()
 
 		PlayAnimMontage(CastRopeAnim, 1.0f, TEXT("None"));
 		Rope->SetActorTickEnabled(false);
-		bIsGrappling = true;
+		bRopeAttached = true;
 	}
-	else if (bIsGrappling)
+	else if (bRopeAttached)
 	{
 		FinishGrapple();
 	}

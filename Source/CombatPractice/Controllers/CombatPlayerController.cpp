@@ -89,7 +89,7 @@ void ACombatPlayerController::Move(const FInputActionValue& Value)
 		Player->AddMovementInput(ForwardDirection, MovementValue.Y);
 		Player->AddMovementInput(RightDirection, MovementValue.X); 
 		
-		if (Player->bIsGrappling && Player->GetCharacterMovement()->MovementMode == EMovementMode::MOVE_Falling)
+		if (Player->bRopeAttached && Player->GetCharacterMovement()->MovementMode == EMovementMode::MOVE_Falling)
 			Player->AddTensionForce();
 	}
 }
@@ -97,7 +97,7 @@ void ACombatPlayerController::Move(const FInputActionValue& Value)
 // Call jump functions from player class
 void ACombatPlayerController::CallJump()
 {
-	if (Player->GetCombatState() == ECombatState::COMBAT_Neutral && !Player->bIsGrappling)
+	if (Player->GetCombatState() == ECombatState::COMBAT_Neutral && !Player->bRopeAttached)
 		Player->Jump(); 
 }
 
@@ -190,7 +190,7 @@ void ACombatPlayerController::CallCastRope()
 // Call grapple from player class
 void ACombatPlayerController::CallGrapple()
 {
-	if (Player->bIsGrappling)
+	if (Player->bRopeAttached)
 		Player->Grapple(); 
 }
 

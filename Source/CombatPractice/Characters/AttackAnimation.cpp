@@ -10,3 +10,13 @@ FAttackAnimation::FAttackAnimation()
 	ForwardKnockbackStrength = 0.0f;
 	VerticalKnockbackStrength = 0.0f;
 }
+
+FAttackAnimation::FAttackAnimation(UAnimMontage* InAnimMontage, EAttackType InAttackType, float InDamageAmount, float InForwardThrust, float InKnockback, float InVerticalKnockback)
+{
+	Animation = InAnimMontage;
+	AttackType = InAttackType;
+	DamageAmount = InDamageAmount;
+	ForwardThrustStrength = InForwardThrust;
+	ForwardKnockbackStrength = InKnockback;
+	VerticalKnockbackStrength = InVerticalKnockback;
+}

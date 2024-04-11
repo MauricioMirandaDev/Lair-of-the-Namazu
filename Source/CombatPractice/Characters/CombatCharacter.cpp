@@ -119,6 +119,9 @@ void ACombatCharacter::TakeDamage(FAttackAnimation AttackAnimation, FVector Atta
 				CombatState = ECombatState::COMBAT_DamagedStun;
 				LaunchCharacter(-GetActorForwardVector() * AttackAnimation.ForwardKnockbackStrength, true, true);
 				break;
+			case EAttackType::ATTACK_Trip:
+				CombatState = ECombatState::COMBAT_DamagedTrip;
+				break;
 			default:
 				CombatState = ECombatState::COMBAT_DamagedNormal;
 				LaunchCharacter(-GetActorForwardVector() * AttackAnimation.ForwardKnockbackStrength, true, true);

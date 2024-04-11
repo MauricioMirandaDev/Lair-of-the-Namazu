@@ -26,6 +26,8 @@ public:
 	// Setter functions
 	void SetPlayerReference(APlayerCharacter* Player);
 
+	void SetTarget(FGrappleActor NewTarget); 
+
 	// Function for cable
 	void UpdateRopeAttached(bool bShouldAttach);
 

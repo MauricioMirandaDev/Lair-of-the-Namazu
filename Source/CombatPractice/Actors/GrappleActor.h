@@ -19,6 +19,8 @@ public:
 
 	void SetIconVisibility(bool bNewVisibility); 
 
+	void Clear();
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	AActor* Actor;
 

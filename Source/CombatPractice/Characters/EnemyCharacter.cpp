@@ -75,6 +75,12 @@ float AEnemyCharacter::GetAttackRadius()
 	return AttackRadius;
 }
 
+// Getter function to access this enemy's grapple icon
+UWidgetComponent* AEnemyCharacter::GetGrappleIcon()
+{
+	return GrappleIcon;
+}
+
 // Set this character to be able to move or not 
 void AEnemyCharacter::UpdateMovement(bool bPauseMovement)
 {

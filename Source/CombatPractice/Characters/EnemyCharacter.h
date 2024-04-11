@@ -28,6 +28,8 @@ public:
 
 	float GetAttackRadius(); 
 
+	UWidgetComponent* GetGrappleIcon();
+
 	// Functions used for combat
 	virtual void UpdateMovement(bool bPauseMovement) override;
 

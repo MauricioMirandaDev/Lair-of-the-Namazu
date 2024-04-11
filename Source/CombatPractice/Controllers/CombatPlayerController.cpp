@@ -190,7 +190,7 @@ void ACombatPlayerController::CallCastRope()
 // Call grapple from player class
 void ACombatPlayerController::CallGrapple()
 {
-	if (Player)
+	if (Player->bIsGrappling)
 		Player->Grapple(); 
 }
 

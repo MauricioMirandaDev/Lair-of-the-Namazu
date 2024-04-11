@@ -18,3 +18,15 @@ void FGrappleActor::SetIconVisibility(bool bNewVisibility)
 {
 	Icon->SetVisibility(bNewVisibility); 
 }
+
+void FGrappleActor::Clear()
+{
+	if (Actor)
+		Actor = nullptr;
+
+	if (Icon)
+	{
+		Icon->SetVisibility(false);
+		Icon = nullptr;
+	}
+}

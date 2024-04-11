@@ -262,11 +262,20 @@ void APlayerCharacter::LockOnBehavior()
 void APlayerCharacter::BeginLockingOn()
 {
 	LockedOnEnemy = FindClosestEnemy();
+
 	if (LockedOnEnemy)
 	{
 		bIsLockedOn = true;
 		LockedOnEnemy->GetLockOnTarget()->SetVisibility(true);
 		SetActorTickEnabled(true);
+
+		Rope->SetActorTickEnabled(false);
+
+		if (!bIsGrappling)
+		{
+			Rope->GetTarget().Clear();
+			Rope->SetTarget(FGrappleActor(LockedOnEnemy, LockedOnEnemy->GetGrappleIcon())); 
+		}
 	}
 }
 
@@ -278,6 +287,9 @@ void APlayerCharacter::StopLockingOn()
 		LockedOnEnemy->GetLockOnTarget()->SetVisibility(false);
 	LockedOnEnemy = nullptr;
 	SetActorTickEnabled(false); 
+
+	Rope->GetTarget().Clear();
+	Rope->SetActorTickEnabled(true); 
 }
 
 // Set the player and camera to always face the locked on enemy
@@ -355,6 +367,12 @@ void APlayerCharacter::SwitchLockedOnEnemy(FVector Direction)
 
 		LockedOnEnemy = FindNearbyEnemy(Direction);
 		LockedOnEnemy->GetLockOnTarget()->SetVisibility(true);
+
+		if (!bIsGrappling)
+		{
+			Rope->GetTarget().Clear();
+			Rope->SetTarget(FGrappleActor(LockedOnEnemy, LockedOnEnemy->GetGrappleIcon()));
+		}
 	}
 }
 
@@ -374,9 +392,15 @@ void APlayerCharacter::PrepareGrapple()
 // Reset values after grappling
 void APlayerCharacter::FinishGrapple()
 {
-	Rope->SetActorTickEnabled(true);
-	Rope->UpdateRopeAttached(false);
 	bIsGrappling = false;
+
+	Rope->UpdateRopeAttached(false);
+	Rope->GetTarget().Clear();
+
+	if (bIsLockedOn)
+		Rope->SetTarget(FGrappleActor(LockedOnEnemy, LockedOnEnemy->GetGrappleIcon()));
+	if (!bIsLockedOn)
+		Rope->SetActorTickEnabled(true);
 }
 
 // Use linear interpolation to grapple the player to a point
@@ -390,7 +414,7 @@ void APlayerCharacter::LerpPlayerPosition(float Alpha)
 // Play animation to cast or detach rope
 void APlayerCharacter::CastRope()
 {
-	if (!bIsGrappling && bCanGrapple)
+	if (!bIsGrappling && bCanGrapple && Rope->GetTarget().Actor)
 	{
 		FVector DirectionToTarget = Rope->GetTarget().Actor->GetActorLocation() - GetActorLocation();
 		DirectionToTarget.Normalize();
@@ -405,9 +429,7 @@ void APlayerCharacter::CastRope()
 	}
 	else if (bIsGrappling)
 	{
-		Rope->SetActorTickEnabled(true);
-		Rope->UpdateRopeAttached(false);
-		bIsGrappling = false;
+		FinishGrapple();
 	}
 }
 

@@ -54,6 +54,13 @@ void ARope::SetPlayerReference(APlayerCharacter* Player)
 	PlayerRef = Player;
 }
 
+// Set the target to a new grapple actor
+void ARope::SetTarget(FGrappleActor NewTarget)
+{
+	Target = NewTarget; 
+	Target.SetIconVisibility(true); 
+}
+
 // Attach the rope to a grapple point or detach it
 void ARope::UpdateRopeAttached(bool bShouldAttach)
 {

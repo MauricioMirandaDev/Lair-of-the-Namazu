@@ -25,6 +25,7 @@ APlayerCharacter::APlayerCharacter()
 	bEnemyJustDefeated = false; 
 	CastRopeAnim = nullptr; 
 	TensionStrength = 100.0f;
+	PreviousEnemyLaunched = nullptr; 
 	InitialPosition = FVector(0.0f);
 	EndPosition = FVector(0.0f);
 	bIsGrappling = false; 
@@ -95,7 +96,7 @@ void APlayerCharacter::TakeDamage(FAttackAnimation AttackAnimation, FVector Atta
 {
 	Super::TakeDamage(AttackAnimation, AttackLocation); 
 
-	//StopLockingOn(); 
+	StopLockingOn(); 
 }
 
 // Apply effects after the character has finished their death animation 
@@ -275,7 +276,7 @@ void APlayerCharacter::BeginLockingOn()
 		if (!bRopeAttached)
 		{
 			Rope->GetTarget().Clear();
-			Rope->SetTarget(FGrappleActor(LockedOnEnemy, LockedOnEnemy->GetGrappleIcon())); 
+			Rope->SetTarget(LockedOnEnemy->CreateGrappleActor()); 
 		}
 	}
 }
@@ -372,7 +373,7 @@ void APlayerCharacter::SwitchLockedOnEnemy(FVector Direction)
 		if (!bRopeAttached)
 		{
 			Rope->GetTarget().Clear();
-			Rope->SetTarget(FGrappleActor(LockedOnEnemy, LockedOnEnemy->GetGrappleIcon()));
+			Rope->SetTarget(LockedOnEnemy->CreateGrappleActor());
 		}
 	}
 }
@@ -398,17 +399,11 @@ void APlayerCharacter::FinishGrapple()
 	bRopeAttached = false;
 	bIsGrappling = false; 
 
-	if (Rope->GetTarget().Actor->IsA(AEnemyCharacter::StaticClass()))
-	{
-		AEnemyCharacter* Enemy = Cast<AEnemyCharacter>(Rope->GetTarget().Actor);
-		Enemy->TakeDamage(FAttackAnimation(nullptr, EAttackType::ATTACK_Trip, 0.0f, 0.0f, 0.0f, 0.0f), GetActorLocation());
-	}
-
 	Rope->UpdateRopeAttached(false);
 	Rope->GetTarget().Clear();
 
 	if (bIsLockedOn)
-		Rope->SetTarget(FGrappleActor(LockedOnEnemy, LockedOnEnemy->GetGrappleIcon()));
+		Rope->SetTarget(LockedOnEnemy->CreateGrappleActor());
 	if (!bIsLockedOn)
 		Rope->SetActorTickEnabled(true);
 }
@@ -419,6 +414,16 @@ void APlayerCharacter::LerpPlayerPosition(float Alpha)
 	FVector LerpedLocation = FMath::Lerp(InitialPosition, EndPosition, Alpha);
 
 	SetActorLocation(LerpedLocation);
+}
+
+// Launch an enemy while the player is grappling 
+void APlayerCharacter::LaunchEnemy(AEnemyCharacter* DamagedEnemy)
+{
+	if (DamagedEnemy != PreviousEnemyLaunched)
+	{
+		PreviousEnemyLaunched = DamagedEnemy;
+		DamagedEnemy->TakeDamage(LaunchAttack, GetActorLocation());
+	}
 }
 
 // Play animation to cast or detach rope
@@ -459,4 +464,19 @@ void APlayerCharacter::AttachRope()
 {
 	Rope->UpdateRopeAttached(true);
 	Rope->GetTarget().SetIconVisibility(false);
+}
+
+// Reel in whatever the rope is attached to
+void APlayerCharacter::ReelIn()
+{
+	if (Rope->GetTarget().Actor->IsA(AEnemyCharacter::StaticClass()))
+	{
+		AEnemyCharacter* Enemy = Cast<AEnemyCharacter>(Rope->GetTarget().Actor);
+
+		if (Enemy->GetCombatState() != ECombatState::COMBAT_DamagedTrip)
+		{
+			Enemy->TakeDamage(TripAttack, GetActorLocation());
+			FinishGrapple();
+		}
+	}
 }

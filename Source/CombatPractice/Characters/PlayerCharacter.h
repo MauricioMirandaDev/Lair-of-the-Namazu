@@ -6,7 +6,6 @@
 #include "PlayerCharacter.generated.h" 
 
 class AEnemyCharacter;
-class AGrapplePoint;
 class ARope;
 class UAnimMontage; 
 
@@ -129,6 +128,12 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animations", meta = (AllowPrivateAccess = "true"))
 	UAnimMontage* CastRopeAnim; 
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animations", meta = (AllowPrivateAccess = "true"))
+	FAttackAnimation LaunchAttack;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animations", meta = (AllowPrivateAccess = "true"))
+	FAttackAnimation TripAttack;
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Rope", meta = (AllowPrivateAccess = "true"))
 	float TensionStrength;
 
@@ -141,12 +146,19 @@ private:
 	UFUNCTION(BlueprintCallable)
 	void LerpPlayerPosition(float Alpha);
 
+	UFUNCTION(BlueprintCallable)
+	void LaunchEnemy(AEnemyCharacter* DamagedEnemy); 
+
 	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	bool bIsGrappling; 
 
 	void CastRope(); 
 
 	void AddTensionForce(); 
+
+	void ReelIn(); 
+
+	AEnemyCharacter* PreviousEnemyLaunched; 
 
 	FVector InitialPosition;
 

@@ -19,7 +19,9 @@ ACombatPlayerController::ACombatPlayerController()
 	InputAction_LockOn = nullptr;
 	InputAction_SwitchEnemy = nullptr; 
 	InputAction_CastRope = nullptr; 
+	InputAction_PrepareReel = nullptr; 
 	InputAction_Grapple = nullptr;
+	InputAction_ReelIn = nullptr; 
 
 	GamepadLookRate = 100.0f; 
 	bCanSwitchEnemy = true;  
@@ -74,6 +76,7 @@ void ACombatPlayerController::SetupInputComponent()
 		// GRAPPLE SYSTEM
 		EnhancedInput->BindAction(InputAction_CastRope, ETriggerEvent::Triggered, this, &ACombatPlayerController::CallCastRope);
 		EnhancedInput->BindAction(InputAction_Grapple, ETriggerEvent::Triggered, this, &ACombatPlayerController::CallGrapple);
+		EnhancedInput->BindAction(InputAction_ReelIn, ETriggerEvent::Triggered, this, &ACombatPlayerController::CallReelIn); 
 	}
 }
 
@@ -191,7 +194,14 @@ void ACombatPlayerController::CallCastRope()
 void ACombatPlayerController::CallGrapple()
 {
 	if (Player->bRopeAttached)
-		Player->Grapple(); 
+		Player->Grapple();
+}
+
+// Call reel in from player class
+void ACombatPlayerController::CallReelIn()
+{
+	if (Player->bRopeAttached)
+		Player->ReelIn(); 
 }
 
 

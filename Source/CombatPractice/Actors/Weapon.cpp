@@ -53,12 +53,12 @@ void AWeapon::BeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherAct
 {
 	if (ACombatCharacter* OtherCharacter = Cast<ACombatCharacter>(OtherActor))
 	{
-		if (LastCharacterDamaged == OtherCharacter)
-			return; 
-
-		OtherCharacter->TakeDamage(OwningCharacter->GetCurrentAttackAnim(), OwningCharacter->GetActorLocation());
-		LastCharacterDamaged = OtherCharacter;
-		UGameplayStatics::PlaySoundAtLocation(GetWorld(), ImpactSoundEffect, GetActorLocation()); 
+		if (LastCharacterDamaged != OtherCharacter)
+		{
+			LastCharacterDamaged = OtherCharacter;
+			OtherCharacter->TakeDamage(OwningCharacter->GetCurrentAttackAnim(), OwningCharacter->GetActorLocation());
+			UGameplayStatics::PlaySoundAtLocation(GetWorld(), ImpactSoundEffect, GetActorLocation()); 
+		} 
 	}
 }
 

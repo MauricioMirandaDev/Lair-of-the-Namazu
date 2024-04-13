@@ -15,7 +15,7 @@ struct FGrappleActor
 public:
 	FGrappleActor();
 
-	FGrappleActor(AActor* InActor, UWidgetComponent* InIcon); 
+	FGrappleActor(AActor* InActor, UWidgetComponent* InIcon);
 
 	void SetIconVisibility(bool bNewVisibility); 
 

@@ -56,7 +56,13 @@ private:
 	UInputAction* InputAction_CastRope;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Enhanced Input System", meta = (AllowPrivateAccess = "true"))
+	UInputAction* InputAction_PrepareReel;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Enhanced Input System", meta = (AllowPrivateAccess = "true"))
 	UInputAction* InputAction_Grapple;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Enhanced Input System", meta = (AllowPrivateAccess = "true"))
+	UInputAction* InputAction_ReelIn;
 
 	// Reference to player used to call functions
 	class APlayerCharacter* Player;
@@ -95,4 +101,6 @@ private:
 	void CallCastRope(); 
 
 	void CallGrapple(); 
+
+	void CallReelIn(); 
 };

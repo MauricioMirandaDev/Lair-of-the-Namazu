@@ -22,6 +22,7 @@ ACombatPlayerController::ACombatPlayerController()
 	InputAction_PrepareReel = nullptr; 
 	InputAction_Grapple = nullptr;
 	InputAction_ReelIn = nullptr; 
+	InputAction_InstantAttack = nullptr; 
 
 	GamepadLookRate = 100.0f; 
 	bCanSwitchEnemy = true;  
@@ -67,6 +68,7 @@ void ACombatPlayerController::SetupInputComponent()
 		// COMBAT
 		EnhancedInput->BindAction(InputAction_LightAttack, ETriggerEvent::Triggered, this, &ACombatPlayerController::CallLightAttack);
 		EnhancedInput->BindAction(InputAction_HeavyAttack, ETriggerEvent::Completed, this, &ACombatPlayerController::CallHeavyAttack);
+		EnhancedInput->BindAction(InputAction_InstantAttack, ETriggerEvent::Triggered, this, &ACombatPlayerController::CallInstantAttack);
 
 		// LOCK-ON SYSTEM
 		EnhancedInput->BindAction(InputAction_LockOn, ETriggerEvent::Triggered, this, &ACombatPlayerController::CallLockOn);
@@ -140,6 +142,13 @@ void ACombatPlayerController::CallHeavyAttack()
 {
 	if (Player->GetCombatState() == ECombatState::COMBAT_Neutral)
 		Player->HeavyAttackPressed(); 
+}
+
+// Call instant attack from player class
+void ACombatPlayerController::CallInstantAttack()
+{
+	if (Player->GetCombatState() == ECombatState::COMBAT_Neutral)
+		Player->InstantAttackPressed(); 
 }
 
 // Call lock on from player class

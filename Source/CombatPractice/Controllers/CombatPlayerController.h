@@ -64,6 +64,9 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Enhanced Input System", meta = (AllowPrivateAccess = "true"))
 	UInputAction* InputAction_ReelIn;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Enhanced Input System", meta = (AllowPrivateAccess = "true"))
+	UInputAction* InputAction_InstantAttack;
+
 	// Reference to player used to call functions
 	class APlayerCharacter* Player;
 
@@ -87,6 +90,8 @@ private:
 	void CallLightAttack();
 
 	void CallHeavyAttack(); 
+
+	void CallInstantAttack(); 
 
 	// Functions and variable for lock-on system
 	void CallLockOn();

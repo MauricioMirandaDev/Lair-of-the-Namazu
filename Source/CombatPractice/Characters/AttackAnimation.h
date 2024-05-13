@@ -13,6 +13,8 @@ enum class EAttackType : uint8 {
 	ATTACK_Heavy UMETA(DisplayName = "Heavy Attack"),
 	ATTACK_Stun UMETA(DisplayName = "Stun Attack"),
 	ATTACK_Trip UMETA(DisplayName = "Trip Attack"), 
+	ATTACK_Behind UMETA(DisplayName = "Instant Attack Behind"),
+	ATTACK_Ground UMETA(DisplayName = "Instant Attack Ground")
 };
 
 USTRUCT(BlueprintType)

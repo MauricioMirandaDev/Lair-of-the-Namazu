@@ -182,6 +182,36 @@ void APlayerCharacter::HeavyAttackPressed()
 		PlayAttackAnim(HeavyAttack);
 }
 
+// Perform an instant attack on an unalarmed enemy or on a tripped enemy
+void APlayerCharacter::InstantAttackPressed()
+{
+	TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypes;
+	ObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECC_GameTraceChannel1));
+
+	TArray<AActor*> ActorsToIngore;
+	ActorsToIngore.Add(this);
+
+	FHitResult HitResult;
+
+	UKismetSystemLibrary::CapsuleTraceSingleForObjects(GetWorld(), GetActorLocation(), GetActorLocation() + (GetActorForwardVector() * 100.0f),
+													   GetCapsuleComponent()->GetUnscaledCapsuleRadius(), GetCapsuleComponent()->GetUnscaledCapsuleHalfHeight(), ObjectTypes, 
+													   false, ActorsToIngore, EDrawDebugTrace::None, OUT HitResult, true);
+
+	if (AEnemyCharacter* HitEnemy = Cast<AEnemyCharacter>(HitResult.GetActor()))
+	{
+		if (FVector::DotProduct(HitEnemy->GetActorForwardVector(), GetActorForwardVector()) > 0.9)
+		{
+			PlayAttackAnim(InstantAttack_Behind);
+			HitEnemy->TakeDamage(InstantAttack_Behind, GetActorLocation());
+		}
+		else if (HitEnemy->GetCombatState() == ECombatState::COMBAT_DamagedTrip)
+		{
+			PlayAttackAnim(InstantAttack_Ground);
+			HitEnemy->TakeDamage(InstantAttack_Ground, GetActorLocation());
+		}
+	}
+}
+
 // Lock onto a nearby enemy or stop locking on
 void APlayerCharacter::LockOn()
 {

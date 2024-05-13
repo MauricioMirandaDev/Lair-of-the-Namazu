@@ -100,15 +100,18 @@ void ACombatCharacter::TakeDamage(FAttackAnimation AttackAnimation, FVector Atta
 	Weapon->UpdateHitbox(false, FVector(0.0f, 0.0f, 0.0f));
 
 	// Rotate to face attacking character
-	FRotator LookAtRotation = (AttackLocation - GetActorLocation()).Rotation();
-	SetActorRotation(FRotator(0.0f, LookAtRotation.Yaw, 0.0f), ETeleportType::None);
+	if (AttackAnimation.AttackType != EAttackType::ATTACK_Behind && AttackAnimation.AttackType != EAttackType::ATTACK_Ground)
+	{
+		FRotator LookAtRotation = (AttackLocation - GetActorLocation()).Rotation();
+		SetActorRotation(FRotator(0.0f, LookAtRotation.Yaw, 0.0f), ETeleportType::None);
+	}
 
 	if (IsDead())
 		OnDeath();
 	else
 	{
 
-		// Add knockback force and update combat state
+		// Update combat state
 		switch (AttackAnimation.AttackType)
 		{
 			case EAttackType::ATTACK_Heavy:
@@ -121,6 +124,12 @@ void ACombatCharacter::TakeDamage(FAttackAnimation AttackAnimation, FVector Atta
 				break;
 			case EAttackType::ATTACK_Trip:
 				CombatState = ECombatState::COMBAT_DamagedTrip;
+				break;
+			case EAttackType::ATTACK_Behind:
+				CombatState = ECombatState::COMBAT_DeadBehind;
+				break;
+			case EAttackType::ATTACK_Ground:
+				CombatState = ECombatState::COMBAT_DeadGround;
 				break;
 			default:
 				CombatState = ECombatState::COMBAT_DamagedNormal;

@@ -13,5 +13,7 @@ enum class ECombatState : uint8 {
 	COMBAT_AttackStartup UMETA(DisplayName = "Attack Startup"),
 	COMBAT_AttackActive UMETA(DisplayName = "Attack Active"),
 	COMBAT_AttackRecover UMETA(DisplayName = "Attack Recovery"),
-	COMBAT_Dead UMETA(DisplayName = "Dead")
+	COMBAT_Dead UMETA(DisplayName = "Dead"),
+	COMBAT_DeadBehind UMETA(DisplayName = "Instant Death Behind"),
+	COMBAT_DeadGround UMETA(DisplayName = "Instant Death Ground")
 };

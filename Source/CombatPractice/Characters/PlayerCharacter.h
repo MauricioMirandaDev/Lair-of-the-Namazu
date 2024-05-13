@@ -79,12 +79,20 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animations", meta = (AllowPrivateAccess = "true"))
 	FAttackAnimation HeavyAttack;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animations", meta = (AllowPrivateAccess = "true"))
+	FAttackAnimation InstantAttack_Behind; 
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animations", meta = (AllowPrivateAccess = "true"))
+	FAttackAnimation InstantAttack_Ground;
+
 	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	bool bJumpPressed; 
 
 	void LightAttackPressed(); 
 
 	void HeavyAttackPressed(); 
+
+	void InstantAttackPressed(); 
 
 	float DefaultWalkSpeed; 
 

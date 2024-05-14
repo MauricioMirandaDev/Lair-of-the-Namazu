@@ -17,6 +17,7 @@ ACombatCharacter::ACombatCharacter()
 	CombatState = ECombatState::COMBAT_Neutral; 
 	CurrentAttackAnimation = FAttackAnimation(); 
 	WeaponClass = nullptr;
+	bLandedFromLaunch = false; 
 	MaxHealth = 100.0f;
 }
 

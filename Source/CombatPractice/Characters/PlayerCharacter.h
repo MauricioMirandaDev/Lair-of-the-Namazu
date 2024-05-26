@@ -85,14 +85,25 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animations", meta = (AllowPrivateAccess = "true"))
 	FAttackAnimation InstantAttack_Ground;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat", meta = (AllowPrivateAccess = "true"))
+	float HealingAmount; 
+
 	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	bool bJumpPressed; 
+
+	UPROPERTY(BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	int32 MedicineCount;
+
+	UPROPERTY(BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	int32 KunaiCount; 
 
 	void LightAttackPressed(); 
 
 	void HeavyAttackPressed(); 
 
 	void InstantAttackPressed(); 
+
+	void ConsumeMedicine(); 
 
 	float DefaultWalkSpeed; 
 
@@ -159,6 +170,9 @@ private:
 
 	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	bool bIsGrappling; 
+
+	UPROPERTY(BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	int32 RopeCount;
 
 	void CastRope(); 
 

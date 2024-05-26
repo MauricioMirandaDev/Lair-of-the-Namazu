@@ -23,6 +23,7 @@ ACombatPlayerController::ACombatPlayerController()
 	InputAction_Grapple = nullptr;
 	InputAction_ReelIn = nullptr; 
 	InputAction_InstantAttack = nullptr; 
+	InputAction_Heal = nullptr; 
 
 	GamepadLookRate = 100.0f; 
 	bCanSwitchEnemy = true;  
@@ -69,6 +70,7 @@ void ACombatPlayerController::SetupInputComponent()
 		EnhancedInput->BindAction(InputAction_LightAttack, ETriggerEvent::Triggered, this, &ACombatPlayerController::CallLightAttack);
 		EnhancedInput->BindAction(InputAction_HeavyAttack, ETriggerEvent::Completed, this, &ACombatPlayerController::CallHeavyAttack);
 		EnhancedInput->BindAction(InputAction_InstantAttack, ETriggerEvent::Triggered, this, &ACombatPlayerController::CallInstantAttack);
+		EnhancedInput->BindAction(InputAction_Heal, ETriggerEvent::Triggered, this, &ACombatPlayerController::CallConsumeMedicine);
 
 		// LOCK-ON SYSTEM
 		EnhancedInput->BindAction(InputAction_LockOn, ETriggerEvent::Triggered, this, &ACombatPlayerController::CallLockOn);
@@ -102,7 +104,7 @@ void ACombatPlayerController::Move(const FInputActionValue& Value)
 // Call jump functions from player class
 void ACombatPlayerController::CallJump()
 {
-	if (Player->GetCombatState() == ECombatState::COMBAT_Neutral && !Player->bRopeAttached)
+	if (Player->CombatState == ECombatState::COMBAT_Neutral && !Player->bRopeAttached)
 		Player->Jump(); 
 }
 
@@ -133,22 +135,29 @@ void ACombatPlayerController::LookGamepad(const FInputActionValue& Value)
 // Call light attack from player class 
 void ACombatPlayerController::CallLightAttack()
 {
-	if (Player->GetCombatState() == ECombatState::COMBAT_Neutral)
+	if (Player->CombatState == ECombatState::COMBAT_Neutral)
 		Player->LightAttackPressed();
 }
 
 // Call heavy attack from player class
 void ACombatPlayerController::CallHeavyAttack()
 {
-	if (Player->GetCombatState() == ECombatState::COMBAT_Neutral)
+	if (Player->CombatState == ECombatState::COMBAT_Neutral)
 		Player->HeavyAttackPressed(); 
 }
 
 // Call instant attack from player class
 void ACombatPlayerController::CallInstantAttack()
 {
-	if (Player->GetCombatState() == ECombatState::COMBAT_Neutral)
+	if (Player->CombatState == ECombatState::COMBAT_Neutral)
 		Player->InstantAttackPressed(); 
+}
+
+// Call use of medicine from player class
+void ACombatPlayerController::CallConsumeMedicine()
+{
+	if (Player->CombatState == ECombatState::COMBAT_Neutral)
+		Player->ConsumeMedicine();
 }
 
 // Call lock on from player class

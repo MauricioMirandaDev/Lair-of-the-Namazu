@@ -62,7 +62,13 @@ protected:
 
 	FAttackAnimation CurrentAttackAnimation;
 
-	// Function used for health system 
+	// Components and function used for health system 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Health", meta = (AllowPrivateAccess = "true"))
+	float MaxHealth;
+
+	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	float CurrentHealth;
+
 	virtual void OnDeath();
 
 private: 
@@ -72,11 +78,4 @@ private:
 
 	UPROPERTY(BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	bool bLandedFromLaunch; 
-
-	// Components used for health system
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Health", meta = (AllowPrivateAccess = "true"))
-	float MaxHealth;
-
-	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-	float CurrentHealth;
 };

@@ -67,6 +67,9 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Enhanced Input System", meta = (AllowPrivateAccess = "true"))
 	UInputAction* InputAction_InstantAttack;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Enhanced Input System", meta = (AllowPrivateAccess = "true"))
+	UInputAction* InputAction_Heal;
+
 	// Reference to player used to call functions
 	class APlayerCharacter* Player;
 
@@ -86,12 +89,14 @@ private:
 
 	void LookGamepad(const FInputActionValue& Value); 
 
-	// Functions for player's attacks
+	// Functions for player's combat
 	void CallLightAttack();
 
 	void CallHeavyAttack(); 
 
 	void CallInstantAttack(); 
+
+	void CallConsumeMedicine(); 
 
 	// Functions and variable for lock-on system
 	void CallLockOn();

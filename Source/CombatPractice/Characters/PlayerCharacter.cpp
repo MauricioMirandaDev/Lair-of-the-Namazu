@@ -17,7 +17,11 @@
 APlayerCharacter::APlayerCharacter()
 {
 	GetCapsuleComponent()->SetCollisionProfileName(TEXT("PlayerCharacter"), true);
+	HealingAmount = 10.0f; 
 	bJumpPressed = false; 
+	MedicineCount = 0;
+	KunaiCount = 0; 
+	RopeCount = 0; 
 	LockOnCameraOffset = 500.0f;
 	MaxLockOnDistance = 100.0f;
 	bIsLockedOn = false;
@@ -46,6 +50,10 @@ APlayerCharacter::APlayerCharacter()
 void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+
+	KunaiCount = 1;
+	RopeCount = 4; 
+	MedicineCount = 5; 
 
 	DefaultWalkSpeed = GetCharacterMovement()->MaxWalkSpeed; 
 
@@ -185,30 +193,46 @@ void APlayerCharacter::HeavyAttackPressed()
 // Perform an instant attack on an unalarmed enemy or on a tripped enemy
 void APlayerCharacter::InstantAttackPressed()
 {
-	TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypes;
-	ObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECC_GameTraceChannel1));
-
-	TArray<AActor*> ActorsToIngore;
-	ActorsToIngore.Add(this);
-
-	FHitResult HitResult;
-
-	UKismetSystemLibrary::CapsuleTraceSingleForObjects(GetWorld(), GetActorLocation(), GetActorLocation() + (GetActorForwardVector() * 100.0f),
-													   GetCapsuleComponent()->GetUnscaledCapsuleRadius(), GetCapsuleComponent()->GetUnscaledCapsuleHalfHeight(), ObjectTypes, 
-													   false, ActorsToIngore, EDrawDebugTrace::None, OUT HitResult, true);
-
-	if (AEnemyCharacter* HitEnemy = Cast<AEnemyCharacter>(HitResult.GetActor()))
+	if (KunaiCount > 0)
 	{
-		if (FVector::DotProduct(HitEnemy->GetActorForwardVector(), GetActorForwardVector()) > 0.9)
+		TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypes;
+		ObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECC_GameTraceChannel1));
+
+		TArray<AActor*> ActorsToIngore;
+		ActorsToIngore.Add(this);
+
+		FHitResult HitResult;
+
+		UKismetSystemLibrary::CapsuleTraceSingleForObjects(GetWorld(), GetActorLocation(), GetActorLocation() + (GetActorForwardVector() * 100.0f),
+														   GetCapsuleComponent()->GetUnscaledCapsuleRadius(), GetCapsuleComponent()->GetUnscaledCapsuleHalfHeight(), ObjectTypes, 
+														   false, ActorsToIngore, EDrawDebugTrace::None, OUT HitResult, true);
+
+		if (AEnemyCharacter* HitEnemy = Cast<AEnemyCharacter>(HitResult.GetActor()))
 		{
-			PlayAttackAnim(InstantAttack_Behind);
-			HitEnemy->TakeDamage(InstantAttack_Behind, GetActorLocation());
+			if (FVector::DotProduct(HitEnemy->GetActorForwardVector(), GetActorForwardVector()) > 0.9)
+			{
+				PlayAttackAnim(InstantAttack_Behind);
+				HitEnemy->TakeDamage(InstantAttack_Behind, GetActorLocation());
+				KunaiCount--; 
+			}
+			else if (HitEnemy->GetCombatState() == ECombatState::COMBAT_DamagedTrip)
+			{
+				PlayAttackAnim(InstantAttack_Ground);
+				HitEnemy->TakeDamage(InstantAttack_Ground, GetActorLocation());
+				KunaiCount--; 
+			}
 		}
-		else if (HitEnemy->GetCombatState() == ECombatState::COMBAT_DamagedTrip)
-		{
-			PlayAttackAnim(InstantAttack_Ground);
-			HitEnemy->TakeDamage(InstantAttack_Ground, GetActorLocation());
-		}
+	}
+}
+
+// Heal damage by consuming medicine
+void APlayerCharacter::ConsumeMedicine()
+{
+	if (MedicineCount > 0)
+	{
+		CurrentHealth += HealingAmount;
+		CurrentHealth = UKismetMathLibrary::Clamp(CurrentHealth, 0.0f, MaxHealth);
+		MedicineCount--; 
 	}
 }
 
@@ -459,7 +483,7 @@ void APlayerCharacter::LaunchEnemy(AEnemyCharacter* DamagedEnemy)
 // Play animation to cast or detach rope
 void APlayerCharacter::CastRope()
 {
-	if (!bRopeAttached && bCanGrapple && Rope->GetTarget().Actor)
+	if (!bRopeAttached && bCanGrapple && Rope->GetTarget().Actor && RopeCount > 0)
 	{
 		FVector DirectionToTarget = Rope->GetTarget().Actor->GetActorLocation() - GetActorLocation();
 		DirectionToTarget.Normalize();
@@ -506,6 +530,7 @@ void APlayerCharacter::ReelIn()
 		if (Enemy->GetCombatState() != ECombatState::COMBAT_DamagedTrip)
 		{
 			Enemy->TakeDamage(TripAttack, GetActorLocation());
+			RopeCount--; 
 			FinishGrapple();
 		}
 	}

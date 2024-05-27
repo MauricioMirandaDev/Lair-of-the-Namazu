@@ -27,7 +27,6 @@ AWeapon::AWeapon()
 	Hitbox->SetupAttachment(Mesh);
 	Hitbox->SetCollisionProfileName(TEXT("NoCollision"), true);
 	Hitbox->OnComponentBeginOverlap.AddDynamic(this, &AWeapon::BeginOverlap);
-	
 }
 
 // Called when the game starts or when spawned

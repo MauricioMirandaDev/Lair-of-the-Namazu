@@ -19,15 +19,25 @@ public:
 	APlayerCharacter();
 
 	// Called every frame
-	virtual void Tick(float DeltaTime) override;
+	virtual void Tick(float DeltaTime) override; 
 
 	// Setter functions
 	void SetCanGrapple(bool bCanPlayerGrapple);
 
-	// Functions used for combat
+	// Functions and variables used for combat
 	virtual void UpdateMovement(bool bPauseMovement) override;
 
 	virtual void ResetAttack() override;
+
+	UFUNCTION(BlueprintPure)
+	const int32 GetMedicineCount(); 
+
+	UFUNCTION(BlueprintPure)
+	const int32 GetKunaiCount();
+
+	static int32 MedicineCount;
+
+	static int32 KunaiCount; 
 
 	// Functions used for health system 
 	virtual void TakeDamage(FAttackAnimation AttackAnimation, FVector AttackLocation) override;
@@ -37,11 +47,16 @@ public:
 	// Function used for lock on system
 	void EnemyDefeated(AActor* Enemy); 
 
-	// Functions used for rope
+	// Functions and variable used for rope
 	UFUNCTION(BlueprintImplementableEvent)
 	void Grapple(); 
 
+	UFUNCTION(BlueprintPure)
+	const int32 GetRopeCount();
+
 	void AttachRope(); 
+
+	static int32 RopeCount;
 
 	// Friend class that handles input bindings
 	friend class ACombatPlayerController; 
@@ -90,12 +105,6 @@ private:
 
 	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	bool bJumpPressed; 
-
-	UPROPERTY(BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-	int32 MedicineCount;
-
-	UPROPERTY(BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-	int32 KunaiCount; 
 
 	void LightAttackPressed(); 
 
@@ -168,11 +177,11 @@ private:
 	UFUNCTION(BlueprintCallable)
 	void LaunchEnemy(AEnemyCharacter* DamagedEnemy); 
 
+	UFUNCTION(BlueprintCallable)
+	void ConsumeRope();
+
 	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	bool bIsGrappling; 
-
-	UPROPERTY(BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-	int32 RopeCount;
 
 	void CastRope(); 
 

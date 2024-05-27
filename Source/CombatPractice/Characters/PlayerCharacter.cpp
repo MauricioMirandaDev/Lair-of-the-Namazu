@@ -13,15 +13,16 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "Kismet/KismetSystemLibrary.h"
 
+int32 APlayerCharacter::MedicineCount = 0;
+int32 APlayerCharacter::KunaiCount = 0; 
+int32 APlayerCharacter::RopeCount = 0;
+
 // Sets default values
 APlayerCharacter::APlayerCharacter()
 {
 	GetCapsuleComponent()->SetCollisionProfileName(TEXT("PlayerCharacter"), true);
 	HealingAmount = 10.0f; 
 	bJumpPressed = false; 
-	MedicineCount = 0;
-	KunaiCount = 0; 
-	RopeCount = 0; 
 	LockOnCameraOffset = 500.0f;
 	MaxLockOnDistance = 100.0f;
 	bIsLockedOn = false;
@@ -50,10 +51,6 @@ APlayerCharacter::APlayerCharacter()
 void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-
-	KunaiCount = 1;
-	RopeCount = 4; 
-	MedicineCount = 5; 
 
 	DefaultWalkSpeed = GetCharacterMovement()->MaxWalkSpeed; 
 
@@ -97,6 +94,24 @@ void APlayerCharacter::UpdateMovement(bool bPauseMovement)
 void APlayerCharacter::ResetAttack()
 {
 	Super::ResetAttack();
+}
+
+// Communicate to the UI the amount of medicine held 
+const int32 APlayerCharacter::GetMedicineCount()
+{
+	return MedicineCount;
+}
+
+// Communicate to the UI the amount of kunai held 
+const int32 APlayerCharacter::GetKunaiCount()
+{
+	return KunaiCount;
+}
+
+// Communicate to the UI the amount of rope held
+const int32 APlayerCharacter::GetRopeCount()
+{
+	return RopeCount; 
 }
 
 // Deduct damage from health and update gameplay as needed
@@ -534,4 +549,10 @@ void APlayerCharacter::ReelIn()
 			FinishGrapple();
 		}
 	}
+}
+
+// Use rope resource (this function is called in blueprints) 
+void APlayerCharacter::ConsumeRope()
+{
+	RopeCount--; 
 }

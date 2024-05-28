@@ -70,8 +70,10 @@ protected:
 
 	virtual void OnMovementModeChanged(EMovementMode PrevMovementMode, uint8 PreviousCustomMode) override; 
 
-	// Function used for health system 
+	// Functions used for health system 
 	virtual void OnDeath() override; 
+
+	virtual void OnFallDeath() override; 
 
 private:
 	// Components for camera control

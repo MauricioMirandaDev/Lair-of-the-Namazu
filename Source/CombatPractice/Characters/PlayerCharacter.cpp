@@ -170,6 +170,18 @@ void APlayerCharacter::OnDeath()
 	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
 }
 
+// Called when character enters fall to death volume
+void APlayerCharacter::OnFallDeath()
+{
+	Super::OnFallDeath();
+
+	UGameplayStatics::GetPlayerController(GetWorld(), 0)->DisableInput(UGameplayStatics::GetPlayerController(GetWorld(), 0));
+
+	SpringArm->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
+
+	AfterDeath();
+}
+
 // Perform animation when player inputs light attack
 void APlayerCharacter::LightAttackPressed()
 {

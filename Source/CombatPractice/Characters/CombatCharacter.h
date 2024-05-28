@@ -47,6 +47,9 @@ public:
 
 	bool IsDead();
 
+	// Friend class that calls OnFallDeath()
+	friend class AFallVolume;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -70,6 +73,8 @@ protected:
 	float CurrentHealth;
 
 	virtual void OnDeath();
+
+	virtual void OnFallDeath(); 
 
 private: 
 	// Component used for combat

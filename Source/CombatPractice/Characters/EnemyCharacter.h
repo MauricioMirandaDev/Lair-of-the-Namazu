@@ -48,8 +48,10 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-	// Function used for combat
+	// Functions used for health system
 	virtual void OnDeath() override; 
+
+	virtual void OnFallDeath() override; 
 
 private:
 	// Reference to this enemy's AI controller

@@ -127,6 +127,16 @@ void AEnemyCharacter::OnDeath()
 	PlayerReference->EnemyDefeated(this); 
 }
 
+// Called when character enters fall to death volume
+void AEnemyCharacter::OnFallDeath()
+{
+	Super::OnFallDeath();
+
+	PlayerReference->EnemyDefeated(this);
+	Weapon->Destroy();
+	this->Destroy();
+}
+
 // Calcualte if the player is within the enemy's search radius
 bool AEnemyCharacter::IsPlayerClose()
 {

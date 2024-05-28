@@ -166,3 +166,9 @@ void ACombatCharacter::OnDeath()
 	GetCapsuleComponent()->SetCollisionProfileName(TEXT("NoCollision"), true);
 	GetCharacterMovement()->SetActive(false, true); 
 }
+
+// Called when character enters fall to death volume
+void ACombatCharacter::OnFallDeath()
+{
+	
+}

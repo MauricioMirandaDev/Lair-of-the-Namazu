@@ -1,6 +1,7 @@
 
 #include "EnemyCharacter.h"
 #include "BehaviorTree/BlackboardComponent.h"
+#include "CombatPractice/Actors/Pickup.h"
 #include "CombatPractice/Actors/Weapon.h"
 #include "CombatPractice/Characters/PlayerCharacter.h"
 #include "CombatPractice/Controllers/EnemyAIController.h"
@@ -107,6 +108,8 @@ void AEnemyCharacter::AfterDeath()
 {
 	Super::AfterDeath();
 
+	SpawnPickup();
+
 	Weapon->Destroy();
 	this->Destroy();
 }
@@ -184,4 +187,15 @@ bool AEnemyCharacter::IsPlayerBlocked()
 bool AEnemyCharacter::IsPlayerWithinAttackRadius()
 {
 	return FVector::Dist(GetActorLocation(), PlayerReference->GetActorLocation()) <= AttackRadius;
+}
+
+// Spawn a pickup item with random chance
+void AEnemyCharacter::SpawnPickup()
+{
+	int32 Index = FMath::RandRange(0, PickupClasses.Num());
+
+	if (Index != PickupClasses.Num())
+		GetWorld()->SpawnActor<APickup>(PickupClasses[Index],
+										FVector(GetActorLocation().X, GetActorLocation().Y, GetActorLocation().Z - GetCapsuleComponent()->GetUnscaledCapsuleHalfHeight()),
+										FRotator(0.0f));
 }

@@ -8,6 +8,7 @@
 
 class UWidgetComponent;
 class APlayerCharacter;
+class APickup; 
 
 UCLASS()
 class COMBATPRACTICE_API AEnemyCharacter : public ACombatCharacter, public IGrappleInterface
@@ -80,10 +81,16 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Components", meta = (AllowPrivateAccess = "true"))
 	UWidgetComponent* LockOnIcon;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Pickups", meta = (AllowPrivateAccess = "true"))
+	TArray<TSubclassOf<APickup>> PickupClasses;
+	//TSubclassOf<APickup> PickupClass;
+
 	UPROPERTY(EditAnywhere, Category = "Combat", meta = (AllowPrivateAccess = "true"))
 	float AttackRadius;
 
 	bool IsPlayerWithinAttackRadius(); 
+
+	void SpawnPickup(); 
 
 	// Components for grapple system
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Components", meta = (AllowPrivateAccess = "true"))

@@ -183,7 +183,13 @@ private:
 	void ConsumeRope();
 
 	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	float AngleToAttached;
+
+	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	bool bIsGrappling; 
+
+	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	bool bRopeAttached; 
 
 	void CastRope(); 
 
@@ -198,6 +204,4 @@ private:
 	FVector EndPosition; 
 
 	bool bCanGrapple; 
-
-	bool bRopeAttached; 
 };

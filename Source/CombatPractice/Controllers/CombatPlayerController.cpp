@@ -135,21 +135,21 @@ void ACombatPlayerController::LookGamepad(const FInputActionValue& Value)
 // Call light attack from player class 
 void ACombatPlayerController::CallLightAttack()
 {
-	if (Player->CombatState == ECombatState::COMBAT_Neutral)
+	if (Player->CombatState == ECombatState::COMBAT_Neutral && !Player->bRopeAttached)
 		Player->LightAttackPressed();
 }
 
 // Call heavy attack from player class
 void ACombatPlayerController::CallHeavyAttack()
 {
-	if (Player->CombatState == ECombatState::COMBAT_Neutral)
+	if (Player->CombatState == ECombatState::COMBAT_Neutral && !Player->bRopeAttached)
 		Player->HeavyAttackPressed(); 
 }
 
 // Call instant attack from player class
 void ACombatPlayerController::CallInstantAttack()
 {
-	if (Player->CombatState == ECombatState::COMBAT_Neutral)
+	if (Player->CombatState == ECombatState::COMBAT_Neutral && !Player->bRopeAttached)
 		Player->InstantAttackPressed(); 
 }
 

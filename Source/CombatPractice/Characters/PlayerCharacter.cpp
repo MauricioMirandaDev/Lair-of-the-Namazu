@@ -33,9 +33,10 @@ APlayerCharacter::APlayerCharacter()
 	PreviousEnemyLaunched = nullptr; 
 	InitialPosition = FVector(0.0f);
 	EndPosition = FVector(0.0f);
+	AngleToAttached = 0.0f;
 	bIsGrappling = false; 
-	bCanGrapple = false; 
 	bRopeAttached = false; 
+	bCanGrapple = false; 
 
 	// Create spring arm component and set default values
 	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("Spring Arm"));
@@ -327,6 +328,12 @@ AEnemyCharacter* APlayerCharacter::FindClosestEnemy()
 void APlayerCharacter::LockOnBehavior()
 {
 	// If the player defeats the locked on enemy, find the next nearest enemy to lock onto or stop if there are none 
+	if (LockedOnEnemy == nullptr && bRopeAttached)
+	{
+		LockedOnMovement();
+	}
+
+	/*
 	if (LockedOnEnemy == nullptr)
 	{
 		if (bEnemyJustDefeated)
@@ -339,6 +346,7 @@ void APlayerCharacter::LockOnBehavior()
 	}
 	else
 		LockedOnMovement();
+		*/
 }
 
 // Begin locking onto an enemy if one can be locked onto; enables Tick() 
@@ -379,16 +387,28 @@ void APlayerCharacter::StopLockingOn()
 void APlayerCharacter::LockedOnMovement()
 {
 	// Rotate the player to always face the enemy
-	FVector DirectionToEnemy = LockedOnEnemy->GetActorLocation() - GetActorLocation();
+	FVector DirectionToEnemy; 
+
+	if (LockedOnEnemy == nullptr && bRopeAttached)
+	{
+		DirectionToEnemy = Rope->GetTarget().Actor->GetActorLocation() - GetActorLocation();
+	}
+	else
+	{
+		DirectionToEnemy = LockedOnEnemy->GetActorLocation() - GetActorLocation();
+
+		// Rotate the camera to focus on enemy and player from a further vantage point 
+		FVector CameraToEnemy = LockedOnEnemy->GetActorLocation() - (GetActorLocation() + (GetActorForwardVector() * -LockOnCameraOffset) + FVector(0.0f, 0.0f, LockOnCameraOffset));
+		CameraToEnemy.Normalize();
+
+		GetController()->SetControlRotation(CameraToEnemy.Rotation());
+	}
+
 	DirectionToEnemy.Normalize();
 
-	SetActorRotation(DirectionToEnemy.Rotation());
+	SetActorRotation(FRotator(0.0f, DirectionToEnemy.Rotation().Yaw, 0.0f));
 
-	// Rotate the camera to focus on enemy and player from a further vantage point 
-	FVector CameraToEnemy = LockedOnEnemy->GetActorLocation() - (GetActorLocation() + (GetActorForwardVector() * -LockOnCameraOffset) + FVector(0.0f, 0.0f, LockOnCameraOffset));
-	CameraToEnemy.Normalize();
-
-	GetController()->SetControlRotation(CameraToEnemy.Rotation());
+	AngleToAttached = UKismetMathLibrary::DegAcos(FVector::DotProduct(GetActorForwardVector(), DirectionToEnemy) / (GetActorForwardVector().Size() * DirectionToEnemy.Size()));
 }
 
 // Find a nearby enemy to switch to when locking on
@@ -479,6 +499,7 @@ void APlayerCharacter::FinishGrapple()
 {
 	bRopeAttached = false;
 	bIsGrappling = false; 
+	SetActorTickEnabled(false);
 
 	Rope->UpdateRopeAttached(false);
 	Rope->GetTarget().Clear();
@@ -521,7 +542,6 @@ void APlayerCharacter::CastRope()
 
 		PlayAnimMontage(CastRopeAnim, 1.0f, TEXT("None"));
 		Rope->SetActorTickEnabled(false);
-		bRopeAttached = true;
 	}
 	else if (bRopeAttached)
 	{
@@ -543,6 +563,8 @@ void APlayerCharacter::AddTensionForce()
 // Attach rope during animation
 void APlayerCharacter::AttachRope()
 {
+	bRopeAttached = true;
+	SetActorTickEnabled(true);
 	Rope->UpdateRopeAttached(true);
 	Rope->GetTarget().SetIconVisibility(false);
 }

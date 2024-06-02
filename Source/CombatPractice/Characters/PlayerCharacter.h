@@ -9,6 +9,13 @@ class AEnemyCharacter;
 class ARope;
 class UAnimMontage; 
 
+UENUM(BlueprintType)
+enum class EPlayerFocus : uint8 {
+	FOCUS_None UMETA(DisplayName = "None"),
+	FOCUS_Enemy UMETA(DisplayName = "Enemy"),
+	FOCUS_Rope UMETA(DisplayName = "Attached Point")
+};
+
 UCLASS()
 class COMBATPRACTICE_API APlayerCharacter : public ACombatCharacter
 {
@@ -106,6 +113,9 @@ private:
 	float HealingAmount; 
 
 	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	EPlayerFocus PlayerFocus;
+
+	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	bool bJumpPressed; 
 
 	void LightAttackPressed(); 
@@ -156,13 +166,13 @@ private:
 	ARope* Rope;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animations", meta = (AllowPrivateAccess = "true"))
-	UAnimMontage* CastRopeAnim; 
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animations", meta = (AllowPrivateAccess = "true"))
 	FAttackAnimation LaunchAttack;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animations", meta = (AllowPrivateAccess = "true"))
 	FAttackAnimation TripAttack;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Rope", meta = (AllowPrivateAccess = "true"))
+	UAnimMontage* CastRopeAnim;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Rope", meta = (AllowPrivateAccess = "true"))
 	float TensionStrength;
@@ -192,6 +202,8 @@ private:
 	bool bRopeAttached; 
 
 	void CastRope(); 
+
+	void AttachedMovement(); 
 
 	void AddTensionForce(); 
 

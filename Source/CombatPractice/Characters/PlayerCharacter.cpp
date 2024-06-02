@@ -22,6 +22,7 @@ APlayerCharacter::APlayerCharacter()
 {
 	GetCapsuleComponent()->SetCollisionProfileName(TEXT("PlayerCharacter"), true);
 	HealingAmount = 10.0f; 
+	PlayerFocus = EPlayerFocus::FOCUS_None; 
 	bJumpPressed = false; 
 	LockOnCameraOffset = 500.0f;
 	MaxLockOnDistance = 100.0f;
@@ -138,7 +139,8 @@ void APlayerCharacter::EnemyDefeated(AActor* Enemy)
 	if (LockedOnEnemy == Enemy)
 	{
 		LockedOnEnemy = nullptr; 
-		bEnemyJustDefeated = true; 
+		bEnemyJustDefeated = true;
+		PlayerFocus = EPlayerFocus::FOCUS_None;
 	}
 }
 
@@ -242,12 +244,14 @@ void APlayerCharacter::InstantAttackPressed()
 				PlayAttackAnim(InstantAttack_Behind);
 				HitEnemy->TakeDamage(InstantAttack_Behind, GetActorLocation());
 				KunaiCount--; 
+				StopLockingOn();
 			}
 			else if (HitEnemy->GetCombatState() == ECombatState::COMBAT_DamagedTrip)
 			{
 				PlayAttackAnim(InstantAttack_Ground);
 				HitEnemy->TakeDamage(InstantAttack_Ground, GetActorLocation());
 				KunaiCount--; 
+				StopLockingOn();
 			}
 		}
 	}
@@ -324,18 +328,19 @@ AEnemyCharacter* APlayerCharacter::FindClosestEnemy()
 		return nullptr;
 }
 
-// Moves player based on the enemy they are locking onto
+// Moves player based on the action they are currently performing
 void APlayerCharacter::LockOnBehavior()
 {
-	// If the player defeats the locked on enemy, find the next nearest enemy to lock onto or stop if there are none 
-	if (LockedOnEnemy == nullptr && bRopeAttached)
+	// Select movement style based on what the player is focussing on
+	switch (PlayerFocus)
 	{
+	case EPlayerFocus::FOCUS_Enemy:
 		LockedOnMovement();
-	}
-
-	/*
-	if (LockedOnEnemy == nullptr)
-	{
+		break;
+	case EPlayerFocus::FOCUS_Rope:
+		AttachedMovement();
+		break;
+	default:
 		if (bEnemyJustDefeated)
 		{
 			BeginLockingOn();
@@ -343,10 +348,8 @@ void APlayerCharacter::LockOnBehavior()
 		}
 		else
 			StopLockingOn();
+		break;
 	}
-	else
-		LockedOnMovement();
-		*/
 }
 
 // Begin locking onto an enemy if one can be locked onto; enables Tick() 
@@ -357,6 +360,7 @@ void APlayerCharacter::BeginLockingOn()
 	if (LockedOnEnemy)
 	{
 		bIsLockedOn = true;
+		PlayerFocus = EPlayerFocus::FOCUS_Enemy;
 		LockedOnEnemy->GetLockOnTarget()->SetVisibility(true);
 		SetActorTickEnabled(true);
 
@@ -374,41 +378,39 @@ void APlayerCharacter::BeginLockingOn()
 void APlayerCharacter::StopLockingOn()
 {
 	bIsLockedOn = false;
+
+	if (bRopeAttached)
+	{
+		PlayerFocus = EPlayerFocus::FOCUS_Rope;
+	}
+	else
+	{
+		PlayerFocus = EPlayerFocus::FOCUS_None;
+		SetActorTickEnabled(false);
+
+		Rope->GetTarget().Clear();
+		Rope->SetActorTickEnabled(true); 
+	}
+
 	if (LockedOnEnemy)
 		LockedOnEnemy->GetLockOnTarget()->SetVisibility(false);
 	LockedOnEnemy = nullptr;
-	SetActorTickEnabled(false); 
-
-	Rope->GetTarget().Clear();
-	Rope->SetActorTickEnabled(true); 
 }
 
 // Set the player and camera to always face the locked on enemy
 void APlayerCharacter::LockedOnMovement()
 {
 	// Rotate the player to always face the enemy
-	FVector DirectionToEnemy; 
-
-	if (LockedOnEnemy == nullptr && bRopeAttached)
-	{
-		DirectionToEnemy = Rope->GetTarget().Actor->GetActorLocation() - GetActorLocation();
-	}
-	else
-	{
-		DirectionToEnemy = LockedOnEnemy->GetActorLocation() - GetActorLocation();
-
-		// Rotate the camera to focus on enemy and player from a further vantage point 
-		FVector CameraToEnemy = LockedOnEnemy->GetActorLocation() - (GetActorLocation() + (GetActorForwardVector() * -LockOnCameraOffset) + FVector(0.0f, 0.0f, LockOnCameraOffset));
-		CameraToEnemy.Normalize();
-
-		GetController()->SetControlRotation(CameraToEnemy.Rotation());
-	}
-
+	FVector DirectionToEnemy = LockedOnEnemy->GetActorLocation() - GetActorLocation();
 	DirectionToEnemy.Normalize();
 
 	SetActorRotation(FRotator(0.0f, DirectionToEnemy.Rotation().Yaw, 0.0f));
 
-	AngleToAttached = UKismetMathLibrary::DegAcos(FVector::DotProduct(GetActorForwardVector(), DirectionToEnemy) / (GetActorForwardVector().Size() * DirectionToEnemy.Size()));
+	// Set the control rotation to focus on the enemy
+	FVector CameraToEnemy = LockedOnEnemy->GetActorLocation() - (GetActorLocation() + (GetActorForwardVector() * -LockOnCameraOffset) + FVector(0.0f, 0.0f, LockOnCameraOffset));
+	CameraToEnemy.Normalize();
+
+	GetController()->SetControlRotation(CameraToEnemy.Rotation());
 }
 
 // Find a nearby enemy to switch to when locking on
@@ -494,12 +496,15 @@ void APlayerCharacter::PrepareGrapple()
 	bIsGrappling = true;
 }
 
-// Reset values after grappling
+// Reset values after grappling; disables Tick() 
 void APlayerCharacter::FinishGrapple()
 {
 	bRopeAttached = false;
+
+	if (PlayerFocus != EPlayerFocus::FOCUS_Enemy)
+		PlayerFocus = EPlayerFocus::FOCUS_None;
+
 	bIsGrappling = false; 
-	SetActorTickEnabled(false);
 
 	Rope->UpdateRopeAttached(false);
 	Rope->GetTarget().Clear();
@@ -507,7 +512,12 @@ void APlayerCharacter::FinishGrapple()
 	if (bIsLockedOn)
 		Rope->SetTarget(LockedOnEnemy->CreateGrappleActor());
 	if (!bIsLockedOn)
+	{
+		if (LockedOnEnemy == nullptr)
+			SetActorTickEnabled(false);
+
 		Rope->SetActorTickEnabled(true);
+	}
 }
 
 // Use linear interpolation to grapple the player to a point
@@ -549,6 +559,19 @@ void APlayerCharacter::CastRope()
 	}
 }
 
+// Set the player to always rotate around the attached point
+void APlayerCharacter::AttachedMovement()
+{
+	// Rotate the player to always face the attached point
+	FVector DirectionToAttached = Rope->GetTarget().Actor->GetActorLocation() - GetActorLocation();
+	DirectionToAttached.Normalize();
+
+	SetActorRotation(FRotator(0.0f, DirectionToAttached.Rotation().Yaw, 0.0f));
+
+	// Get the angle between the player's forward vector and direction to the attached point
+	AngleToAttached = UKismetMathLibrary::DegAcos(FVector::DotProduct(GetActorForwardVector(), DirectionToAttached) / (GetActorForwardVector().Size() * DirectionToAttached.Size()));
+}
+
 // Add tension to player while in midair
 void APlayerCharacter::AddTensionForce()
 {
@@ -560,10 +583,14 @@ void APlayerCharacter::AddTensionForce()
 	GetCharacterMovement()->AddForce(Tension * -TensionStrength * GetCharacterMovement()->Mass);
 }
 
-// Attach rope during animation
+// Attach rope during animation; enables Tick()
 void APlayerCharacter::AttachRope()
 {
 	bRopeAttached = true;
+
+	if (PlayerFocus != EPlayerFocus::FOCUS_Enemy)
+		PlayerFocus = EPlayerFocus::FOCUS_Rope;
+
 	SetActorTickEnabled(true);
 	Rope->UpdateRopeAttached(true);
 	Rope->GetTarget().SetIconVisibility(false);
@@ -590,3 +617,4 @@ void APlayerCharacter::ConsumeRope()
 {
 	RopeCount--; 
 }
+

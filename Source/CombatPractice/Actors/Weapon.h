@@ -6,6 +6,7 @@
 #include "Weapon.generated.h"
 
 class ACombatCharacter;
+class UStaticMeshComponent; 
 
 UCLASS()
 class COMBATPRACTICE_API AWeapon : public AActor
@@ -18,6 +19,9 @@ public:
 
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
+
+	// Getter function
+	UStaticMeshComponent* GetMesh();
 
 	// Setter function
 	void SetOwningCharacter(ACombatCharacter* NewOwner);
@@ -45,7 +49,7 @@ private:
 	class USceneComponent* Root;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
-	class UStaticMeshComponent* Mesh; 
+	UStaticMeshComponent* Mesh; 
 
 	// Component used for combat
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))

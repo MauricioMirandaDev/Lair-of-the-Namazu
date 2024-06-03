@@ -1,6 +1,7 @@
 
 #include "RopePickup.h"
 #include "CombatPractice/Characters/PlayerCharacter.h"
+#include "Kismet/GameplayStatics.h"
 
 ARopePickup::ARopePickup()
 {
@@ -21,5 +22,10 @@ void ARopePickup::CollectPickup()
 {
 	Super::CollectPickup();
 
-	APlayerCharacter::RopeCount++;
+	if (APlayerCharacter::RopeCount < APlayerCharacter::MaxRope)
+	{
+		UGameplayStatics::PlaySoundAtLocation(GetWorld(), CollectSoundEffect, GetActorLocation());
+		APlayerCharacter::RopeCount++;
+		Destroy(); 
+	}
 }

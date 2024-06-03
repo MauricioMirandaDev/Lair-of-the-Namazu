@@ -41,6 +41,12 @@ void AWeapon::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 }
 
+// Getter function to access this weapon's mesh
+UStaticMeshComponent* AWeapon::GetMesh()
+{
+	return Mesh;
+}
+
 // Setter function to set the owner of this weapon
 void AWeapon::SetOwningCharacter(ACombatCharacter* NewOwner)
 {

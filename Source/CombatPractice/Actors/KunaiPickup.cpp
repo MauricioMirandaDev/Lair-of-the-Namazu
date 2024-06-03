@@ -1,6 +1,7 @@
 
 #include "KunaiPickup.h"
 #include "CombatPractice/Characters/PlayerCharacter.h"
+#include "Kismet/GameplayStatics.h"
 
 AKunaiPickup::AKunaiPickup()
 {
@@ -21,5 +22,10 @@ void AKunaiPickup::CollectPickup()
 {
 	Super::CollectPickup();
 
-	APlayerCharacter::KunaiCount++; 
+	if (APlayerCharacter::KunaiCount < APlayerCharacter::MaxKunai)
+	{
+		UGameplayStatics::PlaySoundAtLocation(GetWorld(), CollectSoundEffect, GetActorLocation());
+		APlayerCharacter::KunaiCount++;
+		Destroy(); 
+	}
 }

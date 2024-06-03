@@ -1,6 +1,7 @@
 
 #include "MedicinePickup.h"
 #include "CombatPractice/Characters/PlayerCharacter.h"
+#include "Kismet/GameplayStatics.h"
 
 AMedicinePickup::AMedicinePickup()
 {
@@ -21,5 +22,10 @@ void AMedicinePickup::CollectPickup()
 {
 	Super::CollectPickup();
 
-	APlayerCharacter::MedicineCount++;
+	if (APlayerCharacter::MedicineCount < APlayerCharacter::MaxMedicine)
+	{
+		UGameplayStatics::PlaySoundAtLocation(GetWorld(), CollectSoundEffect, GetActorLocation());
+		APlayerCharacter::MedicineCount++; 
+		Destroy();
+	}
 }

@@ -33,12 +33,6 @@ void APickup::BeginPlay()
 	Super::BeginPlay();
 }
 
-// Peform behavior when collected
-void APickup::CollectPickup()
-{
-	UGameplayStatics::PlaySoundAtLocation(GetWorld(), CollectSoundEffect, GetActorLocation());
-}
-
 // Called every frame
 void APickup::Tick(float DeltaTime)
 {
@@ -49,6 +43,11 @@ void APickup::Tick(float DeltaTime)
 void APickup::BeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	CollectPickup(); 
-	Destroy(); 
+}
+
+// Peform behavior when collected
+void APickup::CollectPickup()
+{
+	
 }
 

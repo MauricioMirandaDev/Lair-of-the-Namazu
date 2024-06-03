@@ -4,6 +4,7 @@
 #include "CombatPractice/CombatPracticeGameModeBase.h"
 #include "CombatPractice/Actors/GrappleActor.h"
 #include "CombatPractice/Actors/Rope.h"
+#include "CombatPractice/Actors/Weapon.h"
 #include "CombatPractice/Characters/EnemyCharacter.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/WidgetComponent.h"
@@ -13,8 +14,11 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "Kismet/KismetSystemLibrary.h"
 
+int32 APlayerCharacter::MaxMedicine = 10;
 int32 APlayerCharacter::MedicineCount = 0;
-int32 APlayerCharacter::KunaiCount = 0; 
+int32 APlayerCharacter::MaxKunai = 1;
+int32 APlayerCharacter::KunaiCount = 0;
+int32 APlayerCharacter::MaxRope = 3;
 int32 APlayerCharacter::RopeCount = 0;
 
 // Sets default values
@@ -60,7 +64,7 @@ void APlayerCharacter::BeginPlay()
 	if (RopeClass)
 	{
 		Rope = GetWorld()->SpawnActor<ARope>(RopeClass);
-		Rope->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, TEXT("RopeSocket"));
+		Rope->AttachToComponent(Weapon->GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, TEXT("RopeSocket"));
 		Rope->SetPlayerReference(this); 
 	}
 
@@ -98,16 +102,34 @@ void APlayerCharacter::ResetAttack()
 	Super::ResetAttack();
 }
 
+// Communicate to the UI the max amount of medicine the player can carry
+const int32 APlayerCharacter::GetMaxMedicine()
+{
+	return MaxMedicine;
+}
+
 // Communicate to the UI the amount of medicine held 
 const int32 APlayerCharacter::GetMedicineCount()
 {
 	return MedicineCount;
 }
 
+// Communicate to the UI the max amount of kunai knives the player can carry
+const int32 APlayerCharacter::GetMaxKunai()
+{
+	return MaxKunai;
+}
+
 // Communicate to the UI the amount of kunai held 
 const int32 APlayerCharacter::GetKunaiCount()
 {
 	return KunaiCount;
+}
+
+// Communicate to the UI the max amount of rope the player can carry
+const int32 APlayerCharacter::GetMaxRope()
+{
+	return MaxRope;
 }
 
 // Communicate to the UI the amount of rope held

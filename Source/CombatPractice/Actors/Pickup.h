@@ -29,6 +29,10 @@ protected:
 	// Function used for collecting
 	virtual void CollectPickup(); 
 
+	// Component used for collecting
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
+	class USoundBase* CollectSoundEffect;
+
 private:
 	// Visual components 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
@@ -39,8 +43,4 @@ private:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
 	class USphereComponent* Collider;
-
-	// Component used for collecting
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
-	class USoundBase* CollectSoundEffect;
 };

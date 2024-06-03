@@ -32,17 +32,27 @@ public:
 	void SetCanGrapple(bool bCanPlayerGrapple);
 
 	// Functions and variables used for combat
-	virtual void UpdateMovement(bool bPauseMovement) override;
-
-	virtual void ResetAttack() override;
+	UFUNCTION(BlueprintPure)
+	const int32 GetMaxMedicine();
 
 	UFUNCTION(BlueprintPure)
 	const int32 GetMedicineCount(); 
 
 	UFUNCTION(BlueprintPure)
+	const int32 GetMaxKunai();
+
+	UFUNCTION(BlueprintPure)
 	const int32 GetKunaiCount();
 
+	virtual void UpdateMovement(bool bPauseMovement) override;
+
+	virtual void ResetAttack() override;
+
+	static int32 MaxMedicine;
+
 	static int32 MedicineCount;
+
+	static int32 MaxKunai;
 
 	static int32 KunaiCount; 
 
@@ -59,9 +69,14 @@ public:
 	void Grapple(); 
 
 	UFUNCTION(BlueprintPure)
+	const int32 GetMaxRope();
+
+	UFUNCTION(BlueprintPure)
 	const int32 GetRopeCount();
 
 	void AttachRope(); 
+
+	static int32 MaxRope;
 
 	static int32 RopeCount;
 

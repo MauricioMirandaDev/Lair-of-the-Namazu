@@ -172,7 +172,7 @@ void ACombatPlayerController::CallSwitchEnemy(const FInputActionValue& Value)
 {
 	const FVector2D Input = Value.Get<FVector2D>();
 
-	if (Player->bIsLockedOn && bCanSwitchEnemy)
+	if (Player && bCanSwitchEnemy)
 	{
 		bCanSwitchEnemy = false;
 

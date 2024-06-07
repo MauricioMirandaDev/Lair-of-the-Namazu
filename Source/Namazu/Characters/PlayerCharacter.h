@@ -48,6 +48,8 @@ public:
 
 	virtual void ResetAttack() override;
 
+	void EnemyDefeated(AActor* Enemy); 
+
 	static int32 MaxMedicine;
 
 	static int32 MedicineCount;
@@ -60,9 +62,6 @@ public:
 	virtual void TakeDamage(FAttackAnimation AttackAnimation, FVector AttackLocation) override;
 
 	virtual void AfterDeath() override; 
-
-	// Function used for lock on system
-	void EnemyDefeated(AActor* Enemy); 
 
 	// Functions and variable used for rope
 	UFUNCTION(BlueprintImplementableEvent)
@@ -141,37 +140,23 @@ private:
 
 	void ConsumeMedicine(); 
 
+	void SelectFocusBehavior();
+
 	float DefaultWalkSpeed; 
 
-	// Components, functions, and variables for lock-on system
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Lock-On System", meta = (AllowPrivateAccess = "true"))
-	float LockOnCameraOffset; 
+	bool bEnemyJustDefeated; 
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Lock-On System", meta = (AllowPrivateAccess = "true"))
-	float MaxLockOnDistance; 
-
-	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-	bool bIsLockedOn;
+	// Components and functions for lock=on system
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
+	class ULockOnComponent* LockOnComponent; 
 
 	void LockOn();
 
-	AEnemyCharacter* FindClosestEnemy();
-
-	void LockOnBehavior();
-
-	void BeginLockingOn(); 
-
-	void StopLockingOn(); 
-
-	void LockedOnMovement();
-
-	AEnemyCharacter* FindNearbyEnemy(FVector Direction);
-
 	void SwitchLockedOnEnemy(FVector Direction); 
 
-	AEnemyCharacter* LockedOnEnemy;
+	void BeginLockingOn();
 
-	bool bEnemyJustDefeated; 
+	void StopLockingOn();
 
 	// Components, functions, and variables for grapple system
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Rope", meta = (AllowPrivateAccess = "true"))

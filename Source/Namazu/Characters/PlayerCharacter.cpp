@@ -1,11 +1,6 @@
 
 #include "PlayerCharacter.h"
 #include "Camera/CameraComponent.h"
-#include "Namazu/NamazuGameModeBase.h"
-#include "Namazu/Actors/GrappleActor.h"
-#include "Namazu/Actors/Rope.h"
-#include "Namazu/Actors/Weapon.h"
-#include "Namazu/Characters/EnemyCharacter.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/WidgetComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -13,6 +8,12 @@
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Kismet/KismetSystemLibrary.h"
+#include "Namazu/NamazuGameModeBase.h"
+#include "Namazu/Actors/GrappleActor.h"
+#include "Namazu/Actors/Rope.h"
+#include "Namazu/Actors/Weapon.h"
+#include "Namazu/Characters/EnemyCharacter.h"
+#include "Namazu/Characters/LockOnComponent.h"
 
 int32 APlayerCharacter::MaxMedicine = 10;
 int32 APlayerCharacter::MedicineCount = 0;
@@ -28,10 +29,6 @@ APlayerCharacter::APlayerCharacter()
 	HealingAmount = 10.0f; 
 	PlayerFocus = EPlayerFocus::FOCUS_None; 
 	bJumpPressed = false; 
-	LockOnCameraOffset = 500.0f;
-	MaxLockOnDistance = 100.0f;
-	bIsLockedOn = false;
-	LockedOnEnemy = nullptr; 
 	bEnemyJustDefeated = false; 
 	CastRopeAnim = nullptr; 
 	TensionStrength = 100.0f;
@@ -51,6 +48,9 @@ APlayerCharacter::APlayerCharacter()
 	// Create camera component and set default values
 	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
 	Camera->SetupAttachment(SpringArm);
+
+	// Create lock-on component and set default values
+	LockOnComponent = CreateDefaultSubobject<ULockOnComponent>(TEXT("Lock-On Component"));
 }
 
 // Called when the game starts or when spawned
@@ -76,30 +76,7 @@ void APlayerCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	LockOnBehavior();
-}
-
-// Set whether the player can grapple or not
-void APlayerCharacter::SetCanGrapple(bool bCanPlayerGrapple)
-{
-	bCanGrapple = bCanPlayerGrapple;
-}
-
-// Set this character to be able to move or not 
-void APlayerCharacter::UpdateMovement(bool bPauseMovement)
-{
-	Super::UpdateMovement(bPauseMovement);
-
-	if (bPauseMovement)
-		GetCharacterMovement()->MaxWalkSpeed = 0.0f;
-	else
-		GetCharacterMovement()->MaxWalkSpeed = DefaultWalkSpeed; 
-}
-
-// Used to reset variables a character uses during combat
-void APlayerCharacter::ResetAttack()
-{
-	Super::ResetAttack();
+	SelectFocusBehavior();
 }
 
 // Communicate to the UI the max amount of medicine the player can carry
@@ -138,6 +115,40 @@ const int32 APlayerCharacter::GetRopeCount()
 	return RopeCount; 
 }
 
+// Set whether the player can grapple or not
+void APlayerCharacter::SetCanGrapple(bool bCanPlayerGrapple)
+{
+	bCanGrapple = bCanPlayerGrapple;
+}
+
+// Set this character to be able to move or not 
+void APlayerCharacter::UpdateMovement(bool bPauseMovement)
+{
+	Super::UpdateMovement(bPauseMovement);
+
+	if (bPauseMovement)
+		GetCharacterMovement()->MaxWalkSpeed = 0.0f;
+	else
+		GetCharacterMovement()->MaxWalkSpeed = DefaultWalkSpeed; 
+}
+
+// Used to reset variables a character uses during combat
+void APlayerCharacter::ResetAttack()
+{
+	Super::ResetAttack();
+}
+
+// Remove the designated enemy from NearbyEnemies if it is present in the array; stop locking onto the enemy if it was previously 
+void APlayerCharacter::EnemyDefeated(AActor* Enemy)
+{
+	if (LockOnComponent->LockedOnEnemy == Enemy)
+	{
+		LockOnComponent->LockedOnEnemy = nullptr;
+		bEnemyJustDefeated = true;
+		PlayerFocus = EPlayerFocus::FOCUS_None;
+	}
+}
+
 // Deduct damage from health and update gameplay as needed
 void APlayerCharacter::TakeDamage(FAttackAnimation AttackAnimation, FVector AttackLocation)
 {
@@ -153,17 +164,6 @@ void APlayerCharacter::AfterDeath()
 
 	if (ANamazuGameModeBase* GameMode = Cast<ANamazuGameModeBase>(UGameplayStatics::GetGameMode(GetWorld())))
 		GameMode->GameOver();
-}
-
-// Remove the designated enemy from NearbyEnemies if it is present in the array; stop locking onto the enemy if it was previously 
-void APlayerCharacter::EnemyDefeated(AActor* Enemy)
-{
-	if (LockedOnEnemy == Enemy)
-	{
-		LockedOnEnemy = nullptr; 
-		bEnemyJustDefeated = true;
-		PlayerFocus = EPlayerFocus::FOCUS_None;
-	}
 }
 
 // Called whenever the player performs a jump 
@@ -290,74 +290,14 @@ void APlayerCharacter::ConsumeMedicine()
 	}
 }
 
-// Lock onto a nearby enemy or stop locking on
-void APlayerCharacter::LockOn()
-{
-	if (!bIsLockedOn)
-		BeginLockingOn();
-	else
-		StopLockingOn();
-}
-
-// Trace to find an enemy that can be locked onto
-AEnemyCharacter* APlayerCharacter::FindClosestEnemy()
-{
-	// Variables for traces 
-	TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypes;
-	ObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECC_GameTraceChannel1));
-
-	TArray<AActor*> ActorsToIgnore;
-	ActorsToIgnore.Add(this);
-
-	TArray<AActor*> FoundActors;
-	TArray<AEnemyCharacter*> NearbyEnemies;
-
-	FVector CameraForward = UKismetMathLibrary::GetForwardVector(Camera->GetComponentRotation());
-
-	FHitResult HitResult; 
-
-	// Get all available enemies within lock on radius
-	UKismetSystemLibrary::SphereOverlapActors(GetWorld(), GetActorLocation(), MaxLockOnDistance, ObjectTypes, AEnemyCharacter::StaticClass(), ActorsToIgnore, FoundActors);
-	
-	// Check to see which enemies are blocked by an object
-	for (AActor* Actor : FoundActors)
-	{
-		if (!UKismetSystemLibrary::LineTraceSingle(GetWorld(), GetActorLocation(), Actor->GetActorLocation(), UEngineTypes::ConvertToTraceType(ECC_Visibility), true, ActorsToIgnore,
-												   EDrawDebugTrace::None, OUT HitResult, true))
-			NearbyEnemies.Add(Cast<AEnemyCharacter>(Actor));
-	}
-	
-	// Lock onto the enemy closest to the center of the camera
-	if (!NearbyEnemies.IsEmpty())
-	{
-		AEnemyCharacter* ClosestEnemy = NearbyEnemies[0];
-
-		for (AEnemyCharacter* Enemy : NearbyEnemies)
-		{
-			FVector DirectionToEnemy = Enemy->GetActorLocation() - GetActorLocation();
-			DirectionToEnemy.Normalize();
-
-			FVector DirectionToClosest = ClosestEnemy->GetActorLocation() - GetActorLocation();
-			DirectionToClosest.Normalize();
-
-			if (FVector::DotProduct(CameraForward, DirectionToEnemy) > FVector::DotProduct(CameraForward, DirectionToClosest))
-				ClosestEnemy = Enemy;
-		}
-
-		return ClosestEnemy;
-	}
-	else
-		return nullptr;
-}
-
 // Moves player based on the action they are currently performing
-void APlayerCharacter::LockOnBehavior()
+void APlayerCharacter::SelectFocusBehavior()
 {
 	// Select movement style based on what the player is focussing on
 	switch (PlayerFocus)
 	{
 	case EPlayerFocus::FOCUS_Enemy:
-		LockedOnMovement();
+		LockOnComponent->LockedOnMovement(); 
 		break;
 	case EPlayerFocus::FOCUS_Rope:
 		AttachedMovement();
@@ -374,133 +314,72 @@ void APlayerCharacter::LockOnBehavior()
 	}
 }
 
-// Begin locking onto an enemy if one can be locked onto; enables Tick() 
-void APlayerCharacter::BeginLockingOn()
+// Lock onto a nearby enemy or stop locking on
+void APlayerCharacter::LockOn()
 {
-	LockedOnEnemy = FindClosestEnemy();
+	if (!LockOnComponent->bIsPlayerLockedOn)
+		BeginLockingOn();
+	else
+		StopLockingOn();
+}
 
-	if (LockedOnEnemy)
+// Switch which enemy the player is locking onto based on the desired direction 
+void APlayerCharacter::SwitchLockedOnEnemy(FVector Direction)
+{
+	if (LockOnComponent->LockedOnEnemy)
 	{
-		bIsLockedOn = true;
-		PlayerFocus = EPlayerFocus::FOCUS_Enemy;
-		LockedOnEnemy->GetLockOnTarget()->SetVisibility(true);
-		SetActorTickEnabled(true);
+		LockOnComponent->LockedOnEnemy->GetLockOnTarget()->SetVisibility(false);
 
-		Rope->SetActorTickEnabled(false);
+		LockOnComponent->TraceOrigin = LockOnComponent->LockedOnEnemy;
+		LockOnComponent->LockOnDirection = Direction;
+		LockOnComponent->UpdatedLockedOnEnemy();
 
 		if (!bRopeAttached)
 		{
 			Rope->GetTarget().Clear();
-			Rope->SetTarget(LockedOnEnemy->CreateGrappleActor()); 
+			Rope->SetTarget(LockOnComponent->LockedOnEnemy->CreateGrappleActor());
 		}
 	}
 }
 
-// Stops locking onto an enemy; disables Tick()
+// Begin locking onto an enemy
+void APlayerCharacter::BeginLockingOn()
+{
+	FVector CameraForward = UKismetMathLibrary::GetForwardVector(Camera->GetComponentRotation());
+
+	LockOnComponent->TraceOrigin = this;
+	LockOnComponent->LockOnDirection = CameraForward;
+	LockOnComponent->UpdatedLockedOnEnemy();
+
+	if (LockOnComponent->LockedOnEnemy)
+	{
+		PlayerFocus = EPlayerFocus::FOCUS_Enemy;
+		SetActorTickEnabled(true);
+
+		Rope->SetActorTickEnabled(false);
+		if (!bRopeAttached)
+		{
+			Rope->GetTarget().Clear();
+			Rope->SetTarget(LockOnComponent->LockedOnEnemy->CreateGrappleActor());
+		}
+	}
+}
+
+// Stop locking onto an enemy
 void APlayerCharacter::StopLockingOn()
 {
-	bIsLockedOn = false;
-
 	if (bRopeAttached)
-	{
 		PlayerFocus = EPlayerFocus::FOCUS_Rope;
-	}
 	else
 	{
 		PlayerFocus = EPlayerFocus::FOCUS_None;
 		SetActorTickEnabled(false);
 
 		Rope->GetTarget().Clear();
-		Rope->SetActorTickEnabled(true); 
+		Rope->SetActorTickEnabled(true);
 	}
 
-	if (LockedOnEnemy)
-		LockedOnEnemy->GetLockOnTarget()->SetVisibility(false);
-	LockedOnEnemy = nullptr;
-}
-
-// Set the player and camera to always face the locked on enemy
-void APlayerCharacter::LockedOnMovement()
-{
-	// Rotate the player to always face the enemy
-	FVector DirectionToEnemy = LockedOnEnemy->GetActorLocation() - GetActorLocation();
-	DirectionToEnemy.Normalize();
-
-	SetActorRotation(FRotator(0.0f, DirectionToEnemy.Rotation().Yaw, 0.0f));
-
-	// Set the control rotation to focus on the enemy
-	FVector CameraToEnemy = LockedOnEnemy->GetActorLocation() - (GetActorLocation() + (GetActorForwardVector() * -LockOnCameraOffset) + FVector(0.0f, 0.0f, LockOnCameraOffset));
-	CameraToEnemy.Normalize();
-
-	GetController()->SetControlRotation(CameraToEnemy.Rotation());
-}
-
-// Find a nearby enemy to switch to when locking on
-AEnemyCharacter* APlayerCharacter::FindNearbyEnemy(FVector Direction)
-{
-	// Variables for traces 
-	TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypes;
-	ObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECC_GameTraceChannel1));
-
-	TArray<AActor*> ActorsToIgnore;
-	ActorsToIgnore.Add(this);
-	ActorsToIgnore.Add(LockedOnEnemy);
-
-	TArray<AActor*> FoundActors;
-	TArray<AEnemyCharacter*> NearbyEnemies;
-
-	FHitResult HitResult;
-
-	// Get all available enemies within lock on radius
-	UKismetSystemLibrary::SphereOverlapActors(GetWorld(), LockedOnEnemy->GetActorLocation(), MaxLockOnDistance, ObjectTypes, AEnemyCharacter::StaticClass(), ActorsToIgnore, FoundActors);
-
-	// Check to see which enemies are blocked by an object
-	for (AActor* Actor : FoundActors)
-	{
-		if (!UKismetSystemLibrary::LineTraceSingle(GetWorld(), GetActorLocation(), Actor->GetActorLocation(), UEngineTypes::ConvertToTraceType(ECC_Visibility), true, ActorsToIgnore,
-			EDrawDebugTrace::None, OUT HitResult, true))
-			NearbyEnemies.Add(Cast<AEnemyCharacter>(Actor));
-	}
-
-	// Lock onto the nearest enemy based on the desired direction
-	if (!NearbyEnemies.IsEmpty())
-	{
-		AEnemyCharacter* ClosestNearbyEnemy = NearbyEnemies[0];
-
-		for (AEnemyCharacter* Enemy : NearbyEnemies)
-		{
-			FVector DirectionToNearbyEnemy = Enemy->GetActorLocation() - LockedOnEnemy->GetActorLocation();
-			DirectionToNearbyEnemy.Normalize();
-
-			FVector DirectionToClosest = ClosestNearbyEnemy->GetActorLocation() - LockedOnEnemy->GetActorLocation();
-			DirectionToClosest.Normalize();
-
-			if (FVector::DotProduct(Direction, DirectionToNearbyEnemy) > FVector::DotProduct(Direction, DirectionToClosest))
-				ClosestNearbyEnemy = Enemy;
-		}
-
-		return ClosestNearbyEnemy;
-	}
-	else
-		return nullptr;
-}
-
-// Switch which enemy the player is locking onto based on the desired direction 
-void APlayerCharacter::SwitchLockedOnEnemy(FVector Direction)
-{
-	if (LockedOnEnemy && FindNearbyEnemy(Direction))
-	{
-		LockedOnEnemy->GetLockOnTarget()->SetVisibility(false);
-
-		LockedOnEnemy = FindNearbyEnemy(Direction);
-		LockedOnEnemy->GetLockOnTarget()->SetVisibility(true);
-
-		if (!bRopeAttached)
-		{
-			Rope->GetTarget().Clear();
-			Rope->SetTarget(LockedOnEnemy->CreateGrappleActor());
-		}
-	}
+	LockOnComponent->ClearLockedOnEnemy();
 }
 
 // Prepare variables for grappling 
@@ -531,11 +410,11 @@ void APlayerCharacter::FinishGrapple()
 	Rope->UpdateRopeAttached(false);
 	Rope->GetTarget().Clear();
 
-	if (bIsLockedOn)
-		Rope->SetTarget(LockedOnEnemy->CreateGrappleActor());
-	if (!bIsLockedOn)
+	if (LockOnComponent->bIsPlayerLockedOn)
+		Rope->SetTarget(LockOnComponent->LockedOnEnemy->CreateGrappleActor());
+	if (!LockOnComponent->bIsPlayerLockedOn)
 	{
-		if (LockedOnEnemy == nullptr)
+		if (LockOnComponent->LockedOnEnemy == nullptr)
 			SetActorTickEnabled(false);
 
 		Rope->SetActorTickEnabled(true);

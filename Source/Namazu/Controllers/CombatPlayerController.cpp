@@ -1,10 +1,11 @@
 
 #include "CombatPlayerController.h"
-#include "Namazu/Characters/PlayerCharacter.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "Namazu/Characters/PlayerCharacter.h"
+#include "Namazu/Characters/GrappleComponent.h"
 
 // Sets default values
 ACombatPlayerController::ACombatPlayerController()
@@ -95,16 +96,13 @@ void ACombatPlayerController::Move(const FInputActionValue& Value)
 	{
 		Player->AddMovementInput(ForwardDirection, MovementValue.Y);
 		Player->AddMovementInput(RightDirection, MovementValue.X); 
-		
-		if (Player->bRopeAttached && Player->GetCharacterMovement()->MovementMode == EMovementMode::MOVE_Falling)
-			Player->AddTensionForce();
 	}
 }
 
 // Call jump functions from player class
 void ACombatPlayerController::CallJump()
 {
-	if (Player->CombatState == ECombatState::COMBAT_Neutral && !Player->bRopeAttached)
+	if (Player->CombatState == ECombatState::COMBAT_Neutral && Player->GetGrappleComponent()->GetRopeState() != ERopeState::ROPE_Attached)
 		Player->Jump(); 
 }
 
@@ -135,21 +133,21 @@ void ACombatPlayerController::LookGamepad(const FInputActionValue& Value)
 // Call light attack from player class 
 void ACombatPlayerController::CallLightAttack()
 {
-	if (Player->CombatState == ECombatState::COMBAT_Neutral && !Player->bRopeAttached)
+	if (Player->CombatState == ECombatState::COMBAT_Neutral && Player->GetGrappleComponent()->GetRopeState() == ERopeState::ROPE_Detached)
 		Player->LightAttackPressed();
 }
 
 // Call heavy attack from player class
 void ACombatPlayerController::CallHeavyAttack()
 {
-	if (Player->CombatState == ECombatState::COMBAT_Neutral && !Player->bRopeAttached)
+	if (Player->CombatState == ECombatState::COMBAT_Neutral && Player->GetGrappleComponent()->GetRopeState() == ERopeState::ROPE_Detached)
 		Player->HeavyAttackPressed(); 
 }
 
 // Call instant attack from player class
 void ACombatPlayerController::CallInstantAttack()
 {
-	if (Player->CombatState == ECombatState::COMBAT_Neutral && !Player->bRopeAttached)
+	if (Player->CombatState == ECombatState::COMBAT_Neutral && Player->GetGrappleComponent()->GetRopeState() == ERopeState::ROPE_Detached)
 		Player->InstantAttackPressed(); 
 }
 
@@ -205,20 +203,20 @@ void ACombatPlayerController::ResetSwitchEnemy()
 void ACombatPlayerController::CallCastRope()
 {
 	if (Player)
-		Player->CastRope(); 
+		Player->CastRod(); 
 }
 
 // Call grapple from player class
 void ACombatPlayerController::CallGrapple()
 {
-	if (Player->bRopeAttached)
+	if (Player->GetGrappleComponent()->GetRopeState() == ERopeState::ROPE_Attached)
 		Player->Grapple();
 }
 
 // Call reel in from player class
 void ACombatPlayerController::CallReelIn()
 {
-	if (Player->bRopeAttached)
+	if (Player->GetGrappleComponent()->GetRopeState() == ERopeState::ROPE_Attached)
 		Player->ReelIn(); 
 }
 

@@ -15,5 +15,5 @@ void UCombatAnimNotify_AttachRope::Notify(USkeletalMeshComponent* MeshComp, UAni
 	Super::Notify(MeshComp, Animation); 
 
 	if (APlayerCharacter* Player = Cast<APlayerCharacter>(OwnerReference))
-		Player->AttachRope();
+		Player->Attach();
 }

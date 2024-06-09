@@ -133,7 +133,6 @@ void ARope::DetermineTarget()
 		}
 
 		Target.SetIconVisibility(true);
-		PlayerRef->SetCanGrapple(true);
 	}
 	else
 	{
@@ -142,7 +141,5 @@ void ARope::DetermineTarget()
 			Target.SetIconVisibility(false);
 			Target = FGrappleActor();
 		}
-
-		PlayerRef->SetCanGrapple(false);
 	}
 }

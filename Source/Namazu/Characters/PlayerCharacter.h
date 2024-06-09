@@ -8,6 +8,8 @@
 class AEnemyCharacter;
 class ARope;
 class UAnimMontage; 
+class ULockOnComponent;
+class UGrappleComponent;
 
 UENUM(BlueprintType)
 enum class EPlayerFocus : uint8 {
@@ -28,8 +30,10 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override; 
 
-	// Setter functions
-	void SetCanGrapple(bool bCanPlayerGrapple);
+	// Getter functions
+	ULockOnComponent* GetLockOnComponent(); 
+
+	UGrappleComponent* GetGrappleComponent(); 
 
 	// Functions and variables used for combat
 	UFUNCTION(BlueprintPure)
@@ -73,7 +77,7 @@ public:
 	UFUNCTION(BlueprintPure)
 	const int32 GetRopeCount();
 
-	void AttachRope(); 
+	void Attach(); 
 
 	static int32 MaxRope;
 
@@ -146,9 +150,9 @@ private:
 
 	bool bEnemyJustDefeated; 
 
-	// Components and functions for lock=on system
+	// Component and functions for lock-on system
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
-	class ULockOnComponent* LockOnComponent; 
+	ULockOnComponent* LockOnComponent; 
 
 	void LockOn();
 
@@ -159,11 +163,8 @@ private:
 	void StopLockingOn();
 
 	// Components, functions, and variables for grapple system
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Rope", meta = (AllowPrivateAccess = "true"))
-	TSubclassOf<ARope> RopeClass;
-
-	UPROPERTY(BlueprintReadOnly, Category = "Rope", meta = (AllowPrivateAccess = "true"))
-	ARope* Rope;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
+	UGrappleComponent* GrappleComponent; 
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animations", meta = (AllowPrivateAccess = "true"))
 	FAttackAnimation LaunchAttack;
@@ -171,17 +172,11 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animations", meta = (AllowPrivateAccess = "true"))
 	FAttackAnimation TripAttack;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Rope", meta = (AllowPrivateAccess = "true"))
-	UAnimMontage* CastRopeAnim;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Rope", meta = (AllowPrivateAccess = "true"))
-	float TensionStrength;
-
 	UFUNCTION(BlueprintCallable)
 	void PrepareGrapple(); 
 
 	UFUNCTION(BlueprintCallable)
-	void FinishGrapple();
+	void ResetRope();
 
 	UFUNCTION(BlueprintCallable)
 	void LerpPlayerPosition(float Alpha);
@@ -192,20 +187,7 @@ private:
 	UFUNCTION(BlueprintCallable)
 	void ConsumeRope();
 
-	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-	float AngleToAttached;
-
-	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-	bool bIsGrappling; 
-
-	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-	bool bRopeAttached; 
-
-	void CastRope(); 
-
-	void AttachedMovement(); 
-
-	void AddTensionForce(); 
+	void CastRod(); 
 
 	void ReelIn(); 
 
@@ -214,6 +196,4 @@ private:
 	FVector InitialPosition;
 
 	FVector EndPosition; 
-
-	bool bCanGrapple; 
 };

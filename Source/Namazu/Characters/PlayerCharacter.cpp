@@ -13,6 +13,7 @@
 #include "Namazu/Actors/Rope.h"
 #include "Namazu/Actors/Weapon.h"
 #include "Namazu/Characters/EnemyCharacter.h"
+#include "Namazu/Characters/GrappleComponent.h"
 #include "Namazu/Characters/LockOnComponent.h"
 
 int32 APlayerCharacter::MaxMedicine = 10;
@@ -30,15 +31,9 @@ APlayerCharacter::APlayerCharacter()
 	PlayerFocus = EPlayerFocus::FOCUS_None; 
 	bJumpPressed = false; 
 	bEnemyJustDefeated = false; 
-	CastRopeAnim = nullptr; 
-	TensionStrength = 100.0f;
 	PreviousEnemyLaunched = nullptr; 
 	InitialPosition = FVector(0.0f);
 	EndPosition = FVector(0.0f);
-	AngleToAttached = 0.0f;
-	bIsGrappling = false; 
-	bRopeAttached = false; 
-	bCanGrapple = false; 
 
 	// Create spring arm component and set default values
 	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("Spring Arm"));
@@ -49,8 +44,11 @@ APlayerCharacter::APlayerCharacter()
 	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
 	Camera->SetupAttachment(SpringArm);
 
-	// Create lock-on component and set default values
+	// Create lock-on component
 	LockOnComponent = CreateDefaultSubobject<ULockOnComponent>(TEXT("Lock-On Component"));
+
+	// Create grapple component
+	GrappleComponent = CreateDefaultSubobject<UGrappleComponent>(TEXT("Grapple Component")); 
 }
 
 // Called when the game starts or when spawned
@@ -60,13 +58,7 @@ void APlayerCharacter::BeginPlay()
 
 	DefaultWalkSpeed = GetCharacterMovement()->MaxWalkSpeed; 
 
-	// Create rope actor and attach to player
-	if (RopeClass)
-	{
-		Rope = GetWorld()->SpawnActor<ARope>(RopeClass);
-		Rope->AttachToComponent(Weapon->GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, TEXT("RopeSocket"));
-		Rope->SetPlayerReference(this); 
-	}
+	GrappleComponent->SpawnRope(Weapon->GetMesh()); 
 
 	SetActorTickEnabled(false);
 }
@@ -77,6 +69,16 @@ void APlayerCharacter::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	SelectFocusBehavior();
+}
+
+ULockOnComponent* APlayerCharacter::GetLockOnComponent()
+{
+	return LockOnComponent;
+}
+
+UGrappleComponent* APlayerCharacter::GetGrappleComponent()
+{
+	return GrappleComponent;
 }
 
 // Communicate to the UI the max amount of medicine the player can carry
@@ -113,12 +115,6 @@ const int32 APlayerCharacter::GetMaxRope()
 const int32 APlayerCharacter::GetRopeCount()
 {
 	return RopeCount; 
-}
-
-// Set whether the player can grapple or not
-void APlayerCharacter::SetCanGrapple(bool bCanPlayerGrapple)
-{
-	bCanGrapple = bCanPlayerGrapple;
 }
 
 // Set this character to be able to move or not 
@@ -300,7 +296,7 @@ void APlayerCharacter::SelectFocusBehavior()
 		LockOnComponent->LockedOnMovement(); 
 		break;
 	case EPlayerFocus::FOCUS_Rope:
-		AttachedMovement();
+		GrappleComponent->AttachedMovement(); 
 		break;
 	default:
 		if (bEnemyJustDefeated)
@@ -334,10 +330,10 @@ void APlayerCharacter::SwitchLockedOnEnemy(FVector Direction)
 		LockOnComponent->LockOnDirection = Direction;
 		LockOnComponent->UpdatedLockedOnEnemy();
 
-		if (!bRopeAttached)
+		if (GrappleComponent->RopeState != ERopeState::ROPE_Attached)
 		{
-			Rope->GetTarget().Clear();
-			Rope->SetTarget(LockOnComponent->LockedOnEnemy->CreateGrappleActor());
+			GrappleComponent->Rope->GetTarget().Clear();
+			GrappleComponent->Rope->SetTarget(LockOnComponent->LockedOnEnemy->CreateGrappleActor());
 		}
 	}
 }
@@ -356,11 +352,11 @@ void APlayerCharacter::BeginLockingOn()
 		PlayerFocus = EPlayerFocus::FOCUS_Enemy;
 		SetActorTickEnabled(true);
 
-		Rope->SetActorTickEnabled(false);
-		if (!bRopeAttached)
+		GrappleComponent->Rope->SetActorTickEnabled(false);
+		if (GrappleComponent->RopeState != ERopeState::ROPE_Attached)
 		{
-			Rope->GetTarget().Clear();
-			Rope->SetTarget(LockOnComponent->LockedOnEnemy->CreateGrappleActor());
+			GrappleComponent->Rope->GetTarget().Clear();
+			GrappleComponent->Rope->SetTarget(LockOnComponent->LockedOnEnemy->CreateGrappleActor());
 		}
 	}
 }
@@ -368,15 +364,15 @@ void APlayerCharacter::BeginLockingOn()
 // Stop locking onto an enemy
 void APlayerCharacter::StopLockingOn()
 {
-	if (bRopeAttached)
+	if (GrappleComponent->RopeState == ERopeState::ROPE_Attached)
 		PlayerFocus = EPlayerFocus::FOCUS_Rope;
 	else
 	{
 		PlayerFocus = EPlayerFocus::FOCUS_None;
 		SetActorTickEnabled(false);
 
-		Rope->GetTarget().Clear();
-		Rope->SetActorTickEnabled(true);
+		GrappleComponent->Rope->GetTarget().Clear();
+		GrappleComponent->Rope->SetActorTickEnabled(true);
 	}
 
 	LockOnComponent->ClearLockedOnEnemy();
@@ -386,38 +382,31 @@ void APlayerCharacter::StopLockingOn()
 void APlayerCharacter::PrepareGrapple()
 {
 	InitialPosition = GetActorLocation();
-	EndPosition = Rope->GetTarget().Actor->GetActorLocation();
+	EndPosition = GrappleComponent->Rope->GetTarget().Actor->GetActorLocation();
 
 	FVector DirectionToTarget = EndPosition - InitialPosition;
 	DirectionToTarget.Normalize();
 
 	FRotator RotationToPoint = DirectionToTarget.Rotation();
 	SetActorRotation(FRotator(0.0f, RotationToPoint.Yaw, 0.0f));
-
-	bIsGrappling = true;
 }
 
 // Reset values after grappling; disables Tick() 
-void APlayerCharacter::FinishGrapple()
+void APlayerCharacter::ResetRope()
 {
-	bRopeAttached = false;
+	GrappleComponent->DetachRope(); 
 
 	if (PlayerFocus != EPlayerFocus::FOCUS_Enemy)
 		PlayerFocus = EPlayerFocus::FOCUS_None;
-
-	bIsGrappling = false; 
-
-	Rope->UpdateRopeAttached(false);
-	Rope->GetTarget().Clear();
-
+	
 	if (LockOnComponent->bIsPlayerLockedOn)
-		Rope->SetTarget(LockOnComponent->LockedOnEnemy->CreateGrappleActor());
-	if (!LockOnComponent->bIsPlayerLockedOn)
+		GrappleComponent->Rope->SetTarget(LockOnComponent->LockedOnEnemy->CreateGrappleActor());
+	else
 	{
 		if (LockOnComponent->LockedOnEnemy == nullptr)
 			SetActorTickEnabled(false);
 
-		Rope->SetActorTickEnabled(true);
+		GrappleComponent->Rope->SetActorTickEnabled(true);
 	}
 }
 
@@ -439,83 +428,47 @@ void APlayerCharacter::LaunchEnemy(AEnemyCharacter* DamagedEnemy)
 	}
 }
 
+// Use rope resource (this function is called in blueprints) 
+void APlayerCharacter::ConsumeRope()
+{
+	RopeCount--; 
+}
+
 // Play animation to cast or detach rope
-void APlayerCharacter::CastRope()
+void APlayerCharacter::CastRod()
 {
-	if (!bRopeAttached && bCanGrapple && Rope->GetTarget().Actor && RopeCount > 0)
+	if (RopeCount > 0 && GrappleComponent->RopeState == ERopeState::ROPE_Detached && GrappleComponent->Rope->GetTarget().Actor)
 	{
-		FVector DirectionToTarget = Rope->GetTarget().Actor->GetActorLocation() - GetActorLocation();
-		DirectionToTarget.Normalize();
+		GrappleComponent->PreAttach();
 
-		FRotator RotationToTarget = DirectionToTarget.Rotation();
+		SetActorTickEnabled(true);
 
-		SetActorRotation(FRotator(0.0f, RotationToTarget.Yaw, 0.0f));
-
-		PlayAnimMontage(CastRopeAnim, 1.0f, TEXT("None"));
-		Rope->SetActorTickEnabled(false);
+		if (PlayerFocus != EPlayerFocus::FOCUS_Enemy)
+			PlayerFocus = EPlayerFocus::FOCUS_Rope;
 	}
-	else if (bRopeAttached)
-	{
-		FinishGrapple();
-	}
-}
-
-// Set the player to always rotate around the attached point
-void APlayerCharacter::AttachedMovement()
-{
-	// Rotate the player to always face the attached point
-	FVector DirectionToAttached = Rope->GetTarget().Actor->GetActorLocation() - GetActorLocation();
-	DirectionToAttached.Normalize();
-
-	SetActorRotation(FRotator(0.0f, DirectionToAttached.Rotation().Yaw, 0.0f));
-
-	// Get the angle between the player's forward vector and direction to the attached point
-	AngleToAttached = UKismetMathLibrary::DegAcos(FVector::DotProduct(GetActorForwardVector(), DirectionToAttached) / (GetActorForwardVector().Size() * DirectionToAttached.Size()));
-}
-
-// Add tension to player while in midair
-void APlayerCharacter::AddTensionForce()
-{
-	FVector DirectionToPlayer = GetActorLocation() - Rope->GetTarget().Actor->GetActorLocation();
-	DirectionToPlayer.Normalize();
-
-	FVector Tension = DirectionToPlayer * FVector::DotProduct(GetVelocity(), DirectionToPlayer);
-
-	GetCharacterMovement()->AddForce(Tension * -TensionStrength * GetCharacterMovement()->Mass);
+	else
+		ResetRope(); 
 }
 
 // Attach rope during animation; enables Tick()
-void APlayerCharacter::AttachRope()
+void APlayerCharacter::Attach()
 {
-	bRopeAttached = true;
-
-	if (PlayerFocus != EPlayerFocus::FOCUS_Enemy)
-		PlayerFocus = EPlayerFocus::FOCUS_Rope;
-
-	SetActorTickEnabled(true);
-	Rope->UpdateRopeAttached(true);
-	Rope->GetTarget().SetIconVisibility(false);
+	GrappleComponent->AttachRope();
 }
 
 // Reel in whatever the rope is attached to
 void APlayerCharacter::ReelIn()
 {
-	if (Rope->GetTarget().Actor->IsA(AEnemyCharacter::StaticClass()))
+	if (GrappleComponent->Rope->GetTarget().Actor->IsA(AEnemyCharacter::StaticClass()))
 	{
-		AEnemyCharacter* Enemy = Cast<AEnemyCharacter>(Rope->GetTarget().Actor);
+		AEnemyCharacter* Enemy = Cast<AEnemyCharacter>(GrappleComponent->Rope->GetTarget().Actor);
 
 		if (Enemy->GetCombatState() != ECombatState::COMBAT_DamagedTrip)
 		{
 			Enemy->TakeDamage(TripAttack, GetActorLocation());
 			RopeCount--; 
-			FinishGrapple();
+			ResetRope();
 		}
 	}
-}
-
-// Use rope resource (this function is called in blueprints) 
-void APlayerCharacter::ConsumeRope()
-{
-	RopeCount--; 
 }
 

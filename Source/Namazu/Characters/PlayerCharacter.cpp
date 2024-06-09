@@ -137,9 +137,9 @@ void APlayerCharacter::ResetAttack()
 // Remove the designated enemy from NearbyEnemies if it is present in the array; stop locking onto the enemy if it was previously 
 void APlayerCharacter::EnemyDefeated(AActor* Enemy)
 {
-	if (LockOnComponent->LockedOnEnemy == Enemy)
+	if (LockOnComponent->GetLockedOnEnemy() == Enemy)
 	{
-		LockOnComponent->LockedOnEnemy = nullptr;
+		LockOnComponent->SetLockedOnEnemy(nullptr);
 		bEnemyJustDefeated = true;
 		PlayerFocus = EPlayerFocus::FOCUS_None;
 	}
@@ -313,29 +313,10 @@ void APlayerCharacter::SelectFocusBehavior()
 // Lock onto a nearby enemy or stop locking on
 void APlayerCharacter::LockOn()
 {
-	if (!LockOnComponent->bIsPlayerLockedOn)
+	if (!LockOnComponent->IsPlayerLockedOn())
 		BeginLockingOn();
 	else
 		StopLockingOn();
-}
-
-// Switch which enemy the player is locking onto based on the desired direction 
-void APlayerCharacter::SwitchLockedOnEnemy(FVector Direction)
-{
-	if (LockOnComponent->LockedOnEnemy)
-	{
-		LockOnComponent->LockedOnEnemy->GetLockOnTarget()->SetVisibility(false);
-
-		LockOnComponent->TraceOrigin = LockOnComponent->LockedOnEnemy;
-		LockOnComponent->LockOnDirection = Direction;
-		LockOnComponent->UpdatedLockedOnEnemy();
-
-		if (GrappleComponent->RopeState != ERopeState::ROPE_Attached)
-		{
-			GrappleComponent->Rope->GetTarget().Clear();
-			GrappleComponent->Rope->SetTarget(LockOnComponent->LockedOnEnemy->CreateGrappleActor());
-		}
-	}
 }
 
 // Begin locking onto an enemy
@@ -343,20 +324,19 @@ void APlayerCharacter::BeginLockingOn()
 {
 	FVector CameraForward = UKismetMathLibrary::GetForwardVector(Camera->GetComponentRotation());
 
-	LockOnComponent->TraceOrigin = this;
-	LockOnComponent->LockOnDirection = CameraForward;
-	LockOnComponent->UpdatedLockedOnEnemy();
+	LockOnComponent->SetLockedOnEnemy(LockOnComponent->FindClosestEnemy(this, CameraForward));
 
-	if (LockOnComponent->LockedOnEnemy)
+	if (LockOnComponent->IsPlayerLockedOn())
 	{
 		PlayerFocus = EPlayerFocus::FOCUS_Enemy;
 		SetActorTickEnabled(true);
 
 		GrappleComponent->Rope->SetActorTickEnabled(false);
+
 		if (GrappleComponent->RopeState != ERopeState::ROPE_Attached)
 		{
 			GrappleComponent->Rope->GetTarget().Clear();
-			GrappleComponent->Rope->SetTarget(LockOnComponent->LockedOnEnemy->CreateGrappleActor());
+			GrappleComponent->Rope->SetTarget(LockOnComponent->GetLockedOnEnemy()->CreateGrappleActor());
 		}
 	}
 }
@@ -375,7 +355,22 @@ void APlayerCharacter::StopLockingOn()
 		GrappleComponent->Rope->SetActorTickEnabled(true);
 	}
 
-	LockOnComponent->ClearLockedOnEnemy();
+	LockOnComponent->SetLockedOnEnemy(nullptr);
+}
+
+// Switch which enemy the player is locking onto based on the desired direction 
+void APlayerCharacter::SwitchLockedOnEnemy(FVector Direction)
+{
+	if (LockOnComponent->IsPlayerLockedOn())
+	{
+		LockOnComponent->SetLockedOnEnemy(LockOnComponent->FindClosestEnemy(LockOnComponent->GetLockedOnEnemy(), Direction));
+
+		if (GrappleComponent->RopeState != ERopeState::ROPE_Attached)
+		{
+			GrappleComponent->Rope->GetTarget().Clear();
+			GrappleComponent->Rope->SetTarget(LockOnComponent->GetLockedOnEnemy()->CreateGrappleActor());
+		}
+	}
 }
 
 // Prepare variables for grappling 
@@ -399,12 +394,11 @@ void APlayerCharacter::ResetRope()
 	if (PlayerFocus != EPlayerFocus::FOCUS_Enemy)
 		PlayerFocus = EPlayerFocus::FOCUS_None;
 	
-	if (LockOnComponent->bIsPlayerLockedOn)
-		GrappleComponent->Rope->SetTarget(LockOnComponent->LockedOnEnemy->CreateGrappleActor());
+	if (LockOnComponent->IsPlayerLockedOn())
+		GrappleComponent->Rope->SetTarget(LockOnComponent->GetLockedOnEnemy()->CreateGrappleActor());
 	else
 	{
-		if (LockOnComponent->LockedOnEnemy == nullptr)
-			SetActorTickEnabled(false);
+		SetActorTickEnabled(false);
 
 		GrappleComponent->Rope->SetActorTickEnabled(true);
 	}

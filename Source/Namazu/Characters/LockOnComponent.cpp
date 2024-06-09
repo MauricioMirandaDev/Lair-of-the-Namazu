@@ -13,12 +13,8 @@ ULockOnComponent::ULockOnComponent()
 	// Set default values
 	MaxLockOnDistance = 500.0f;
 	ForwardOffset = 500.0f;
-	UpOffset = 500.0f; 
-	bIsPlayerLockedOn = false; 
-	Player = nullptr; 
+	UpOffset = 500.0f;  
 	LockedOnEnemy = nullptr; 
-	TraceOrigin = nullptr; 
-	LockOnDirection = FVector(0.0f);
 }
 
 // Called when the game starts
@@ -37,37 +33,41 @@ void ULockOnComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActo
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 }
 
-// Upate the enemy the player is locked onto
-void ULockOnComponent::UpdatedLockedOnEnemy()
+// Getter function to access the locked on enemy
+AEnemyCharacter* ULockOnComponent::GetLockedOnEnemy()
 {
-	LockedOnEnemy = FindClosestEnemy();
-
-	if (LockedOnEnemy)
-	{
-		bIsPlayerLockedOn = true;
-		LockedOnEnemy->GetLockOnTarget()->SetVisibility(true);
-	}
+	return LockedOnEnemy;
 }
 
-// Clear the enemy the player is locked onto
-void ULockOnComponent::ClearLockedOnEnemy()
+// Set the new enemy the player is locked onto
+void ULockOnComponent::SetLockedOnEnemy(AEnemyCharacter* NewEnemy)
 {
-	if (LockedOnEnemy)
-		LockedOnEnemy->GetLockOnTarget()->SetVisibility(false);
+	// Turn off the original enemy's lock on target
+	if (IsPlayerLockedOn())
+		LockedOnEnemy->GetLockOnTarget()->SetVisibility(false); 
 
-	bIsPlayerLockedOn = false;
-	LockedOnEnemy = nullptr; 
+	LockedOnEnemy = NewEnemy; 
+
+	// If the new enemy is not null, turn on the new enemy's lock on target
+	if (IsPlayerLockedOn())
+		LockedOnEnemy->GetLockOnTarget()->SetVisibility(true); 
+}
+
+// Return whether the player is locked onto an enemy or not
+bool ULockOnComponent::IsPlayerLockedOn()
+{
+	return LockedOnEnemy != nullptr;
 }
 
 // Find the enemy closest to the player
-AEnemyCharacter* ULockOnComponent::FindClosestEnemy()
+AEnemyCharacter* ULockOnComponent::FindClosestEnemy(AActor* TraceOrigin, FVector Direction)
 {
 	// Variables for tracing
 	TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypes;
 	ObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECC_GameTraceChannel1));
 
 	TArray<AActor*> ActorsToIgnore;
-	ActorsToIgnore.Add(Player);
+	ActorsToIgnore.Add(TraceOrigin);
 
 	TArray<AActor*> FoundActors;
 
@@ -98,7 +98,7 @@ AEnemyCharacter* ULockOnComponent::FindClosestEnemy()
 				if (!UKismetSystemLibrary::LineTraceSingle(GetWorld(), Player->GetActorLocation(), NextActor->GetActorLocation(), UEngineTypes::ConvertToTraceType(ECC_Visibility),
 					false, ActorsToIgnore, EDrawDebugTrace::None, OUT HitResult, true)
 					&&
-					FVector::DotProduct(LockOnDirection, DirectionToNext) > FVector::DotProduct(LockOnDirection, DirectionToClosest))
+					FVector::DotProduct(Direction, DirectionToNext) > FVector::DotProduct(Direction, DirectionToClosest))
 				{
 					ClosestEnemy = NextActor;
 				}
@@ -113,6 +113,7 @@ AEnemyCharacter* ULockOnComponent::FindClosestEnemy()
 	else
 		return nullptr;
 }
+
 
 // Move the player around the enemy they are locked onto
 void ULockOnComponent::LockedOnMovement()

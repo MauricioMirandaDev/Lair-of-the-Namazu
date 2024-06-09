@@ -156,11 +156,11 @@ private:
 
 	void LockOn();
 
-	void SwitchLockedOnEnemy(FVector Direction); 
-
 	void BeginLockingOn();
 
 	void StopLockingOn();
+
+	void SwitchLockedOnEnemy(FVector Direction); 
 
 	// Components, functions, and variables for grapple system
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))

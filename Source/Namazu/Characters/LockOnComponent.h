@@ -20,15 +20,26 @@ public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
-	// Friend class that access functions and variables
-	friend class APlayerCharacter; 
+	// Getter function
+	AEnemyCharacter* GetLockedOnEnemy(); 
+
+	// Setter function
+	void SetLockedOnEnemy(AEnemyCharacter* NewEnemy); 
+	
+	// Functions for lock-on system
+	UFUNCTION(BlueprintPure)
+	bool IsPlayerLockedOn(); 
+
+	AEnemyCharacter* FindClosestEnemy(AActor* TraceOrigin, FVector Direction);
+
+	void LockedOnMovement(); 
 
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
 
 private:
-	// Components, functions, and variables for lock-on system
+	// Components and variables for lock-on system
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Lock-On System", meta = (AllowPrivateAccess = "true"))
 	float MaxLockOnDistance;
 
@@ -38,22 +49,7 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Lock-On System", meta = (AllowPrivateAccess = "true"))
 	float UpOffset;
 
-	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-	bool bIsPlayerLockedOn; 
-
-	void UpdatedLockedOnEnemy(); 
-
-	void ClearLockedOnEnemy(); 
-
-	AEnemyCharacter* FindClosestEnemy();
-
-	void LockedOnMovement(); 
-
 	APlayerCharacter* Player; 
 
 	AEnemyCharacter* LockedOnEnemy;
-
-	AActor* TraceOrigin; 
-
-	FVector LockOnDirection;
 };

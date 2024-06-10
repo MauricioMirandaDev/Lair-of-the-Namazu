@@ -67,7 +67,7 @@ public:
 
 	virtual void AfterDeath() override; 
 
-	// Functions and variable used for rope
+	// Functions and variable used for grapple system
 	UFUNCTION(BlueprintImplementableEvent)
 	void Grapple(); 
 

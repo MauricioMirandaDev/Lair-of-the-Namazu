@@ -34,9 +34,22 @@ void UGrappleComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAct
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 }
 
+// Getter function to access the rope actor
+ARope* UGrappleComponent::GetRope()
+{
+	return Rope;
+}
+
+// Getter function to access the state the rope is in
 ERopeState UGrappleComponent::GetRopeState()
 {
 	return RopeState;
+}
+
+// Setter function to update the state the rope is in
+void UGrappleComponent::SetRopeState(ERopeState UpdatedState)
+{
+	RopeState = UpdatedState;
 }
 
 // Spawn rope actor and attach it to the player's weapon
@@ -55,6 +68,10 @@ void UGrappleComponent::PreAttach()
 {
 	if (CastRodAnim)
 	{
+		FVector DirectionToAttachPoint = Rope->GetTarget().Actor->GetActorLocation() - Player->GetActorLocation();
+		DirectionToAttachPoint.Normalize();
+
+		Player->SetActorRotation(FRotator(0.0f, DirectionToAttachPoint.Rotation().Yaw, 0.0f));
 		Player->PlayAnimMontage(CastRodAnim, 1.0f);
 
 		Rope->SetActorTickEnabled(false); 
@@ -64,8 +81,7 @@ void UGrappleComponent::PreAttach()
 // Attach rope to object 
 void UGrappleComponent::AttachRope()
 {
-	RopeState = ERopeState::ROPE_Attached;
-
+	RopeState = ERopeState::ROPE_Attached; 
 	Rope->UpdateRopeAttached(true);
 	Rope->GetTarget().SetIconVisibility(false); 
 }

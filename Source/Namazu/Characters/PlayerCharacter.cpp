@@ -71,11 +71,13 @@ void APlayerCharacter::Tick(float DeltaTime)
 	SelectFocusBehavior();
 }
 
+// Getter function to access lock-on component
 ULockOnComponent* APlayerCharacter::GetLockOnComponent()
 {
 	return LockOnComponent;
 }
 
+// Getter function to access grapple component 
 UGrappleComponent* APlayerCharacter::GetGrappleComponent()
 {
 	return GrappleComponent;
@@ -189,6 +191,9 @@ void APlayerCharacter::OnDeath()
 	SpringArm->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
 
 	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
+
+	StopLockingOn();
+	ResetRope();
 }
 
 // Called when character enters fall to death volume
@@ -199,6 +204,9 @@ void APlayerCharacter::OnFallDeath()
 	UGameplayStatics::GetPlayerController(GetWorld(), 0)->DisableInput(UGameplayStatics::GetPlayerController(GetWorld(), 0));
 
 	SpringArm->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
+
+	StopLockingOn();
+	ResetRope();
 
 	AfterDeath();
 }
@@ -331,12 +339,12 @@ void APlayerCharacter::BeginLockingOn()
 		PlayerFocus = EPlayerFocus::FOCUS_Enemy;
 		SetActorTickEnabled(true);
 
-		GrappleComponent->Rope->SetActorTickEnabled(false);
+		GrappleComponent->GetRope()->SetActorTickEnabled(false);
 
-		if (GrappleComponent->RopeState != ERopeState::ROPE_Attached)
+		if (GrappleComponent->GetRopeState() != ERopeState::ROPE_Attached)
 		{
-			GrappleComponent->Rope->GetTarget().Clear();
-			GrappleComponent->Rope->SetTarget(LockOnComponent->GetLockedOnEnemy()->CreateGrappleActor());
+			GrappleComponent->GetRope()->GetTarget().Clear();
+			GrappleComponent->GetRope()->SetTarget(LockOnComponent->GetLockedOnEnemy()->CreateGrappleActor());
 		}
 	}
 }
@@ -344,15 +352,15 @@ void APlayerCharacter::BeginLockingOn()
 // Stop locking onto an enemy
 void APlayerCharacter::StopLockingOn()
 {
-	if (GrappleComponent->RopeState == ERopeState::ROPE_Attached)
+	if (GrappleComponent->GetRopeState() == ERopeState::ROPE_Attached)
 		PlayerFocus = EPlayerFocus::FOCUS_Rope;
 	else
 	{
 		PlayerFocus = EPlayerFocus::FOCUS_None;
 		SetActorTickEnabled(false);
 
-		GrappleComponent->Rope->GetTarget().Clear();
-		GrappleComponent->Rope->SetActorTickEnabled(true);
+		GrappleComponent->GetRope()->GetTarget().Clear();
+		GrappleComponent->GetRope()->SetActorTickEnabled(true);
 	}
 
 	LockOnComponent->SetLockedOnEnemy(nullptr);
@@ -365,10 +373,10 @@ void APlayerCharacter::SwitchLockedOnEnemy(FVector Direction)
 	{
 		LockOnComponent->SetLockedOnEnemy(LockOnComponent->FindClosestEnemy(LockOnComponent->GetLockedOnEnemy(), Direction));
 
-		if (GrappleComponent->RopeState != ERopeState::ROPE_Attached)
+		if (GrappleComponent->GetRopeState() != ERopeState::ROPE_Attached)
 		{
-			GrappleComponent->Rope->GetTarget().Clear();
-			GrappleComponent->Rope->SetTarget(LockOnComponent->GetLockedOnEnemy()->CreateGrappleActor());
+			GrappleComponent->GetRope()->GetTarget().Clear();
+			GrappleComponent->GetRope()->SetTarget(LockOnComponent->GetLockedOnEnemy()->CreateGrappleActor());
 		}
 	}
 }
@@ -376,8 +384,10 @@ void APlayerCharacter::SwitchLockedOnEnemy(FVector Direction)
 // Prepare variables for grappling 
 void APlayerCharacter::PrepareGrapple()
 {
+	GrappleComponent->SetRopeState(ERopeState::ROPE_Grappling);
+
 	InitialPosition = GetActorLocation();
-	EndPosition = GrappleComponent->Rope->GetTarget().Actor->GetActorLocation();
+	EndPosition = GrappleComponent->GetRope()->GetTarget().Actor->GetActorLocation();
 
 	FVector DirectionToTarget = EndPosition - InitialPosition;
 	DirectionToTarget.Normalize();
@@ -395,12 +405,12 @@ void APlayerCharacter::ResetRope()
 		PlayerFocus = EPlayerFocus::FOCUS_None;
 	
 	if (LockOnComponent->IsPlayerLockedOn())
-		GrappleComponent->Rope->SetTarget(LockOnComponent->GetLockedOnEnemy()->CreateGrappleActor());
+		GrappleComponent->GetRope()->SetTarget(LockOnComponent->GetLockedOnEnemy()->CreateGrappleActor());
 	else
 	{
 		SetActorTickEnabled(false);
 
-		GrappleComponent->Rope->SetActorTickEnabled(true);
+		GrappleComponent->GetRope()->SetActorTickEnabled(true);
 	}
 }
 
@@ -431,34 +441,41 @@ void APlayerCharacter::ConsumeRope()
 // Play animation to cast or detach rope
 void APlayerCharacter::CastRod()
 {
-	if (RopeCount > 0 && GrappleComponent->RopeState == ERopeState::ROPE_Detached && GrappleComponent->Rope->GetTarget().Actor)
+	switch (GrappleComponent->GetRopeState())
 	{
-		GrappleComponent->PreAttach();
-
-		SetActorTickEnabled(true);
-
-		if (PlayerFocus != EPlayerFocus::FOCUS_Enemy)
-			PlayerFocus = EPlayerFocus::FOCUS_Rope;
+	case ERopeState::ROPE_Detached:
+		if (RopeCount > 0 && GrappleComponent->GetRope()->GetTarget().Actor)
+			GrappleComponent->PreAttach();
+		break;
+	case ERopeState::ROPE_Attached:
+		ResetRope();
+		break;
+	default:
+		break;
 	}
-	else
-		ResetRope(); 
 }
 
 // Attach rope during animation; enables Tick()
 void APlayerCharacter::Attach()
 {
+	SetActorTickEnabled(true);
+
 	GrappleComponent->AttachRope();
+
+	if (PlayerFocus != EPlayerFocus::FOCUS_Enemy)
+		PlayerFocus = EPlayerFocus::FOCUS_Rope;
 }
 
 // Reel in whatever the rope is attached to
 void APlayerCharacter::ReelIn()
 {
-	if (GrappleComponent->Rope->GetTarget().Actor->IsA(AEnemyCharacter::StaticClass()))
+	if (GrappleComponent->GetRope()->GetTarget().Actor->IsA(AEnemyCharacter::StaticClass()))
 	{
-		AEnemyCharacter* Enemy = Cast<AEnemyCharacter>(GrappleComponent->Rope->GetTarget().Actor);
+		AEnemyCharacter* Enemy = Cast<AEnemyCharacter>(GrappleComponent->GetRope()->GetTarget().Actor);
 
 		if (Enemy->GetCombatState() != ECombatState::COMBAT_DamagedTrip)
 		{
+			PlayAttackAnim(TripAttack);
 			Enemy->TakeDamage(TripAttack, GetActorLocation());
 			RopeCount--; 
 			ResetRope();

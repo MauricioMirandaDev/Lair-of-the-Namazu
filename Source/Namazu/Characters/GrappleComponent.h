@@ -11,6 +11,7 @@ class ARope;
 UENUM(BlueprintType)
 enum class ERopeState : uint8 {
 	ROPE_Detached UMETA(DisplayName = "Rope Detached"),
+	ROPE_Attaching UMETA(DisplayName = "Attaching Rope"), 
 	ROPE_Attached UMETA(DisplayName = "Rope Attached"),
 	ROPE_Grappling UMETA(DisplayName = "Grappling"),
 	ROPE_Reeling UMETA(DisplayName = "Reeling In")
@@ -29,17 +30,30 @@ public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 	// Getter functions
+	ARope* GetRope(); 
+
 	ERopeState GetRopeState();
 
-	// Friend class that access functions and variables
-	friend class APlayerCharacter;
+	// Setter functions
+	void SetRopeState(ERopeState UpdatedState); 
+
+	// Functions for grapple system
+	void SpawnRope(class UStaticMeshComponent* Component);
+
+	void PreAttach(); 
+
+	void AttachRope(); 
+
+	void DetachRope(); 
+
+	void AttachedMovement(); 
 
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
 
 private:	
-	// Components, functions, and variable for grapple system
+	// Components, function, and variable for grapple system
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Rope", meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<ARope> RopeClass;
 
@@ -57,16 +71,6 @@ private:
 
 	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	float AngleToAttachPoint; 
-
-	void SpawnRope(class UStaticMeshComponent* Component);
-
-	void PreAttach(); 
-
-	void AttachRope(); 
-
-	void DetachRope(); 
-
-	void AttachedMovement(); 
 
 	void TensionForce(); 
 

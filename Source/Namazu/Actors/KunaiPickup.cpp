@@ -1,31 +1,36 @@
 
 #include "KunaiPickup.h"
-#include "Namazu/Characters/PlayerCharacter.h"
 #include "Kismet/GameplayStatics.h"
+#include "Namazu/Characters/PlayerCharacter.h"
 
+// Sets default values
 AKunaiPickup::AKunaiPickup()
 {
+	
 }
 
+// Called when the game starts or when spawned
 void AKunaiPickup::BeginPlay()
 {
 	Super::BeginPlay();
 }
 
+// Called every frame
 void AKunaiPickup::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 }
 
-// Add another kunai to the player's inventory
-void AKunaiPickup::CollectPickup()
+// Have the player collect this item when the collider is overlapped
+void AKunaiPickup::BeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	Super::CollectPickup();
+	Super::BeginOverlap(OverlappedComp, OtherActor, OtherComp, OtherBodyIndex, bFromSweep, SweepResult);
 
 	if (APlayerCharacter::KunaiCount < APlayerCharacter::MaxKunai)
 	{
-		UGameplayStatics::PlaySoundAtLocation(GetWorld(), CollectSoundEffect, GetActorLocation());
 		APlayerCharacter::KunaiCount++;
-		Destroy(); 
+		APlayerCharacter::CollectedPickups.Add(PickupTag, this);
+		UGameplayStatics::PlaySoundAtLocation(GetWorld(), CollectSoundEffect, GetActorLocation());
+		Destroy();
 	}
 }

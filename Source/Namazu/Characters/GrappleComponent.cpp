@@ -60,6 +60,7 @@ void UGrappleComponent::SpawnRope(UStaticMeshComponent* Component)
 		Rope = GetWorld()->SpawnActor<ARope>(RopeClass);
 		Rope->AttachToComponent(Component, FAttachmentTransformRules::KeepRelativeTransform, TEXT("RopeSocket"));
 		Rope->SetPlayerReference(Player); 
+		Rope->SetActorTickEnabled(Player->RopeCount > 0);
 	}
 }
 
@@ -113,7 +114,7 @@ void UGrappleComponent::AttachedMovement()
 // Calculate tension force between player and point of attachment
 void UGrappleComponent::TensionForce()
 {
-	if (Player->GetCharacterMovement()->MovementMode == EMovementMode::MOVE_Falling)
+	if (Player->GetCharacterMovement()->MovementMode == EMovementMode::MOVE_Falling && Player->GetCombatState() != ECombatState::COMBAT_DeadFalling)
 	{
 		FVector DirectionToPlayer = Player->GetActorLocation() - Rope->GetTarget().Actor->GetActorLocation();
 		DirectionToPlayer.Normalize(); 

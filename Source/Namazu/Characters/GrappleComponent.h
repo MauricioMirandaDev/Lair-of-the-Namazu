@@ -64,9 +64,6 @@ private:
 	float TensionStrength; 
 
 	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-	ARope* Rope;
-
-	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	ERopeState RopeState; 
 
 	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
@@ -75,4 +72,6 @@ private:
 	void TensionForce(); 
 
 	APlayerCharacter* Player;
+
+	ARope* Rope;
 };

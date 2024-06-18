@@ -3,10 +3,12 @@
 
 #include "CoreMinimal.h"
 #include "CombatCharacter.h"
+#include "NativeGameplayTags.h"
 #include "PlayerCharacter.generated.h" 
 
 class AEnemyCharacter;
 class ARope;
+class APickup; 
 class UAnimMontage; 
 class ULockOnComponent;
 class UGrappleComponent;
@@ -31,11 +33,6 @@ public:
 	virtual void Tick(float DeltaTime) override; 
 
 	// Getter functions
-	ULockOnComponent* GetLockOnComponent(); 
-
-	UGrappleComponent* GetGrappleComponent(); 
-
-	// Functions and variables used for combat
 	UFUNCTION(BlueprintPure)
 	const int32 GetMaxMedicine();
 
@@ -48,21 +45,34 @@ public:
 	UFUNCTION(BlueprintPure)
 	const int32 GetKunaiCount();
 
+	UFUNCTION(BlueprintPure)
+	const int32 GetMaxRope();
+
+	UFUNCTION(BlueprintPure)
+	const int32 GetRopeCount();
+
+	ULockOnComponent* GetLockOnComponent(); 
+
+	UGrappleComponent* GetGrappleComponent(); 
+
+	// Functions and variables used for combat
+	static TMap<FGameplayTag, APickup*> CollectedPickups; 
+
+	static int32 MaxKunai;
+
+	static int32 KunaiCount;
+
 	virtual void UpdateMovement(bool bPauseMovement) override;
 
 	virtual void ResetAttack() override;
 
-	void EnemyDefeated(AActor* Enemy); 
+	void EnemyDefeated(AActor* Enemy);  
 
+	// Functions and variables used for health system 
 	static int32 MaxMedicine;
 
 	static int32 MedicineCount;
 
-	static int32 MaxKunai;
-
-	static int32 KunaiCount; 
-
-	// Functions used for health system 
 	virtual void TakeDamage(FAttackAnimation AttackAnimation, FVector AttackLocation) override;
 
 	virtual void AfterDeath() override; 
@@ -70,12 +80,6 @@ public:
 	// Functions and variable used for grapple system
 	UFUNCTION(BlueprintImplementableEvent)
 	void Grapple(); 
-
-	UFUNCTION(BlueprintPure)
-	const int32 GetMaxRope();
-
-	UFUNCTION(BlueprintPure)
-	const int32 GetRopeCount();
 
 	void Attach(); 
 
@@ -143,6 +147,8 @@ private:
 	void InstantAttackPressed(); 
 
 	void ConsumeMedicine(); 
+
+	void ConsumeKunai(FAttackAnimation Animation, AEnemyCharacter* Enemy);
 
 	void SelectFocusBehavior();
 

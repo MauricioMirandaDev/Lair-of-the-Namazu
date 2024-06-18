@@ -170,5 +170,5 @@ void ACombatCharacter::OnDeath()
 // Called when character enters fall to death volume
 void ACombatCharacter::OnFallDeath()
 {
-	
+	CombatState = ECombatState::COMBAT_DeadFalling; 
 }

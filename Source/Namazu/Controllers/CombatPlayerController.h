@@ -70,8 +70,14 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Enhanced Input System", meta = (AllowPrivateAccess = "true"))
 	UInputAction* InputAction_Heal;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Enhanced Input System", meta = (AllowPrivateAccess = "true"))
+	UInputAction* InputAction_Pause;
+
 	// Reference to player used to call functions
 	class APlayerCharacter* Player;
+
+	// General gameplay functions
+	void Pause(); 
 
 	// Functions for movement
 	void Move(const FInputActionValue& Value); 

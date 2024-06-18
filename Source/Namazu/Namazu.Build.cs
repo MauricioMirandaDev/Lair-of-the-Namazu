@@ -8,7 +8,7 @@ public class Namazu : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 	
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "AIModule", "GameplayTasks", "UMG", "EnhancedInput", "CableComponent" });
+		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "AIModule", "GameplayTasks", "UMG", "EnhancedInput", "CableComponent", "GameplayTags" });
 
 		PrivateDependencyModuleNames.AddRange(new string[] { });
 

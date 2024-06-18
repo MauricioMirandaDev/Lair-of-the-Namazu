@@ -3,7 +3,10 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/GameModeBase.h"
+#include "NativeGameplayTags.h"
 #include "NamazuGameModeBase.generated.h"
+
+class APickup;
 
 UCLASS()
 class NAMAZU_API ANamazuGameModeBase : public AGameModeBase
@@ -14,6 +17,10 @@ public:
     /** Remove the current menu widget and create a new one from the specified class, if provided. */
     UFUNCTION(BlueprintCallable, Category = "UMG Game")
     void ChangeMenuWidget(TSubclassOf<UUserWidget> NewWidgetClass);
+
+    // Blueprint event that pauses game
+    UFUNCTION(BlueprintImplementableEvent)
+    void PauseGame(); 
 
     // Blueprint event that implements game over logic 
     UFUNCTION(BlueprintImplementableEvent)

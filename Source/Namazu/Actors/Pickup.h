@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "NativeGameplayTags.h"
 #include "Pickup.generated.h"
 
 UCLASS()
@@ -26,12 +27,12 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-	// Function used for collecting
-	virtual void CollectPickup(); 
-
-	// Component used for collecting
+	// Components used for collecting
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
 	class USoundBase* CollectSoundEffect;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true", ExposeOnSpawn = "true"))
+	FGameplayTag PickupTag; 
 
 private:
 	// Visual components 

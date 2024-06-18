@@ -10,16 +10,19 @@
 #include "Kismet/KismetSystemLibrary.h"
 #include "Namazu/NamazuGameModeBase.h"
 #include "Namazu/Actors/GrappleActor.h"
+#include "Namazu/Actors/Pickup.h"
 #include "Namazu/Actors/Rope.h"
 #include "Namazu/Actors/Weapon.h"
 #include "Namazu/Characters/EnemyCharacter.h"
 #include "Namazu/Characters/GrappleComponent.h"
 #include "Namazu/Characters/LockOnComponent.h"
 
-int32 APlayerCharacter::MaxMedicine = 10;
-int32 APlayerCharacter::MedicineCount = 0;
+TMap<FGameplayTag, APickup*> APlayerCharacter::CollectedPickups; 
+
 int32 APlayerCharacter::MaxKunai = 1;
 int32 APlayerCharacter::KunaiCount = 0;
+int32 APlayerCharacter::MaxMedicine = 10;
+int32 APlayerCharacter::MedicineCount = 0;
 int32 APlayerCharacter::MaxRope = 3;
 int32 APlayerCharacter::RopeCount = 0;
 
@@ -71,18 +74,6 @@ void APlayerCharacter::Tick(float DeltaTime)
 	SelectFocusBehavior();
 }
 
-// Getter function to access lock-on component
-ULockOnComponent* APlayerCharacter::GetLockOnComponent()
-{
-	return LockOnComponent;
-}
-
-// Getter function to access grapple component 
-UGrappleComponent* APlayerCharacter::GetGrappleComponent()
-{
-	return GrappleComponent;
-}
-
 // Communicate to the UI the max amount of medicine the player can carry
 const int32 APlayerCharacter::GetMaxMedicine()
 {
@@ -117,6 +108,18 @@ const int32 APlayerCharacter::GetMaxRope()
 const int32 APlayerCharacter::GetRopeCount()
 {
 	return RopeCount; 
+}
+
+// Getter function to access lock-on component
+ULockOnComponent* APlayerCharacter::GetLockOnComponent()
+{
+	return LockOnComponent;
+}
+
+// Getter function to access grapple component 
+UGrappleComponent* APlayerCharacter::GetGrappleComponent()
+{
+	return GrappleComponent;
 }
 
 // Set this character to be able to move or not 
@@ -164,6 +167,18 @@ void APlayerCharacter::AfterDeath()
 		GameMode->GameOver();
 }
 
+
+// Attach rope during animation; enables Tick()
+void APlayerCharacter::Attach()
+{
+	SetActorTickEnabled(true);
+
+	GrappleComponent->AttachRope();
+
+	if (PlayerFocus != EPlayerFocus::FOCUS_Enemy)
+		PlayerFocus = EPlayerFocus::FOCUS_Rope;
+}
+
 // Called whenever the player performs a jump 
 void APlayerCharacter::Jump()
 {
@@ -192,8 +207,15 @@ void APlayerCharacter::OnDeath()
 
 	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
 
+	PlayerFocus = EPlayerFocus::FOCUS_None;
+	SetActorTickEnabled(false);
+
 	StopLockingOn();
-	ResetRope();
+	LockOnComponent->DestroyComponent();
+
+	GrappleComponent->DetachRope();
+	GrappleComponent->GetRope()->Destroy();
+	GrappleComponent->DestroyComponent();
 }
 
 // Called when character enters fall to death volume
@@ -205,8 +227,15 @@ void APlayerCharacter::OnFallDeath()
 
 	SpringArm->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
 
+	PlayerFocus = EPlayerFocus::FOCUS_None;
+	SetActorTickEnabled(false);
+
 	StopLockingOn();
-	ResetRope();
+	LockOnComponent->DestroyComponent();
+
+	GrappleComponent->DetachRope();
+	GrappleComponent->GetRope()->Destroy();
+	GrappleComponent->DestroyComponent();
 
 	AfterDeath();
 }
@@ -249,37 +278,24 @@ void APlayerCharacter::HeavyAttackPressed()
 // Perform an instant attack on an unalarmed enemy or on a tripped enemy
 void APlayerCharacter::InstantAttackPressed()
 {
-	if (KunaiCount > 0)
+	TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypes;
+	ObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECC_GameTraceChannel1));
+
+	TArray<AActor*> ActorsToIngore;
+	ActorsToIngore.Add(this);
+
+	FHitResult HitResult;
+
+	UKismetSystemLibrary::CapsuleTraceSingleForObjects(GetWorld(), GetActorLocation(), GetActorLocation() + (GetActorForwardVector() * 100.0f),
+														GetCapsuleComponent()->GetUnscaledCapsuleRadius(), GetCapsuleComponent()->GetUnscaledCapsuleHalfHeight(), ObjectTypes, 
+														false, ActorsToIngore, EDrawDebugTrace::None, OUT HitResult, true);
+
+	if (AEnemyCharacter* HitEnemy = Cast<AEnemyCharacter>(HitResult.GetActor()))
 	{
-		TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypes;
-		ObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECC_GameTraceChannel1));
-
-		TArray<AActor*> ActorsToIngore;
-		ActorsToIngore.Add(this);
-
-		FHitResult HitResult;
-
-		UKismetSystemLibrary::CapsuleTraceSingleForObjects(GetWorld(), GetActorLocation(), GetActorLocation() + (GetActorForwardVector() * 100.0f),
-														   GetCapsuleComponent()->GetUnscaledCapsuleRadius(), GetCapsuleComponent()->GetUnscaledCapsuleHalfHeight(), ObjectTypes, 
-														   false, ActorsToIngore, EDrawDebugTrace::None, OUT HitResult, true);
-
-		if (AEnemyCharacter* HitEnemy = Cast<AEnemyCharacter>(HitResult.GetActor()))
-		{
-			if (FVector::DotProduct(HitEnemy->GetActorForwardVector(), GetActorForwardVector()) > 0.9)
-			{
-				PlayAttackAnim(InstantAttack_Behind);
-				HitEnemy->TakeDamage(InstantAttack_Behind, GetActorLocation());
-				KunaiCount--; 
-				StopLockingOn();
-			}
-			else if (HitEnemy->GetCombatState() == ECombatState::COMBAT_DamagedTrip)
-			{
-				PlayAttackAnim(InstantAttack_Ground);
-				HitEnemy->TakeDamage(InstantAttack_Ground, GetActorLocation());
-				KunaiCount--; 
-				StopLockingOn();
-			}
-		}
+		if (FVector::DotProduct(HitEnemy->GetActorForwardVector(), GetActorForwardVector()) > 0.9)
+			ConsumeKunai(InstantAttack_Behind, HitEnemy);
+		else if (HitEnemy->GetCombatState() == ECombatState::COMBAT_DamagedTrip)
+			ConsumeKunai(InstantAttack_Ground, HitEnemy);
 	}
 }
 
@@ -291,6 +307,18 @@ void APlayerCharacter::ConsumeMedicine()
 		CurrentHealth += HealingAmount;
 		CurrentHealth = UKismetMathLibrary::Clamp(CurrentHealth, 0.0f, MaxHealth);
 		MedicineCount--; 
+	}
+}
+
+// Inflict instant attack on enemy
+void APlayerCharacter::ConsumeKunai(FAttackAnimation Animation, AEnemyCharacter* Enemy)
+{
+	if (KunaiCount > 0)
+	{
+		PlayAttackAnim(Animation);
+		Enemy->TakeDamage(Animation, GetActorLocation());
+		KunaiCount--;
+		StopLockingOn(); 
 	}
 }
 
@@ -381,7 +409,7 @@ void APlayerCharacter::SwitchLockedOnEnemy(FVector Direction)
 	}
 }
 
-// Prepare variables for grappling 
+// Prepare variables for grappling (this function is called in blueprints) 
 void APlayerCharacter::PrepareGrapple()
 {
 	GrappleComponent->SetRopeState(ERopeState::ROPE_Grappling);
@@ -396,7 +424,7 @@ void APlayerCharacter::PrepareGrapple()
 	SetActorRotation(FRotator(0.0f, RotationToPoint.Yaw, 0.0f));
 }
 
-// Reset values after grappling; disables Tick() 
+// Reset values after grappling (this function is called in blueprints) ; disables Tick() 
 void APlayerCharacter::ResetRope()
 {
 	GrappleComponent->DetachRope(); 
@@ -414,7 +442,7 @@ void APlayerCharacter::ResetRope()
 	}
 }
 
-// Use linear interpolation to grapple the player to a point
+// Use linear interpolation to grapple the player to a point (this function is called in blueprints) 
 void APlayerCharacter::LerpPlayerPosition(float Alpha)
 {
 	FVector LerpedLocation = FMath::Lerp(InitialPosition, EndPosition, Alpha);
@@ -422,7 +450,7 @@ void APlayerCharacter::LerpPlayerPosition(float Alpha)
 	SetActorLocation(LerpedLocation);
 }
 
-// Launch an enemy while the player is grappling 
+// Launch an enemy while the player is grappling (this function is called in blueprints) 
 void APlayerCharacter::LaunchEnemy(AEnemyCharacter* DamagedEnemy)
 {
 	if (DamagedEnemy != PreviousEnemyLaunched)
@@ -436,6 +464,8 @@ void APlayerCharacter::LaunchEnemy(AEnemyCharacter* DamagedEnemy)
 void APlayerCharacter::ConsumeRope()
 {
 	RopeCount--; 
+	if (RopeCount == 0)
+		GrappleComponent->GetRope()->SetActorTickEnabled(false); 
 }
 
 // Play animation to cast or detach rope
@@ -453,17 +483,6 @@ void APlayerCharacter::CastRod()
 	default:
 		break;
 	}
-}
-
-// Attach rope during animation; enables Tick()
-void APlayerCharacter::Attach()
-{
-	SetActorTickEnabled(true);
-
-	GrappleComponent->AttachRope();
-
-	if (PlayerFocus != EPlayerFocus::FOCUS_Enemy)
-		PlayerFocus = EPlayerFocus::FOCUS_Rope;
 }
 
 // Reel in whatever the rope is attached to

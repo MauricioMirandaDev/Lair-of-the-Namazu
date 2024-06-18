@@ -3,7 +3,9 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "Namazu/NamazuGameModeBase.h"
 #include "Namazu/Characters/PlayerCharacter.h"
 #include "Namazu/Characters/GrappleComponent.h"
 
@@ -25,6 +27,7 @@ ACombatPlayerController::ACombatPlayerController()
 	InputAction_ReelIn = nullptr; 
 	InputAction_InstantAttack = nullptr; 
 	InputAction_Heal = nullptr; 
+	InputAction_Pause = nullptr; 
 
 	GamepadLookRate = 100.0f; 
 	bCanSwitchEnemy = true;  
@@ -57,6 +60,9 @@ void ACombatPlayerController::SetupInputComponent()
 	// Bind actions to input system
 	if (UEnhancedInputComponent* EnhancedInput = Cast<UEnhancedInputComponent>(InputComponent))
 	{
+		// GENERAL
+		EnhancedInput->BindAction(InputAction_Pause, ETriggerEvent::Triggered, this, &ACombatPlayerController::Pause);
+
 		// MOVEMENT
 		EnhancedInput->BindAction(InputAction_Move, ETriggerEvent::Triggered, this, &ACombatPlayerController::Move);
 		EnhancedInput->BindAction(InputAction_Jump, ETriggerEvent::Ongoing, this, &ACombatPlayerController::CallJump);
@@ -83,6 +89,13 @@ void ACombatPlayerController::SetupInputComponent()
 		EnhancedInput->BindAction(InputAction_Grapple, ETriggerEvent::Triggered, this, &ACombatPlayerController::CallGrapple);
 		EnhancedInput->BindAction(InputAction_ReelIn, ETriggerEvent::Triggered, this, &ACombatPlayerController::CallReelIn); 
 	}
+}
+
+// Pauses the game
+void ACombatPlayerController::Pause()
+{
+	if (ANamazuGameModeBase* GameMode = Cast<ANamazuGameModeBase>(UGameplayStatics::GetGameMode(GetWorld())))
+		GameMode->PauseGame();
 }
 
 // Find forward and right vectors based on control rotation and move in those directions

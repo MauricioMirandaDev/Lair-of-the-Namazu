@@ -39,6 +39,8 @@ void ACombatPlayerController::BeginPlay()
 	Super::BeginPlay();
 	SetInputMode(FInputModeGameOnly());
 
+	ANamazuGameModeBase::PlayerControllerRef = this;
+
 	Player = Cast<APlayerCharacter>(GetPawn());
 	if (Player == nullptr)
 		return; 
@@ -91,11 +93,16 @@ void ACombatPlayerController::SetupInputComponent()
 	}
 }
 
-// Pauses the game
+// Pauses and unpauses the game
 void ACombatPlayerController::Pause()
 {
 	if (ANamazuGameModeBase* GameMode = Cast<ANamazuGameModeBase>(UGameplayStatics::GetGameMode(GetWorld())))
-		GameMode->PauseGame();
+	{
+		if (UGameplayStatics::IsGamePaused(GetWorld()))
+			GameMode->UnpauseGame();
+		else
+			GameMode->PauseGame();
+	}
 }
 
 // Find forward and right vectors based on control rotation and move in those directions

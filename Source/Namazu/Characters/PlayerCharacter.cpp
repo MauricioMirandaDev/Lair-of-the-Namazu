@@ -59,6 +59,8 @@ void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
+	ANamazuGameModeBase::PlayerRef = this; 
+
 	DefaultWalkSpeed = GetCharacterMovement()->MaxWalkSpeed; 
 
 	GrappleComponent->SpawnRope(Weapon->GetMesh()); 

@@ -16,5 +16,5 @@ void UCombatAnimNotify_SetMovement::Notify(USkeletalMeshComponent* MeshComp, UAn
 	Super::Notify(MeshComp, Animation);
 
 	if (OwnerReference)
-		OwnerReference->UpdateMovement(bStopMovement);
+		OwnerReference->StopMovement(bStopMovement);
 }

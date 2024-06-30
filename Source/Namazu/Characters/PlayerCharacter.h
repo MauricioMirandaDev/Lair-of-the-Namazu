@@ -62,7 +62,7 @@ public:
 
 	static int32 KunaiCount;
 
-	virtual void UpdateMovement(bool bPauseMovement) override;
+	virtual void StopMovement(bool bPauseMovement) override;
 
 	virtual void ResetAttack() override;
 
@@ -151,8 +151,6 @@ private:
 	void ConsumeKunai(FAttackAnimation Animation, AEnemyCharacter* Enemy);
 
 	void SelectFocusBehavior();
-
-	float DefaultWalkSpeed; 
 
 	bool bEnemyJustDefeated; 
 

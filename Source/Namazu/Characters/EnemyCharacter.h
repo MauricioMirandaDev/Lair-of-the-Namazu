@@ -30,7 +30,7 @@ public:
 	float GetAttackRadius(); 
 
 	// Functions used for combat
-	virtual void UpdateMovement(bool bPauseMovement) override;
+	virtual void StopMovement(bool bPauseMovement) override;
 
 	virtual void ResetAttack() override; 
 
@@ -66,6 +66,9 @@ private:
 	UPROPERTY(EditAnywhere, Category = "Search", meta = (AllowPrivateAccess = "true", UIMin = "0.0", UIMax = "180.0"))
 	float MaxSightAngle;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true", ExposeOnSpawn = "true"))
+	TArray<FVector> PatrolLocations;
+
 	bool IsPlayerClose(); 
 
 	bool IsPlayerWithinView(bool bCheckBehind, float Angle);
@@ -83,7 +86,6 @@ private:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Pickups", meta = (AllowPrivateAccess = "true"))
 	TArray<TSubclassOf<APickup>> PickupClasses;
-	//TSubclassOf<APickup> PickupClass;
 
 	UPROPERTY(EditAnywhere, Category = "Combat", meta = (AllowPrivateAccess = "true"))
 	float AttackRadius;

@@ -10,6 +10,7 @@ AEnemyAIController::AEnemyAIController()
 {
 	BehaviorTree = nullptr; 
 	EnemyOwner = nullptr; 
+	PatrolSelection = 0;
 }
 
 // Called when the game starts or when spawned
@@ -57,6 +58,9 @@ void AEnemyAIController::ChasePlayer()
 	if (EnemyOwner->GetCombatState() == ECombatState::COMBAT_Neutral)
 	{
 		GetPathFollowingComponent()->SetActive(true, true);
+		
+		EnemyOwner->UpdateMovementSpeed(EnemyOwner->RunSpeed); 
+
 		MoveToActor(EnemyOwner->GetPlayerReference(), EnemyOwner->GetAttackRadius() - 100.0f, true, true, true, 0, true);
 	}
 }
@@ -65,7 +69,31 @@ void AEnemyAIController::ChasePlayer()
 void AEnemyAIController::Move(FVector Destination)
 {
 	if (EnemyOwner->GetCombatState() == ECombatState::COMBAT_Neutral)
+	{
+		EnemyOwner->UpdateMovementSpeed(EnemyOwner->WalkSpeed);
+
 		MoveToLocation(Destination, 1.0f, true, true, true, true, 0, true);
+	}
+}
+
+// Set the enemy to move in the following pattern
+void AEnemyAIController::Patrol(FVector StartLocation)
+{
+	if (EnemyOwner->GetCombatState() == ECombatState::COMBAT_Neutral)
+	{
+		EnemyOwner->UpdateMovementSpeed(EnemyOwner->WalkSpeed);
+
+		if (PatrolSelection == EnemyOwner->PatrolLocations.Num())
+		{
+			PatrolSelection = 0;
+			MoveToLocation(StartLocation, 1.0f, true, true, true, true, 0, true);
+		}
+		else
+		{
+			MoveToLocation(EnemyOwner->PatrolLocations[PatrolSelection], 1.0f, true, true, true, true, 0, true);
+			PatrolSelection++;
+		}
+	}
 }
 
 // Call functions to perform line of sight calculation towards player

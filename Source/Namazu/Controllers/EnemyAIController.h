@@ -30,6 +30,8 @@ public:
 
 	void Move(FVector Destination); 
 
+	void Patrol(FVector StartLocation);
+
 	// Functions to handle enemy search
 	bool CanSeePlayer();
 
@@ -54,5 +56,8 @@ private:
 	class UBehaviorTree* BehaviorTree;
 
 	// Enemy who owns this controller 
-	AEnemyCharacter* EnemyOwner; 
+	AEnemyCharacter* EnemyOwner;  
+
+	// Variable to handle enemy movement
+	int32 PatrolSelection; 
 };

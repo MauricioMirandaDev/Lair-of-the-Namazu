@@ -34,7 +34,7 @@ public:
 	void SetCurrentAttackAnim(FAttackAnimation NewAnim);
 
 	// Functions used for combat
-	virtual void UpdateMovement(bool bPauseMovement); 
+	virtual void StopMovement(bool bPauseMovement); 
 
 	virtual void ResetAttack();
 
@@ -61,7 +61,15 @@ protected:
 	UPROPERTY(BlueprintReadOnly, Category = "Combat", meta = (AllowPrivateAccess = "true"))
 	ECombatState CombatState; 
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat", meta = (AllowPrivateAccess = "true"))
+	float WalkSpeed;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat", meta = (AllowPrivateAccess = "true"))
+	float RunSpeed; 
+
 	void PlayAttackAnim(FAttackAnimation AttackAnimation);
+
+	void UpdateMovementSpeed(float NewSpeed);
 
 	FAttackAnimation CurrentAttackAnimation;
 

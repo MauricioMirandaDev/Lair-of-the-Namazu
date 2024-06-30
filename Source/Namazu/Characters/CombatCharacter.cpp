@@ -15,6 +15,8 @@ ACombatCharacter::ACombatCharacter()
 	SetCanBeDamaged(true);
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 	CombatState = ECombatState::COMBAT_Neutral; 
+	WalkSpeed = 300.0f;
+	RunSpeed = 600.0f; 
 	CurrentAttackAnimation = FAttackAnimation(); 
 	WeaponClass = nullptr;
 	bLandedFromLaunch = false; 
@@ -74,7 +76,7 @@ void ACombatCharacter::SetCurrentAttackAnim(FAttackAnimation NewAnim)
 }
 
 // Set this character to be able to move or not 
-void ACombatCharacter::UpdateMovement(bool bPauseMovement)
+void ACombatCharacter::StopMovement(bool bPauseMovement)
 {
 
 }
@@ -157,6 +159,11 @@ void ACombatCharacter::PlayAttackAnim(FAttackAnimation AttackAnimation)
 {
 	PlayAnimMontage(AttackAnimation.Animation, 1.0f, TEXT("None"));
 	CurrentAttackAnimation = AttackAnimation;
+}
+
+void ACombatCharacter::UpdateMovementSpeed(float NewSpeed)
+{
+	GetCharacterMovement()->MaxWalkSpeed = NewSpeed;
 }
 
 // Called when character runs out of health

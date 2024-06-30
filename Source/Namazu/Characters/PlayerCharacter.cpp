@@ -61,8 +61,6 @@ void APlayerCharacter::BeginPlay()
 
 	ANamazuGameModeBase::PlayerRef = this; 
 
-	DefaultWalkSpeed = GetCharacterMovement()->MaxWalkSpeed; 
-
 	GrappleComponent->SpawnRope(Weapon->GetMesh()); 
 
 	SetActorTickEnabled(false);
@@ -125,14 +123,14 @@ UGrappleComponent* APlayerCharacter::GetGrappleComponent()
 }
 
 // Set this character to be able to move or not 
-void APlayerCharacter::UpdateMovement(bool bPauseMovement)
+void APlayerCharacter::StopMovement(bool bPauseMovement)
 {
-	Super::UpdateMovement(bPauseMovement);
+	Super::StopMovement(bPauseMovement);
 
 	if (bPauseMovement)
-		GetCharacterMovement()->MaxWalkSpeed = 0.0f;
+		UpdateMovementSpeed(0.0f);
 	else
-		GetCharacterMovement()->MaxWalkSpeed = DefaultWalkSpeed; 
+		UpdateMovementSpeed(RunSpeed);
 }
 
 // Used to reset variables a character uses during combat

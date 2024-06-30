@@ -77,9 +77,9 @@ float AEnemyCharacter::GetAttackRadius()
 }
 
 // Set this character to be able to move or not 
-void AEnemyCharacter::UpdateMovement(bool bPauseMovement)
+void AEnemyCharacter::StopMovement(bool bPauseMovement)
 {
-	Super::UpdateMovement(bPauseMovement); 
+	Super::StopMovement(bPauseMovement); 
 
 	if (bPauseMovement)
 		EnemyController->GetPathFollowingComponent()->SetActive(false, true);

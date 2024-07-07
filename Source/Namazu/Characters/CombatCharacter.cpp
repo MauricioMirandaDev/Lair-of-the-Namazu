@@ -19,6 +19,7 @@ ACombatCharacter::ACombatCharacter()
 	RunSpeed = 600.0f; 
 	CurrentAttackAnimation = FAttackAnimation(); 
 	WeaponClass = nullptr;
+	DamagedNormalMontage = nullptr; 
 	bLandedFromLaunch = false; 
 	MaxHealth = 100.0f;
 }
@@ -136,6 +137,7 @@ void ACombatCharacter::TakeDamage(FAttackAnimation AttackAnimation, FVector Atta
 				break;
 			default:
 				CombatState = ECombatState::COMBAT_DamagedNormal;
+				PlayAnimMontage(DamagedNormalMontage, 1.0f, TEXT("None")); 
 				LaunchCharacter(-GetActorForwardVector() * AttackAnimation.ForwardKnockbackStrength, true, true);
 				break;
 		}

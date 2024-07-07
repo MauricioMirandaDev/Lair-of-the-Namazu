@@ -5,6 +5,7 @@
 #include "Namazu/Actors/Weapon.h"
 #include "Namazu/Characters/PlayerCharacter.h"
 #include "Namazu/Controllers/EnemyAIController.h"
+#include "Namazu/NamazuGameModeBase.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/WidgetComponent.h"
 #include "Kismet/GameplayStatics.h"
@@ -20,6 +21,7 @@ AEnemyCharacter::AEnemyCharacter()
 	MaxSightAngle = 90.0f; 
 	PlayerReference = nullptr;
 	AttackRadius = 100.0f;
+	TrackingStrength = 3.0f;
 
 	// Create health bar 
 	HealthBar = CreateDefaultSubobject<UWidgetComponent>(TEXT("Health Bar"));
@@ -100,6 +102,7 @@ void AEnemyCharacter::TakeDamage(FAttackAnimation AttackAnimation, FVector Attac
 {
 	Super::TakeDamage(AttackAnimation, AttackLocation); 
 
+	StopTracking(); 
 	EnemyController->GetBlackboardComponent()->ClearValue(TEXT("CanRunTree"));
 }
 
@@ -181,6 +184,24 @@ bool AEnemyCharacter::IsPlayerBlocked()
 
 	return UKismetSystemLibrary::LineTraceSingle(GetWorld(), GetActorLocation(), PlayerReference->GetActorLocation(), UEngineTypes::ConvertToTraceType(ECC_Visibility),
 												 true, ActorsToIngore, EDrawDebugTrace::None, OUT LineResult, true);
+}
+
+// Send the enemy to follow the player's location during an attack
+void AEnemyCharacter::Tracking()
+{
+	FVector DirectionToPlayer = ANamazuGameModeBase::PlayerRef->GetActorLocation() - GetActorLocation();
+	DirectionToPlayer.Normalize();
+
+	FVector EndLocation;
+	float DistanceToPlayer = FVector::Dist(GetActorLocation(), ANamazuGameModeBase::PlayerRef->GetActorLocation());
+
+	// If the end location will be less than 1 meter towards the player, limit the end location
+	if (DistanceToPlayer <= 100.0f)
+		EndLocation = ANamazuGameModeBase::PlayerRef->GetActorLocation() - (DirectionToPlayer * DistanceToPlayer);
+	else
+		EndLocation = GetActorLocation() + (DirectionToPlayer * TrackingStrength);
+
+	SetActorLocationAndRotation(EndLocation, FRotator(0.0f, DirectionToPlayer.Rotation().Yaw, 0.0f));
 }
 
 // Calulate if the player is within attacking distance

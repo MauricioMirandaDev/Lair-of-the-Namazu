@@ -30,6 +30,12 @@ public:
 	float GetAttackRadius(); 
 
 	// Functions used for combat
+	UFUNCTION(BlueprintImplementableEvent)
+	void AddTrackingToAttack(); 
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void StopTracking(); 
+
 	virtual void StopMovement(bool bPauseMovement) override;
 
 	virtual void ResetAttack() override; 
@@ -89,6 +95,12 @@ private:
 
 	UPROPERTY(EditAnywhere, Category = "Combat", meta = (AllowPrivateAccess = "true"))
 	float AttackRadius;
+
+	UPROPERTY(EditAnywhere, Category = "Combat", meta = (AllowPrivateAccess = "true"))
+	float TrackingStrength;
+
+	UFUNCTION(BlueprintCallable)
+	void Tracking(); 
 
 	bool IsPlayerWithinAttackRadius(); 
 

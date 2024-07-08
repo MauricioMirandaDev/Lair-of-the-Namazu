@@ -37,12 +37,14 @@ public:
 
 	bool CanSensePlayerBehind(); 
 
-	// Function to handle combat
+	// Functions to handle combat
 	bool IsPlayerDead(); 
 
 	bool IsSelfDead(); 
 
 	bool CanAttack(); 
+
+	bool CanUseAlternateAttack();
 
 	void StartAttackAnimation(FAttackAnimation AttackAnim); 
 
@@ -54,6 +56,10 @@ private:
 	// This enemy's behavior tree
 	UPROPERTY(EditDefaultsOnly, Category = "Behavior Tree", meta = (AllowPrivateAccess = "true"))
 	class UBehaviorTree* BehaviorTree;
+
+	/** Enter a value between 0.0 and 1.0 */
+	UPROPERTY(EditDefaultsOnly, Category = "Behavior Tree", meta = (AllowPrivateAccess = "true", UIMin = "0.0", UIMax = "1.0"))
+	float ChanceOfAlternateAttack;
 
 	// Enemy who owns this controller 
 	AEnemyCharacter* EnemyOwner;  

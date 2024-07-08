@@ -9,6 +9,7 @@
 AEnemyAIController::AEnemyAIController()
 {
 	BehaviorTree = nullptr; 
+	ChanceOfAlternateAttack = 0.0f;
 	EnemyOwner = nullptr; 
 	PatrolSelection = 0;
 }
@@ -139,6 +140,12 @@ bool AEnemyAIController::CanAttack()
 		return EnemyOwner->IsPlayerWithinAttackRadius() && EnemyOwner->GetCombatState() == ECombatState::COMBAT_Neutral; 
 	else
 		return false;
+}
+
+// Randomly decide whether to use this enemy's alternate attack or primary attack
+bool AEnemyAIController::CanUseAlternateAttack()
+{
+	return ChanceOfAlternateAttack >= FMath::RandRange(0.0f, 1.0f);
 }
 
 // Call function to perform attack animation 

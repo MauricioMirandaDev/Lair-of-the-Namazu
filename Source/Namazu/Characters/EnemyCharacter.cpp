@@ -174,6 +174,14 @@ bool AEnemyCharacter::IsPlayerWithinView(bool bCheckBehind, float Angle)
 		return false;
 }
 
+// Determine if the player's position is higher than this enemy's capsule height
+bool AEnemyCharacter::IsPlayerHigherThanEnemy()
+{
+	float ZDistance = ANamazuGameModeBase::PlayerRef->GetActorLocation().Z - GetActorLocation().Z;
+
+	return ZDistance > GetCapsuleComponent()->GetUnscaledCapsuleHalfHeight();
+}
+
 // Perform a line trace to see if ray to player is blockd by anything
 bool AEnemyCharacter::IsPlayerBlocked()
 {

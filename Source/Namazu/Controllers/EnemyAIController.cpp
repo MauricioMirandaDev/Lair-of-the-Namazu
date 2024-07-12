@@ -115,6 +115,15 @@ bool AEnemyAIController::CanSensePlayerBehind()
 		return false;
 }
 
+// Call function to check if the player's position is higher than the enemy
+bool AEnemyAIController::IsPlayerAbove()
+{
+	if (EnemyOwner)
+		return EnemyOwner->IsPlayerHigherThanEnemy();
+	else
+		return false;
+}
+
 // Call function to check if player has died
 bool AEnemyAIController::IsPlayerDead()
 {

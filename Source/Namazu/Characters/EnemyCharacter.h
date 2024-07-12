@@ -79,6 +79,8 @@ private:
 
 	bool IsPlayerWithinView(bool bCheckBehind, float Angle);
 
+	bool IsPlayerHigherThanEnemy(); 
+
 	bool IsPlayerBlocked();
 
 	APlayerCharacter* PlayerReference;

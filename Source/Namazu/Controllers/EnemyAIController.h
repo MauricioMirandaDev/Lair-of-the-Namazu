@@ -37,6 +37,8 @@ public:
 
 	bool CanSensePlayerBehind(); 
 
+	bool IsPlayerAbove(); 
+
 	// Functions to handle combat
 	bool IsPlayerDead(); 
 

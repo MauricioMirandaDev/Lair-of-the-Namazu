@@ -20,6 +20,7 @@ AEnemyCharacter::AEnemyCharacter()
 	SearchRadius = 500.0f;
 	MaxSightAngle = 90.0f; 
 	PlayerReference = nullptr;
+	bIsAiming = false; 
 	AttackRadius = 100.0f;
 	TrackingStrength = 3.0f;
 
@@ -164,11 +165,20 @@ bool AEnemyCharacter::IsPlayerWithinView(bool bCheckBehind, float Angle)
 		float AngleBetweenPlayer = UKismetMathLibrary::DegAcos(FVector::DotProduct(GetActorForwardVector(), DirectionToPlayer));
 
 		if (bCheckBehind && AngleBetweenPlayer >= Angle)
+		{
+			bIsAiming = true;
 			return true;
+		}
 		else if (AngleBetweenPlayer <= Angle)
+		{
+			bIsAiming = true;
 			return true;
+		}
 		else
+		{
+			bIsAiming = false;
 			return false; 
+		}
 	}
 	else
 		return false;

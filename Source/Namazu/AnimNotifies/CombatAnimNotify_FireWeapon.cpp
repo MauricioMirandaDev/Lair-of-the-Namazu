@@ -13,6 +13,11 @@ void UCombatAnimNotify_FireWeapon::Notify(USkeletalMeshComponent* MeshComp, UAni
 {
 	Super::Notify(MeshComp, Animation);
 
-	if (ALongRangeWeapon* RangeWeapon = Cast<ALongRangeWeapon>(OwnerReference->GetWeapon()))
-		RangeWeapon->FireWeapon();
+	if (OwnerReference)
+	{
+		ALongRangeWeapon* RangeWeapon = Cast<ALongRangeWeapon>(OwnerReference->GetWeapon());
+
+		if (RangeWeapon)
+			RangeWeapon->FireWeapon();
+	}
 }

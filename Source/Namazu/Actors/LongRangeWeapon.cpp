@@ -2,7 +2,9 @@
 #include "LongRangeWeapon.h"
 #include "Components/StaticMeshComponent.h"
 #include "Kismet/KismetSystemLibrary.h"
+#include "Namazu/NamazuGameModeBase.h"
 #include "Namazu/Characters/CombatCharacter.h"
+#include "Namazu/Characters/PlayerCharacter.h"
 #include "Namazu/Actors/Projectile.h"
 
 // Sets default values
@@ -25,5 +27,10 @@ void ALongRangeWeapon::Tick(float DeltaTime)
 
 void ALongRangeWeapon::FireWeapon()
 {
-	GetWorld()->SpawnActor<AProjectile>(ProjectileClass, Mesh->GetSocketLocation(TEXT("SpawnSocket")), OwningCharacter->GetActorForwardVector().Rotation());
+	FVector FireDirection = ANamazuGameModeBase::PlayerRef->GetActorLocation() - OwningCharacter->GetActorLocation();
+	FireDirection.Normalize();
+
+	FVector FireLocation = OwningCharacter->GetActorLocation() + (FireDirection * 100.0f);
+
+	GetWorld()->SpawnActor<AProjectile>(ProjectileClass, FireLocation, FireDirection.Rotation());
 }

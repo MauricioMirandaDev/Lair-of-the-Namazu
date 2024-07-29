@@ -200,8 +200,13 @@ bool AEnemyCharacter::IsPlayerBlocked()
 
 	FHitResult LineResult; 
 
-	return UKismetSystemLibrary::LineTraceSingle(GetWorld(), GetActorLocation(), PlayerReference->GetActorLocation(), UEngineTypes::ConvertToTraceType(ECC_Visibility),
-												 true, ActorsToIngore, EDrawDebugTrace::None, OUT LineResult, true);
+	UKismetSystemLibrary::LineTraceSingle(GetWorld(), GetActorLocation(), PlayerReference->GetActorLocation(), UEngineTypes::ConvertToTraceType(ECC_Visibility),
+										  true, ActorsToIngore, EDrawDebugTrace::None, OUT LineResult, true);
+
+	if (LineResult.GetActor() != nullptr)
+		return !LineResult.GetActor()->IsA(APlayerCharacter::StaticClass());
+	else
+		return LineResult.bBlockingHit;
 }
 
 // Send the enemy to follow the player's location during an attack

@@ -32,9 +32,9 @@ void ALongRangeWeapon::FireWeapon()
 
 	FVector FireLocation = OwningCharacter->GetActorLocation() + (FireDirection * 100.0f);
 
-	//GetWorld()->SpawnActor<AProjectile>(ProjectileClass, FireLocation, FireDirection.Rotation());
+	GetWorld()->SpawnActor<AProjectile>(ProjectileClass, FireLocation, FireDirection.Rotation());
 
-	TArray<AActor*> ActorsToIgnore;
+	/*TArray<AActor*> ActorsToIgnore;
 	ActorsToIgnore.Add(this);
 	ActorsToIgnore.Add(OwningCharacter);
 
@@ -47,5 +47,5 @@ void ALongRangeWeapon::FireWeapon()
 	{
 		if (HitResult.GetActor()->IsA(APlayerCharacter::StaticClass()))
 			ANamazuGameModeBase::PlayerRef->TakeDamage(FAttackAnimation(nullptr, EAttackType::ATTACK_Stun, 10.0f, 0.0f, 100.0f, 0.0f), ANamazuGameModeBase::PlayerRef->GetActorLocation());
-	}
+	}*/
 }

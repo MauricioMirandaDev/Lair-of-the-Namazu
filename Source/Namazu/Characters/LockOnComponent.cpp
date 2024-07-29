@@ -81,8 +81,7 @@ AEnemyCharacter* ULockOnComponent::FindClosestEnemy(AActor* TraceOrigin, FVector
 	// Perform line trace to see if line of sight to enemy is blocked
 	if (!FoundActors.IsEmpty())
 	{
-		if (!UKismetSystemLibrary::LineTraceSingle(GetWorld(), Player->GetActorLocation(), FoundActors[0]->GetActorLocation(), UEngineTypes::ConvertToTraceType(ECC_Visibility),
-			false, ActorsToIgnore, EDrawDebugTrace::None, OUT HitResult, true))
+		if (!IsEnemyBlocked(TraceOrigin, FoundActors[0]))
 		{
 			ClosestEnemy = FoundActors[0];
 
@@ -95,10 +94,7 @@ AEnemyCharacter* ULockOnComponent::FindClosestEnemy(AActor* TraceOrigin, FVector
 				FVector DirectionToNext = NextActor->GetActorLocation() - TraceOrigin->GetActorLocation();
 				DirectionToNext.Normalize();
 
-				if (!UKismetSystemLibrary::LineTraceSingle(GetWorld(), Player->GetActorLocation(), NextActor->GetActorLocation(), UEngineTypes::ConvertToTraceType(ECC_Visibility),
-					false, ActorsToIgnore, EDrawDebugTrace::None, OUT HitResult, true)
-					&&
-					FVector::DotProduct(Direction, DirectionToNext) > FVector::DotProduct(Direction, DirectionToClosest))
+				if (!IsEnemyBlocked(TraceOrigin, NextActor) && FVector::DotProduct(Direction, DirectionToNext) > FVector::DotProduct(Direction, DirectionToClosest))
 				{
 					ClosestEnemy = NextActor;
 				}
@@ -114,6 +110,23 @@ AEnemyCharacter* ULockOnComponent::FindClosestEnemy(AActor* TraceOrigin, FVector
 		return nullptr;
 }
 
+// Line trace to determine if the enemy is blocked
+bool ULockOnComponent::IsEnemyBlocked(AActor* TraceOrigin, AActor* TraceEnd)
+{
+	TArray<AActor*> ActorsToIgnore;
+	ActorsToIgnore.Add(TraceOrigin);
+	ActorsToIgnore.Add(Player);
+
+	FHitResult HitResult;
+
+	UKismetSystemLibrary::LineTraceSingle(GetWorld(), Player->GetActorLocation(), TraceEnd->GetActorLocation(), UEngineTypes::ConvertToTraceType(ECC_Visibility),
+		false, ActorsToIgnore, EDrawDebugTrace::None, OUT HitResult, true);
+
+	if (HitResult.GetActor() != nullptr)
+		return !HitResult.GetActor()->IsA(AEnemyCharacter::StaticClass());
+	else
+		return HitResult.bBlockingHit;
+}
 
 // Move the player around the enemy they are locked onto
 void ULockOnComponent::LockedOnMovement()

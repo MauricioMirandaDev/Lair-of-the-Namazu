@@ -39,7 +39,7 @@ protected:
 	virtual void BeginPlay() override;
 
 private:
-	// Components and variables for lock-on system
+	// Components, function, and variables for lock-on system
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Lock-On System", meta = (AllowPrivateAccess = "true"))
 	float MaxLockOnDistance;
 
@@ -48,6 +48,8 @@ private:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Lock-On System", meta = (AllowPrivateAccess = "true"))
 	float UpOffset;
+
+	bool IsEnemyBlocked(AActor* TraceOrigin, AActor* TraceEnd);
 
 	APlayerCharacter* Player; 
 

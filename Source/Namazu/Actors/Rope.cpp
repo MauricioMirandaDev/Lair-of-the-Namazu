@@ -97,15 +97,18 @@ void ARope::DetermineTarget()
 	// Determine which actors are within line of sight to the player
 	for (AActor* Actor : FoundActors)
 	{
-		if (!UKismetSystemLibrary::LineTraceSingle(GetWorld(), PlayerRef->GetActorLocation(), Actor->GetActorLocation(), UEngineTypes::ConvertToTraceType(ECC_Visibility),
-			true, ActorsToIgnore, EDrawDebugTrace::None, OUT HitResult, true)
-			&&
-			Actor->Implements<UGrappleInterface>())
+		UKismetSystemLibrary::LineTraceSingle(GetWorld(), PlayerRef->GetActorLocation(), Actor->GetActorLocation(), UEngineTypes::ConvertToTraceType(ECC_Visibility),
+			true, ActorsToIgnore, EDrawDebugTrace::None, OUT HitResult, true);
+
+		if (HitResult.GetActor() != nullptr)
 		{
-			if (AGrapplePoint* Point = Cast<AGrapplePoint>(Actor))
-				NearbyGrappleActors.Add(Point->CreateGrappleActor());
-			else if (AEnemyCharacter* Enemy = Cast<AEnemyCharacter>(Actor))
-				NearbyGrappleActors.Add(Enemy->CreateGrappleActor()); 
+			if (HitResult.GetActor()->Implements<UGrappleInterface>())
+			{
+				if (AGrapplePoint* Point = Cast<AGrapplePoint>(Actor))
+					NearbyGrappleActors.Add(Point->CreateGrappleActor());
+				else if (AEnemyCharacter* Enemy = Cast<AEnemyCharacter>(Actor))
+					NearbyGrappleActors.Add(Enemy->CreateGrappleActor());
+			}
 		}
 	}
 

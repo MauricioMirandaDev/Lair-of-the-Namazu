@@ -30,9 +30,10 @@ int32 APlayerCharacter::RopeCount = 0;
 APlayerCharacter::APlayerCharacter()
 {
 	GetCapsuleComponent()->SetCollisionProfileName(TEXT("PlayerCharacter"), true);
+	JumpSoundEffect = nullptr; 
+	bJumpPressed = false; 
 	HealingAmount = 10.0f; 
 	PlayerFocus = EPlayerFocus::FOCUS_None; 
-	bJumpPressed = false; 
 	bEnemyJustDefeated = false; 
 	PreviousEnemyLaunched = nullptr; 
 	InitialPosition = FVector(0.0f);
@@ -184,13 +185,18 @@ void APlayerCharacter::Jump()
 {
 	Super::Jump(); 
 
-	bJumpPressed = true;
+	// Play jump sound effect once
+	if (!bJumpPressed) 
+	{
+		UGameplayStatics::PlaySoundAtLocation(GetWorld(), JumpSoundEffect, GetActorLocation());
+		bJumpPressed = true;
+	}
 }
 
 // Called when the player's movement mode changes
 void APlayerCharacter::OnMovementModeChanged(EMovementMode PrevMovementMode, uint8 PreviousCustomMode)
 {
-	Super::OnMovementModeChanged(PrevMovementMode, PreviousCustomMode); 
+	Super::OnMovementModeChanged(PrevMovementMode, PreviousCustomMode);
 
 	if (PrevMovementMode == EMovementMode::MOVE_Falling)
 		bJumpPressed = false;
